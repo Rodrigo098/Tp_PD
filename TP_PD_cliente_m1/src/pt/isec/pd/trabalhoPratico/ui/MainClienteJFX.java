@@ -17,7 +17,9 @@ public class MainClienteJFX extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         RootPane root = new RootPane();
-        Scene scene = new Scene(root,700,400);
+        Scene scene = new Scene(root,500,200);
+        String css = this.getClass().getResource("css/estilos.css").toExternalForm();
+        scene.getStylesheets().add(css);
         stage.setScene(scene);
         stage.setTitle(title);
         stage.setMinWidth(700);

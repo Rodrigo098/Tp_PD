@@ -1,6 +1,5 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI;
 
-import javafx.application.Platform;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
@@ -24,6 +23,7 @@ public class LogoutUtilizador extends BorderPane {
         HBox hBox = new HBox(cancelar, confirmar);
         VBox vBox = new VBox(label, hBox);
 
+        this.setStyle("-fx-background-color: #FFF3E0; -fx-padding: 30;");
         this.setCenter(vBox);
         this.setFocusTraversable(true);
     }

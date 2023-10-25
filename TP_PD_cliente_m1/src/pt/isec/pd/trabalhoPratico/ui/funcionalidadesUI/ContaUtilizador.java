@@ -1,8 +1,7 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI;
 
-import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -21,10 +20,14 @@ public class ContaUtilizador extends BorderPane {
         registar_presenca = new Button("Registar Presença");
         voltar = new Button("Voltar");
         logout = new Button("Logout");
+        logout.getStyleClass().add("btnLogout");
 
-        HBox hBox = new HBox(voltar, lista, registar_presenca);
+        VBox vBox = new VBox(lista, registar_presenca, voltar);
+
+        this.setStyle("-fx-background-color: #E8EAF6; -fx-padding: 30 30 0 30;");
+        this.setMargin(logout, new Insets(10));
         this.setBottom(logout);
-        this.setCenter(hBox);
+        this.setCenter(vBox);
         this.setFocusTraversable(true);
     }
 

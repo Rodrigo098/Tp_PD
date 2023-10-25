@@ -19,18 +19,16 @@ public class RootPane extends BorderPane {
         registar = new Button("Registar");
 
         HBox hBox = new HBox(login, registar);
-        BorderPane borderPane = new BorderPane(hBox);
-        borderPane.setFocusTraversable(true);
+        hBox.getStyleClass().add("hbox");
 
         StackPane funcionalidades = new StackPane(
-                borderPane,
+                new BorderPane(hBox),
                 new LoginUtilizador(),
                 new RegistoUtilizador(),
                 new LogoutUtilizador(),
                 new ContaUtilizador()
         );
-        //funcionalidades.setFocusTraversable(true);
-        //this.setFocusTraversable(true);
+
         this.setCenter(funcionalidades);
     }
 

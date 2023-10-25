@@ -27,6 +27,7 @@ public class RegistoUtilizador extends BorderPane {
         HBox hBox = new HBox(voltar, registar);
         VBox vBox = new VBox(username, password, confirmar_password, hBox);
 
+        this.setStyle("-fx-background-color: #78909C; -fx-padding: 30;");
         this.setCenter(vBox);
         this.setFocusTraversable(true);
     }

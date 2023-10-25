@@ -28,6 +28,8 @@ public class LoginUtilizador extends BorderPane {
         HBox hBox = new HBox(voltar, entrar);
         VBox vBox = new VBox(username, password, hBox);
 
+        this.setStyle("-fx-background-color: #E0F2F1; -fx-padding: 30;");
+        this.getStyleClass().add("extendBorderPane");
         this.setCenter(vBox);
         this.setFocusTraversable(true);
     }

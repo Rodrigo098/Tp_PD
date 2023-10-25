@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="c7bccdb4-b3f8-480e-b2c1-257f317cc302" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../.idea/tp_pd.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TP_PD_cliente_m1.iml" beforeDir="false" afterPath="$PROJECT_DIR$/TP_PD_cliente_m1.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/MainClienteJFX.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/MainClienteJFX.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/RootPane.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/RootPane.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/ContaUtilizador.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/ContaUtilizador.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LoginUtilizador.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LoginUtilizador.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LogoutUtilizador.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LogoutUtilizador.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/RegistoUtilizador.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/RegistoUtilizador.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/MainClienteJFX.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/MainClienteJFX.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/RootPane.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/RootPane.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/ContaUtilizador.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/ContaUtilizador.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LoginUtilizador.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LoginUtilizador.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LogoutUtilizador.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LogoutUtilizador.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/RegistoUtilizador.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/RegistoUtilizador.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +48,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "last_opened_file_path": "C:/Program Files/Java/javafx-sdk-21.0.1/lib",
+    "last_opened_file_path": "C:/Users/ipwmo/Desktop/tp_pd/TP_PD_cliente_m1",
     "project.structure.last.edited": "Libraries",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.25632185"
