@@ -11,6 +11,7 @@ public class RootPane extends BorderPane {
     ProgClienteManager progClienteManager;
 
     public RootPane(ProgClienteManager progClienteManager) {
+        this.progClienteManager = progClienteManager;
         createViews();
         registerHandlers();
         update();

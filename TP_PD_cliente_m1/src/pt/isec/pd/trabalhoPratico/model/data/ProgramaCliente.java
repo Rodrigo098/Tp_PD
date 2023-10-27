@@ -12,15 +12,15 @@ public class ProgramaCliente {
     //ver se é email:
     public boolean verificaFormato(String email){
         String [] verificaFormatoEmail = email.split("@|\\.");
-        return (verificaFormatoEmail.length != 3 && verificaFormatoEmail[2].length() > 3);
+        return (verificaFormatoEmail.length != 3);
     }
 
 
     //FUNCIONALIDADES:
     //COMUNS:
-    public boolean login(String email, String password){
+    public void login(String email, String password){
         if(email == null || password == null || verificaFormato(email))
-            return false;
+            return;
 
         //CÓDIGO A IMPLEMENTAR
         //procura na BD se existe um username correspondente
@@ -39,20 +39,18 @@ public class ProgramaCliente {
         else {
             MainCliente.administradorSBP.set(false);
         }
-
         MainCliente.menuSBP.set("CONTA");
-        return true;
     }
 
     //UTILIZADOR:
-    public boolean registar(String nome, String password, String email, String confPass, String numIdentificacao){
+    public void registar(String nome, String password, String email, String confPass, String numIdentificacao){
         if(nome == null || password == null || !password.equals(confPass) || email == null || verificaFormato(email) || numIdentificacao == null)
-                return false;
+                return;
         int numID;
         try {
             numID = Integer.parseInt(numIdentificacao);
         } catch (NumberFormatException e) {
-            return false;
+            return;
         }
 
         //CÓDIGO A IMPLEMENTAR
@@ -62,7 +60,6 @@ public class ProgramaCliente {
                 //senão
                     //insere na BD
         MainCliente.menuSBP.set("CONTA");
-        return true;
     }
 
     public boolean editarRegisto() {

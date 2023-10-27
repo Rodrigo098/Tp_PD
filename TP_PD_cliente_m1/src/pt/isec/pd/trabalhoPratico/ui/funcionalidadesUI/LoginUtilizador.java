@@ -44,6 +44,8 @@ public class LoginUtilizador extends BorderPane {
         });
         entrar.setOnAction(e -> {
             progClienteManager.login(username.getText(), password.getText());
+            username.setText("");
+            password.setText("");
         });
         MainCliente.menuSBP.addListener(observable -> update());
     }

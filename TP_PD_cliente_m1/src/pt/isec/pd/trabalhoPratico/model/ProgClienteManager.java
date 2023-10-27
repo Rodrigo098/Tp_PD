@@ -9,8 +9,8 @@ public class ProgClienteManager {
         programaCliente = new ProgramaCliente();
     }
 
-    public boolean login(String email, String password) {
-        return programaCliente.login(email, password);
+    public void login(String email, String password) {
+        programaCliente.login(email, password);
     }
     public void registar(String nome, String password, String confPass, String email, String numIdentificacao) {
         programaCliente.registar(nome, password, confPass, email, numIdentificacao);

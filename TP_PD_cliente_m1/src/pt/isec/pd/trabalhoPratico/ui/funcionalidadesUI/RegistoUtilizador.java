@@ -21,8 +21,9 @@ public class RegistoUtilizador extends BorderPane {
 
     private void createViews() {
         username = new TextField("Username");
+        email = new TextField("email");
         password = new TextField("Password");
-        confirmar_password = new TextField("confirmar Password");
+        confirmar_password = new TextField("Confirmar password");
 
         registar = new Button("Criar registo");
         voltar = new Button("Voltar");
