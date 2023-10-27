@@ -6,18 +6,24 @@
   <component name="ChangeListManager">
     <list default="true" id="c7bccdb4-b3f8-480e-b2c1-257f317cc302" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/MainCliente.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/MainCliente.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/model/ProgClienteManager.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/model/ProgClienteManager.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/model/data/ProgramaCliente.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/model/data/ProgramaCliente.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/RootPane.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/RootPane.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/css/estilos.css" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/css/estilos.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LoginUtilizador.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LoginUtilizador.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/RegistoUtilizador.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/RegistoUtilizador.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/ContaUtilizador.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LoginUtilizador.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LogoutUtilizador.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/RegistoUtilizador.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/MainCliente.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/MainCliente.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/model/ProgClienteManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/model/ProgClienteManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/model/data/ProgramaCliente.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/model/data/ProgramaCliente.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/RootPane.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/RootPane.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/css/estilos.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/css/estilos.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LoginUtilizador.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LoginUtilizador.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/RegistoUtilizador.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/RegistoUtilizador.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/ContaUtilizador.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Utilizador/ContaUtilizadorUI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LoginUtilizador.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LoginClienteUI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LogoutUtilizador.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/LogoutClienteUI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/RegistoUtilizador.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Utilizador/RegistoUtilizadorUI.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +60,11 @@
     &quot;project.structure.side.proportion&quot;: &quot;0.25632185&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="MainCliente" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="pt.isec.pd.trabalhoPratico.MainCliente" />

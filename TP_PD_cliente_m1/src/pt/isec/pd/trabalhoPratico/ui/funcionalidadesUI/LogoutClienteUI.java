@@ -8,10 +8,10 @@ import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
-public class LogoutUtilizador extends BorderPane {
+public class LogoutClienteUI extends BorderPane {
     private Button confirmar, cancelar;
     ProgClienteManager progClienteManager;
-    public LogoutUtilizador(ProgClienteManager progClienteManager)  {
+    public LogoutClienteUI(ProgClienteManager progClienteManager)  {
         this.progClienteManager = progClienteManager;
         createViews();
         registerHandlers();
@@ -38,6 +38,7 @@ public class LogoutUtilizador extends BorderPane {
         confirmar.setOnAction(e -> {
             progClienteManager.logout();
             MainCliente.menuSBP.set("MENU");
+            MainCliente.administradorSBP.set("INDIFINIDO");
         });
         MainCliente.menuSBP.addListener(observable -> update());
     }

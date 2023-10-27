@@ -8,11 +8,12 @@ import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
-public class RegistoUtilizador extends BorderPane {
-    private Button registar, voltar;
-    private TextField username, email, password, confirmar_password;
+public class LoginClienteUI extends BorderPane {
+    private Button entrar, voltar;
+    private TextField username, password;
     private ProgClienteManager progClienteManager;
-    public RegistoUtilizador(ProgClienteManager progClienteManager)  {
+
+    public LoginClienteUI(ProgClienteManager progClienteManager) {
         this.progClienteManager = progClienteManager;
         createViews();
         registerHandlers();
@@ -20,18 +21,19 @@ public class RegistoUtilizador extends BorderPane {
     }
 
     private void createViews() {
-        username = new TextField("Username");
-        email = new TextField("email");
-        password = new TextField("Password");
-        confirmar_password = new TextField("Confirmar password");
+        username = new TextField();
+        password = new TextField();
+        username.setPromptText("Username");
+        password.setPromptText("Password");
 
-        registar = new Button("Criar registo");
+        entrar = new Button("Entrar");
         voltar = new Button("Voltar");
 
-        HBox hBox = new HBox(voltar, registar);
-        VBox vBox = new VBox(username, email, password, confirmar_password, hBox);
+        HBox hBox = new HBox(voltar, entrar);
+        VBox vBox = new VBox(username, password, hBox);
 
-        this.setStyle("-fx-background-color: #78909C; -fx-padding: 30;");
+        this.setStyle("-fx-background-color: #E0F2F1; -fx-padding: 30;");
+        this.getStyleClass().add("extendBorderPane");
         this.setCenter(vBox);
         this.setFocusTraversable(true);
     }
@@ -40,13 +42,15 @@ public class RegistoUtilizador extends BorderPane {
         voltar.setOnAction(e -> {
             MainCliente.menuSBP.set("MENU");
         });
-        registar.setOnAction(e -> {
-            progClienteManager.registar(username.getText(), password.getText(), confirmar_password.getText(), email.getText(), "123");
+        entrar.setOnAction(e -> {
+            progClienteManager.login(username.getText(), password.getText());
+            username.setText(null);
+            password.setText(null);
         });
         MainCliente.menuSBP.addListener(observable -> update());
     }
 
     private void update() {
-        this.setVisible(MainCliente.menuSBP.get().equals("REGISTO"));
+        this.setVisible(MainCliente.menuSBP.get().equals("LOGIN"));
     }
 }

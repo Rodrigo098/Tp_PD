@@ -11,15 +11,14 @@ public class ProgramaCliente {
 
     //ver se é email:
     public boolean verificaFormato(String email){
-        String [] verificaFormatoEmail = email.split("@|\\.");
-        return (verificaFormatoEmail.length != 3);
+        return email == null || email.split("@|\\.").length != 3;
     }
 
 
     //FUNCIONALIDADES:
     //COMUNS:
     public void login(String email, String password){
-        if(email == null || password == null || verificaFormato(email))
+        if(password == null || verificaFormato(email))
             return;
 
         //CÓDIGO A IMPLEMENTAR
@@ -34,17 +33,17 @@ public class ProgramaCliente {
 
         //se existir email e pass for correspondente:
         if(email.equals("admin@isec.pt")) {//verificaFormatoEmail[0].equals("admin") é só por agora, depois vai ser o que corresponde na BD
-            MainCliente.administradorSBP.set(true);
+            MainCliente.administradorSBP.set("ADMINISTRADOR");
         }
         else {
-            MainCliente.administradorSBP.set(false);
+            MainCliente.administradorSBP.set("UTILIZADOR");
         }
         MainCliente.menuSBP.set("CONTA");
     }
 
     //UTILIZADOR:
-    public void registar(String nome, String password, String email, String confPass, String numIdentificacao){
-        if(nome == null || password == null || !password.equals(confPass) || email == null || verificaFormato(email) || numIdentificacao == null)
+    public void registar(String nome, String email, String numIdentificacao, String password, String confPass){
+        if(nome == null || password == null || !password.equals(confPass) || verificaFormato(email) || numIdentificacao == null)
                 return;
         int numID;
         try {
@@ -60,6 +59,7 @@ public class ProgramaCliente {
                 //senão
                     //insere na BD
         MainCliente.menuSBP.set("CONTA");
+        MainCliente.administradorSBP.set("UTILIZADOR");
     }
 
     public boolean editarRegisto() {

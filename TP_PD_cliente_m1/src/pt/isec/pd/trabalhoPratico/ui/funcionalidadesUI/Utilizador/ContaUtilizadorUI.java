@@ -1,17 +1,16 @@
-package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI;
+package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
-public class ContaUtilizador extends BorderPane {
-    private Button lista, registar_presenca, voltar, logout;
+public class ContaUtilizadorUI extends BorderPane {
+    private Button listaPresencas, registarPresenca, editarRegisto, obterCSV, logout;
     private ProgClienteManager progClienteManager;
-    public ContaUtilizador(ProgClienteManager progClienteManager)  {
+    public ContaUtilizadorUI(ProgClienteManager progClienteManager)  {
         this.progClienteManager = progClienteManager;
         createViews();
         registerHandlers();
@@ -19,13 +18,14 @@ public class ContaUtilizador extends BorderPane {
     }
 
     private void createViews() {
-        lista = new Button("Ver Lista de Presenças ");
-        registar_presenca = new Button("Registar Presença");
-        voltar = new Button("Voltar");
+        listaPresencas = new Button("Ver Lista de Presenças ");
+        registarPresenca = new Button("Registar Presença");
+        editarRegisto = new Button("Editar Registo");
+        obterCSV = new Button("Obter CSV");
         logout = new Button("Logout");
         logout.getStyleClass().add("btnLogout");
 
-        VBox vBox = new VBox(lista, registar_presenca, voltar);
+        VBox vBox = new VBox(listaPresencas, registarPresenca, editarRegisto, obterCSV);
 
         this.setStyle("-fx-background-color: #E8EAF6; -fx-padding: 30 30 0 30;");
         this.setMargin(logout, new Insets(10));
@@ -35,25 +35,29 @@ public class ContaUtilizador extends BorderPane {
     }
 
     private void registerHandlers() {
-        voltar.setOnAction(e -> {
-            MainCliente.menuSBP.set("MENU");
-        });
-        lista.setOnAction(e -> {
+        listaPresencas.setOnAction(e -> {
             //progClienteManager.consultarPresenças();
             //mostrar lista de presenças
         });
-        registar_presenca.setOnAction(e -> {
+        registarPresenca.setOnAction(e -> {
             //mostrar form registar presença
             //o progClienteManager.registarPresença() chama-se na submissão do registo
         });
+        editarRegisto.setOnAction(e -> {
+            MainCliente.menuSBP.set("EDITAR_REGISTO");
+        });
+        obterCSV.setOnAction(e -> {
+            progClienteManager.obterCSV();
+        });
         logout.setOnAction(e -> {
             progClienteManager.logout();
+            MainCliente.administradorSBP.set("INDIFINIDO");
             MainCliente.menuSBP.set("LOGOUT");
         });
-        MainCliente.menuSBP.addListener(observable -> update());
+        MainCliente.administradorSBP.addListener(observable -> update());
     }
 
     private void update() {
-        this.setVisible(MainCliente.menuSBP.get().equals("CONTA"));
+        this.setVisible(MainCliente.administradorSBP.get().equals("UTILIZADOR"));
     }
 }

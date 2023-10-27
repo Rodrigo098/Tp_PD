@@ -3,7 +3,7 @@
     -fx-font-size: 15px;
 }
 Label {
-    -fx-padding: 5 40;
+    -fx-padding: 10 40;
     -fx-background-color: rgba( 255, 255, 255, 0.8);
     -fx-background-radius: 20px;
 }
@@ -13,8 +13,8 @@ BorderPane {
     -fx-alignment: center;
 }
 HBox {
-    -fx-spacing: 30;
-    -fx-padding: 20;
+    -fx-spacing: 40;
+    -fx-padding: 10;
     -fx-alignment: center;
 }
 .hbox, VBox {
@@ -22,7 +22,7 @@ HBox {
     -fx-effect: dropshadow( gaussian , rgb(0, 0, 0) , 20,0,0,1 );
     -fx-border-width: 3;
     -fx-border-radius: 25px;
-    -fx-spacing: 20;
+    -fx-spacing: 15;
     -fx-padding: 20;
     -fx-alignment: center;
 }
