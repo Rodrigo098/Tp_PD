@@ -3,7 +3,7 @@
     -fx-font-size: 15px;
 }
 Label {
-    -fx-padding: 10 40 0 40;
+    -fx-padding: 10 40;
     -fx-background-color: rgba( 255, 255, 255, 0.8);
     -fx-background-radius: 20px;
 }
@@ -13,7 +13,7 @@ BorderPane {
     -fx-alignment: center;
 }
 HBox {
-    -fx-spacing: 30;
+    -fx-spacing: 40;
     -fx-padding: 10;
     -fx-alignment: center;
 }
@@ -37,6 +37,11 @@ Button {
 }
 .btnLogout {
     -fx-font: 15px "Arial";
-    -fx-padding: 10 10;
+    -fx-padding: 10;
     -fx-background-color: #BF360C;
+}
+.eventoButton {
+    -fx-font: 15px "Arial";
+    -fx-padding: 5;
+    -fx-background-color: #567B75;
 }

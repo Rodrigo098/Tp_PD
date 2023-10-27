@@ -37,6 +37,11 @@ Button {
 }
 .btnLogout {
     -fx-font: 15px "Arial";
-    -fx-padding: 10 10;
+    -fx-padding: 10;
     -fx-background-color: #BF360C;
+}
+.eventoButton {
+    -fx-font: 15px "Arial";
+    -fx-padding: 5;
+    -fx-background-color: #567B75;
 }

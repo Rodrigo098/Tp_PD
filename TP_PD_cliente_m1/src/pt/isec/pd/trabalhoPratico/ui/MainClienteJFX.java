@@ -7,7 +7,7 @@ import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class MainClienteJFX extends Application {
     ProgClienteManager clienteManager;
-    private String title = "Registo Presenças";
+    private String title = "App Presenças";
 
     @Override
     public void init() throws Exception {
@@ -28,3 +28,13 @@ public class MainClienteJFX extends Application {
         stage.show();
     }
 }
+/*
+        Stage stage2 = new Stage();
+        ListarEventosUI listPane = new ListarEventosUI(clienteManager);
+        Scene scene2 = new Scene(listPane, 300, 400);
+        stage2.setScene(scene2);
+        stage2.setTitle("Lista Eventos");
+        stage2.setX(stage.getX() + stage.getWidth());
+        stage2.setY(stage.getY());
+        stage2.show();
+ */

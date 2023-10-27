@@ -18,16 +18,30 @@ public class EventoUI extends VBox {
     private void createViews() {
 
         Label eventoNome = new Label("evento -" + nomeEvento);
-        gerarCodigoPresencas = new Button("Gerar Código Presenças");
-        editarEvento = new Button("Editar Evento");
-        eliminarEvento = new Button("Eliminar Evento");
-        listarPresencas = new Button("Ver Lista de Presenças");
-        obterPresencasCSV = new Button("Obter CSV");
+        gerarCodigoPresencas = new Button("Gerar Código");
+        gerarCodigoPresencas.getStyleClass().add("eventoButton");
+
+        editarEvento = new Button("Editar");
+        editarEvento.getStyleClass().add("eventoButton");
+
+        eliminarEvento = new Button("Eliminar");
+        eliminarEvento.getStyleClass().add("eventoButton");
+
+        obterPresencasCSV = new Button("CSV");
+        obterPresencasCSV.getStyleClass().add("eventoButton");
+
+        listarPresencas = new Button("Ver Presenças");
+        listarPresencas.getStyleClass().add("eventoButton");
+
         eliminarPresencas = new Button("Eliminar Presenças");
+        eliminarPresencas.getStyleClass().add("eventoButton");
+
         inserirPresencas = new Button("Inserir Presenças");
+        inserirPresencas.getStyleClass().add("eventoButton");
 
         FlowPane flowPane = new FlowPane(gerarCodigoPresencas, editarEvento, eliminarEvento, listarPresencas, obterPresencasCSV, eliminarPresencas, inserirPresencas);
 
+        this.setStyle("-fx-border-color: black");
         this.getChildren().addAll(eventoNome, flowPane);
     }
     private void registerHandlers() {

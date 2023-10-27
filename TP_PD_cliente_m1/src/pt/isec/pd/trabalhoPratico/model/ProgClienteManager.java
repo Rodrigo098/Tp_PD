@@ -41,6 +41,6 @@ public class ProgClienteManager {
     }
 
     public String[] obterListaEventos() {
-        return new String[0];
+        return new String[]{"ola", "adeus"};
     }
 }
