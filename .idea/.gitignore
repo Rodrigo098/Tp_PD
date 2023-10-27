@@ -1,6 +1,4 @@
 # Default ignored files
 /shelf/
-/workspace.xml
-../TP_PD_cliente_m1/.idea/workspace.xml
-../TP_PD_servidor_m1/.idea/workspace.xml
-../TP_PD_servidorBackup_m1/.idea/workspace.xml
+**/workspace.xml
+

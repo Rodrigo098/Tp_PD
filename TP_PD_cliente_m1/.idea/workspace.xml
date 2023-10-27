@@ -5,15 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c7bccdb4-b3f8-480e-b2c1-257f317cc302" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/model/ProgClienteManager.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/model/ProgClienteManager.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/css/estilos.css" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/css/estilos.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/model/ProgClienteManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/model/ProgClienteManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/MainClienteJFX.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/MainClienteJFX.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/css/estilos.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/css/estilos.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/ContaAdministradorUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/ContaAdministradorUI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/EventoUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/EventoUI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/ListarEventosUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/ListarEventosUI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TP_PD_cliente_m1.iml" beforeDir="false" afterPath="$PROJECT_DIR$/TP_PD_cliente_m1.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/MainClienteJFX.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/MainClienteJFX.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/ContaAdministradorUI.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/ContaAdministradorUI.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/EventoUI.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/EventoUI.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/ListarEventosUI.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/ListarEventosUI.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,17 +37,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "last_opened_file_path": "C:/Users/ipwmo/Desktop/2º ano/PA/exercicioFiguras",
-    "project.structure.last.edited": "Libraries",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.25632185"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/ipwmo/Desktop/2º ano/PA/exercicioFiguras&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Libraries&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.25632185&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
       <recent name="pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador" />
