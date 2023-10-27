@@ -25,7 +25,7 @@ public class RootPane extends BorderPane {
         registar = new Button("Registar");
 
         HBox hBox = new HBox(login, registar);
-        hBox.getStyleClass().add("hbox");
+        hBox.getStyleClass().add("conteudo");
 
         StackPane stackPane = new StackPane(
                 new BorderPane(hBox),

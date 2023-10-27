@@ -3,11 +3,21 @@ package pt.isec.pd.trabalhoPratico.model.data;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class ProgramaCliente {
     private Socket socket;
+    public ArrayList<String> listaEventos;//obviamente que não é string mas meanwhile yes
+
     public ProgramaCliente(){
+        //vai
+        listaEventos = new ArrayList<>();
+        listaEventos.add("Evento 1");
+        listaEventos.add("Evento 2");
+        listaEventos.add("Evento 3");
     }
+
+    //temos de pôr uma thread que atualiza o arraylist de eventos
 
     //ver se é email:
     public boolean verificaFormato(String email){
@@ -91,4 +101,15 @@ public class ProgramaCliente {
     }
 
 
+    public String[] obterListaEventos() {
+        String [] eventos = new String[listaEventos.size()];
+        for(String evento : listaEventos){
+            eventos[listaEventos.indexOf(evento)] = evento;//depois põe-se toString
+        }
+        return eventos;
+    }
+
+    public String obterEvento(int eventoSelecionado) {
+        return listaEventos.get(eventoSelecionado);//depois põe-se toString
+    }
 }

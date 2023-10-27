@@ -3,6 +3,7 @@ package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -13,7 +14,7 @@ import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 public class ContaAdministradorUI extends BorderPane {
     static protected SimpleStringProperty opcaoAdmin = new SimpleStringProperty("NADA");
     //Eventos
-    private Button criarEvento, listarEventos, logout;
+    private Button criarEvento, listarEventos, editorEventos, logout;
     private ProgClienteManager progClienteManager;
 
     //-----------------------------------------------------------------
@@ -26,17 +27,18 @@ public class ContaAdministradorUI extends BorderPane {
 
     //-----------------------------------------------------------------
     private void createViews() {
-        criarEvento = new Button("+Evento");
+        criarEvento = new Button("Criar Evento");
         listarEventos = new Button("Listar Eventos");
 
         logout = new Button("Logout");
         logout.getStyleClass().add("btnLogout");
 
         VBox funcionalidades = new VBox(criarEvento, listarEventos);
-
-        StackPane ladoDireito = new StackPane(new StackPane(new ListarEventosUI(progClienteManager)), new CriarEventoUI(progClienteManager));
+        funcionalidades.setMinWidth(200);
+        StackPane ladoDireito = new StackPane(new ListarEventosUI(progClienteManager), new CriarEventoUI(progClienteManager), new EditorEventos(progClienteManager));
         HBox hBox = new HBox(funcionalidades, ladoDireito);
         hBox.setSpacing(20);
+
         this.setStyle("-fx-background-color: #E8EFF6; -fx-padding: 30 30 0 30;");
         this.setMargin(logout, new Insets(10));
         this.setBottom(logout);

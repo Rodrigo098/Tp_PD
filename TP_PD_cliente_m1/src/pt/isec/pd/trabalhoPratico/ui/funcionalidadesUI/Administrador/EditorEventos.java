@@ -2,14 +2,17 @@ package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
+import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
-public class EventoUI extends VBox {
+public class EditorEventos extends BorderPane {
     private Button editarEvento, eliminarEvento, gerarCodigoPresencas, listarPresencas, obterPresencasCSV, eliminarPresencas, inserirPresencas;
-    private String nomeEvento;
-    public EventoUI(String nomeEvento){
-        this.nomeEvento = nomeEvento;
+    private ProgClienteManager progClienteManager;
+
+    public EditorEventos(ProgClienteManager progClienteManager){
+        this.progClienteManager = progClienteManager;
         createViews();
         registerHandlers();
         update();
@@ -17,7 +20,6 @@ public class EventoUI extends VBox {
 
     private void createViews() {
 
-        Label eventoNome = new Label("evento -" + nomeEvento);
         gerarCodigoPresencas = new Button("Gerar Código");
         gerarCodigoPresencas.getStyleClass().add("eventoButton");
 
@@ -41,32 +43,42 @@ public class EventoUI extends VBox {
 
         FlowPane flowPane = new FlowPane(gerarCodigoPresencas, editarEvento, eliminarEvento, listarPresencas, obterPresencasCSV, eliminarPresencas, inserirPresencas);
 
-        this.setStyle("-fx-border-color: black");
-        this.getChildren().addAll(eventoNome, flowPane);
+        flowPane.setVgap(8);
+        flowPane.setHgap(4);
+
+        Label label = new Label("Editor de Eventos");
+        label.getStyleClass().add("titulo");
+
+        VBox vBox = new VBox(new Label("Evento Selecionado: " + progClienteManager.obterEvento(ListarEventosUI.eventoSelecionado)), flowPane);
+        this.setCenter(vBox);
+        this.setTop(label);
     }
+
     private void registerHandlers() {
         gerarCodigoPresencas.setOnAction(e -> {
-            //progClienteManager.gerarCodigoPresencas(nomeEvento);
+            //progClienteManager.gerarCodigoPresencas(ListarEventosUI.eventoSelecionado);
         });
         editarEvento.setOnAction(e -> {
-            //progClienteManager.editarEvento(nomeEvento);
+            //progClienteManager.editarEvento(ListarEventosUI.eventoSelecionado);
         });
         eliminarEvento.setOnAction(e -> {
-            //progClienteManager.eliminarEvento(nomeEvento);
+            //progClienteManager.eliminarEvento(ListarEventosUI.eventoSelecionado);
         });
         listarPresencas.setOnAction(e -> {});
         obterPresencasCSV.setOnAction(e -> {
-            //progClienteManager.obterPresencasCSV(nomeEvento);
+            //progClienteManager.obterPresencasCSV(ListarEventosUI.eventoSelecionado);
         });
         eliminarPresencas.setOnAction(e -> {
-            //progClienteManager.eliminarPresencas(nomeEvento);
+            //progClienteManager.eliminarPresencas(ListarEventosUI.eventoSelecionado);
         });
         inserirPresencas.setOnAction(e -> {
-            //progClienteManager.inserirPresencas(presencasAInserir.getText(), nomeEvento);
+            //progClienteManager.inserirPresencas(presencasAInserir.getText(), ListarEventosUI.eventoSelecionado);
         });
+
+        ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
     }
 
     private void update() {
-        //evento que mudou
+        this.setVisible(ContaAdministradorUI.opcaoAdmin.get().equals("EDITOR_EVENTOS"));
     }
 }

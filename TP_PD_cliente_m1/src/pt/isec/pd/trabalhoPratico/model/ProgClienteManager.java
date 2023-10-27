@@ -41,6 +41,10 @@ public class ProgClienteManager {
     }
 
     public String[] obterListaEventos() {
-        return new String[]{"ola", "adeus"};
+        return programaCliente.obterListaEventos();
+    }
+
+    public String obterEvento(int eventoSelecionado) {
+        return programaCliente.obterEvento(eventoSelecionado);
     }
 }

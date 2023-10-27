@@ -17,7 +17,7 @@ HBox {
     -fx-padding: 10;
     -fx-alignment: center;
 }
-.hbox, VBox {
+.conteudo, VBox {
     -fx-border-color: #455A64;
     -fx-effect: dropshadow( gaussian , rgb(0, 0, 0) , 20,0,0,1 );
     -fx-border-width: 3;
@@ -26,22 +26,28 @@ HBox {
     -fx-padding: 20;
     -fx-alignment: center;
 }
-Button {
+Button, .titulo {
     -fx-font: 20px "Arial";
     -fx-padding: 10 40;
     -fx-text-fill: white;
     -fx-background-color: #455A64;
     -fx-background-radius: 20px;
     -fx-effect: innershadow( gaussian , rgba(43, 51, 55, 0.5) , 15,0,0,0 );
-    /*rgb(195, 215, 214) rgb(55,71,79) */;
 }
+.titulo {
+    -fx-background-color: #90A4AE;
+    -fx-border: 4px solid transparent;
+}
+
 .btnLogout {
     -fx-font: 15px "Arial";
     -fx-padding: 10;
     -fx-background-color: #BF360C;
 }
+
 .eventoButton {
-    -fx-font: 15px "Arial";
-    -fx-padding: 5;
-    -fx-background-color: #567B75;
+    -fx-font: 12px "Arial";
+    -fx-text-fill: black;
+    -fx-padding: 7;
+    -fx-background-color: white;
 }

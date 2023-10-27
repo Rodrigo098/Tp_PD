@@ -1,8 +1,8 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class CriarEventoUI extends BorderPane {
@@ -16,10 +16,10 @@ public class CriarEventoUI extends BorderPane {
     }
 
     private void createViews() {
-
-        Label eventoNome = new Label("Criar Evento");
-        this.setTop(eventoNome);
-
+        Label label = new Label("Criar Evento");
+        label.getStyleClass().add("titulo");
+        this.setCenter(new VBox());
+        this.setTop(label);
     }
     private void registerHandlers() {
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
