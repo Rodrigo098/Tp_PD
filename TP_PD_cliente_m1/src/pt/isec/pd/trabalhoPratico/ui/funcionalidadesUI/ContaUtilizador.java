@@ -6,10 +6,13 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.MainCliente;
+import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class ContaUtilizador extends BorderPane {
     private Button lista, registar_presenca, voltar, logout;
-    public ContaUtilizador() {
+    private ProgClienteManager progClienteManager;
+    public ContaUtilizador(ProgClienteManager progClienteManager)  {
+        this.progClienteManager = progClienteManager;
         createViews();
         registerHandlers();
         update();
@@ -36,14 +39,15 @@ public class ContaUtilizador extends BorderPane {
             MainCliente.menuSBP.set("MENU");
         });
         lista.setOnAction(e -> {
-            //... manager
+            //progClienteManager.consultarPresenças();
             //mostrar lista de presenças
         });
         registar_presenca.setOnAction(e -> {
             //mostrar form registar presença
+            //o progClienteManager.registarPresença() chama-se na submissão do registo
         });
         logout.setOnAction(e -> {
-            //... manager
+            progClienteManager.logout();
             MainCliente.menuSBP.set("LOGOUT");
         });
         MainCliente.menuSBP.addListener(observable -> update());

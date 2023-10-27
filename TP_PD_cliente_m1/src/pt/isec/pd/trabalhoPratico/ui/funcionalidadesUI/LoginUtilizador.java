@@ -8,11 +8,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.MainCliente;
+import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class LoginUtilizador extends BorderPane {
     private Button entrar, voltar;
     private TextField username, password;
-    public LoginUtilizador() {
+    private ProgClienteManager progClienteManager;
+
+    public LoginUtilizador(ProgClienteManager progClienteManager) {
+        this.progClienteManager = progClienteManager;
         createViews();
         registerHandlers();
         update();
@@ -39,8 +43,7 @@ public class LoginUtilizador extends BorderPane {
             MainCliente.menuSBP.set("MENU");
         });
         entrar.setOnAction(e -> {
-            //... manager
-            MainCliente.menuSBP.set("CONTA");
+            progClienteManager.login(username.getText(), password.getText());
         });
         MainCliente.menuSBP.addListener(observable -> update());
     }

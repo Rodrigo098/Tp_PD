@@ -3,12 +3,14 @@ package pt.isec.pd.trabalhoPratico.ui;
 import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import pt.isec.pd.trabalhoPratico.MainCliente;
+import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.*;
 
 public class RootPane extends BorderPane {
     private Button login, registar;
+    ProgClienteManager progClienteManager;
 
-    public RootPane() {
+    public RootPane(ProgClienteManager progClienteManager) {
         createViews();
         registerHandlers();
         update();
@@ -23,10 +25,10 @@ public class RootPane extends BorderPane {
 
         StackPane funcionalidades = new StackPane(
                 new BorderPane(hBox),
-                new LoginUtilizador(),
-                new RegistoUtilizador(),
-                new LogoutUtilizador(),
-                new ContaUtilizador()
+                new LoginUtilizador(progClienteManager),
+                new RegistoUtilizador(progClienteManager),
+                new LogoutUtilizador(progClienteManager),
+                new ContaUtilizador(progClienteManager)
         );
 
         this.setCenter(funcionalidades);

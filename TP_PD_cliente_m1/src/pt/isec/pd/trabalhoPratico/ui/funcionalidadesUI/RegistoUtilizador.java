@@ -6,11 +6,14 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.MainCliente;
+import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class RegistoUtilizador extends BorderPane {
     private Button registar, voltar;
-    private TextField username, password, confirmar_password;
-    public RegistoUtilizador() {
+    private TextField username, email, password, confirmar_password;
+    private ProgClienteManager progClienteManager;
+    public RegistoUtilizador(ProgClienteManager progClienteManager)  {
+        this.progClienteManager = progClienteManager;
         createViews();
         registerHandlers();
         update();
@@ -25,7 +28,7 @@ public class RegistoUtilizador extends BorderPane {
         voltar = new Button("Voltar");
 
         HBox hBox = new HBox(voltar, registar);
-        VBox vBox = new VBox(username, password, confirmar_password, hBox);
+        VBox vBox = new VBox(username, email, password, confirmar_password, hBox);
 
         this.setStyle("-fx-background-color: #78909C; -fx-padding: 30;");
         this.setCenter(vBox);
@@ -37,8 +40,7 @@ public class RegistoUtilizador extends BorderPane {
             MainCliente.menuSBP.set("MENU");
         });
         registar.setOnAction(e -> {
-            //... manager
-            MainCliente.menuSBP.set("CONTA");
+            progClienteManager.registar(username.getText(), password.getText(), confirmar_password.getText(), email.getText(), "123");
         });
         MainCliente.menuSBP.addListener(observable -> update());
     }

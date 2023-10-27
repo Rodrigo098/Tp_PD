@@ -26,7 +26,7 @@ HBox {
     -fx-padding: 20;
     -fx-alignment: center;
 }
-.button {
+Button {
     -fx-font: 20px "Arial";
     -fx-padding: 10 40;
     -fx-text-fill: white;
