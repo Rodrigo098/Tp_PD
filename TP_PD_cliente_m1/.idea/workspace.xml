@@ -4,19 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c7bccdb4-b3f8-480e-b2c1-257f317cc302" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TP_PD_cliente_m1.iml" beforeDir="false" afterPath="$PROJECT_DIR$/TP_PD_cliente_m1.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/MainClienteJFX.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/MainClienteJFX.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/RootPane.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/RootPane.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/css/estilos.css" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/css/estilos.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/ContaAdministradorUI.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/ContaAdministradorUI.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/EditorEventos.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/TP_PD_cliente_m1/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/EditorEventos.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/MainClienteJFX.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/MainClienteJFX.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/RootPane.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/RootPane.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/ContaAdministradorUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/ContaAdministradorUI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/EditorEventos.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pt/isec/pd/trabalhoPratico/ui/funcionalidadesUI/Administrador/EditorEventos.java" afterDir="false" />
-    </list>
+    <list default="true" id="c7bccdb4-b3f8-480e-b2c1-257f317cc302" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
