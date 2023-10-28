@@ -34,14 +34,6 @@ public class RootPane extends BorderPane {
                 new ContaUtilizadorUI(progClienteManager),
                 new ContaAdministradorUI(progClienteManager)
         );
-        /*StackPane funcionalidades = new StackPane(
-                new BorderPane(hBox),
-                new LoginClienteUI(progClienteManager),
-                new RegistoUtilizadorUI(progClienteManager),
-                new LogoutClienteUI(progClienteManager),
-                new ContaUtilizadorUI(progClienteManager)
-        );*/
-
         this.setCenter(stackPane);
     }
 
