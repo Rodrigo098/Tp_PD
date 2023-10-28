@@ -36,13 +36,16 @@ Button, .titulo {
 }
 .titulo {
     -fx-background-color: #90A4AE;
-    -fx-border: 4px solid transparent;
 }
 
 .btnLogout {
     -fx-font: 15px "Arial";
     -fx-padding: 10;
     -fx-background-color: #BF360C;
+}
+
+FlowPane {
+    -fx-alignment: center;
 }
 
 .eventoButton {

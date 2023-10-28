@@ -44,12 +44,13 @@ public class EditorEventos extends BorderPane {
         FlowPane flowPane = new FlowPane(gerarCodigoPresencas, editarEvento, eliminarEvento, listarPresencas, obterPresencasCSV, eliminarPresencas, inserirPresencas);
 
         flowPane.setVgap(8);
-        flowPane.setHgap(4);
+        flowPane.setHgap(8);
 
         Label label = new Label("Editor de Eventos");
         label.getStyleClass().add("titulo");
 
         VBox vBox = new VBox(new Label("Evento Selecionado: " + progClienteManager.obterEvento(ListarEventosUI.eventoSelecionado)), flowPane);
+
         this.setCenter(vBox);
         this.setTop(label);
     }

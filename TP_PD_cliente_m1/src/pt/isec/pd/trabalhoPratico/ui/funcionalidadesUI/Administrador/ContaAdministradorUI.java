@@ -28,18 +28,17 @@ public class ContaAdministradorUI extends BorderPane {
     //-----------------------------------------------------------------
     private void createViews() {
         criarEvento = new Button("Criar Evento");
-        listarEventos = new Button("Listar Eventos");
+        listarEventos = new Button("Lista Eventos");
 
         logout = new Button("Logout");
         logout.getStyleClass().add("btnLogout");
 
         VBox funcionalidades = new VBox(criarEvento, listarEventos);
-        funcionalidades.setMinWidth(200);
         StackPane ladoDireito = new StackPane(new ListarEventosUI(progClienteManager), new CriarEventoUI(progClienteManager), new EditorEventos(progClienteManager));
+        ladoDireito.setPrefWidth(400);
         HBox hBox = new HBox(funcionalidades, ladoDireito);
-        hBox.setSpacing(20);
 
-        this.setStyle("-fx-background-color: #E8EFF6; -fx-padding: 30 30 0 30;");
+        this.setStyle("-fx-background-color: #E8EFF6; -fx-padding: 20 20 0 20;");
         this.setMargin(logout, new Insets(10));
         this.setBottom(logout);
         this.setCenter(hBox);

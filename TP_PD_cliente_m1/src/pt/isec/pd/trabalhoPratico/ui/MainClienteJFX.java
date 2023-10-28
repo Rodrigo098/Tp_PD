@@ -18,13 +18,13 @@ public class MainClienteJFX extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         RootPane root = new RootPane(clienteManager);
-        Scene scene = new Scene(root,500,200);
+        Scene scene = new Scene(root, 750, 400);
         String css = this.getClass().getResource("css/estilos.css").toExternalForm();
         scene.getStylesheets().add(css);
         stage.setScene(scene);
         stage.setTitle(title);
-        stage.setMinWidth(700);
-        stage.setMinHeight(400);
+        stage.setMaxWidth(900);
+        stage.setMaxHeight(500);
         stage.show();
     }
 }
