@@ -5,6 +5,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
+
 public class CriarEventoUI extends BorderPane {
     ProgClienteManager progClienteManager;
 

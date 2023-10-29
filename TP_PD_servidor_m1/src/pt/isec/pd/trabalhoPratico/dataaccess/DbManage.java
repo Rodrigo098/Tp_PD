@@ -1,6 +1,8 @@
 package pt.isec.pd.trabalhoPratico.dataaccess;
 
 import java.sql.*;
+import org.sqlite.*;
+
 public class DbManage extends Thread{
     private static final String dbAdress = "databasePD.db";
     private static final String dbUrl= "jdbc:sqlite:"+dbAdress;
@@ -10,12 +12,12 @@ public class DbManage extends Thread{
         String nome_evento = "Evento1";
 
         try(Connection connection = DriverManager.getConnection(dbUrl);
-            Class.forName("org.sqlite.JDBC");
+
          Statement statement = connection.createStatement()){
 
             //Somente para teste de ligação a base de dados
             String createEntryQuery = "INSERT INTO Codigo_Registo (n_codigo_registo,nome_evento) VALUES ('"
-                    + codigo_registo+"'," + nome_evento+ ")";
+                    + codigo_registo+"','" + nome_evento+ "')";
 
             if(statement.executeUpdate(createEntryQuery)<1){
                 System.out.println("Entry insertion or update failed");
