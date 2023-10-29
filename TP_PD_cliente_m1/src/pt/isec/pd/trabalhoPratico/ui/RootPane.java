@@ -1,16 +1,19 @@
 package pt.isec.pd.trabalhoPratico.ui;
 
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador.ContaAdministradorUI;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.ContaUtilizadorUI;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.LoginClienteUI;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.RegistoUtilizadorUI;
 
 public class RootPane extends BorderPane {
-    private Button login, registar;
+    private Button login;
+    private Text registar;
+    private TextField username, password;
     ProgClienteManager progClienteManager;
 
     public RootPane(ProgClienteManager progClienteManager) {
@@ -21,15 +24,19 @@ public class RootPane extends BorderPane {
     }
 
     private void createViews() {
-        login = new Button("Login");
-        registar = new Button("Registar");
+        username = new TextField();
+        password = new TextField();
+        username.setPromptText("Username");
+        password.setPromptText("Password");
 
-        HBox hBox = new HBox(login, registar);
-        hBox.getStyleClass().add("conteudo");
+        login = new Button("Login");
+        registar = new Text("Registar");
+        registar.getStyleClass().add("links");
+
+        VBox vBox = new VBox(username, password, login, registar);
 
         StackPane stackPane = new StackPane(
-                new BorderPane(hBox),
-                new LoginClienteUI(progClienteManager),
+                new BorderPane(vBox),
                 new RegistoUtilizadorUI(progClienteManager),
                 new ContaUtilizadorUI(progClienteManager),
                 new ContaAdministradorUI(progClienteManager)
@@ -39,14 +46,16 @@ public class RootPane extends BorderPane {
 
     private void registerHandlers() {
         login.setOnAction(e -> {
-            MainCliente.menuSBP.set("LOGIN");
-            System.out.println("login");
+            progClienteManager.login(username.getText(), password.getText());
+            username.setText(null);
+            password.setText(null);
         });
-        registar.setOnAction(e -> {
+        registar.setOnMouseClicked( e -> {
             MainCliente.menuSBP.set("REGISTO");
-            System.out.println("registo");
         });
+        MainCliente.menuSBP.addListener(observable -> update());
     }
 
-    private void update() {}
+    private void update() {
+    }
 }
