@@ -2,7 +2,11 @@
 <module type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/TP_PD_cliente_m1/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/TP_PD_servidor_m1/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/TP_PD_servidor_m1/src/pt/isec/pd/trabalhoPratico" isTestSource="false" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">
@@ -14,5 +18,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="JavaFx" level="application" />
   </component>
 </module>
