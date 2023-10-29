@@ -1,6 +1,9 @@
 package pt.isec.pd.trabalhoPratico;
 
-public abstract class Geral {
+import java.io.Serializable;
+
+public abstract class Geral implements Serializable {
+    static final long serialVersionUID = 1L;
 //Comuns:
     //login(email,password)
     //logout
