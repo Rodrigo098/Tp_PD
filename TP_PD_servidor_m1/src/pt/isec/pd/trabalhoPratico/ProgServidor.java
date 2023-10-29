@@ -5,12 +5,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-
-
+import java.util.ArrayList;
+import java.util.List;
 
 class threadCliente implements Runnable {
     Socket Client;
-    boolean flagStop;
+    boolean flagStop;// flag para terminar a thread
 
     public threadCliente(Socket client) {
         Client = client;
@@ -29,7 +29,7 @@ class threadCliente implements Runnable {
                     out.flush();
 
             }
-
+            Client.close();
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -41,9 +41,23 @@ class threadCliente implements Runnable {
 }
 
 public class ProgServidor {
-    ServerSocket socket;
 
-    public static void main(String[] args) {
+    List<Socket> clients=new ArrayList<>();
+
+    public void serviço() {
+
+            try(ServerSocket socket=new ServerSocket()) {
+                while (true){
+                    Socket cli=socket.accept();// aceita clientes
+                    clients.add(cli);// adiciona cliente conectado a lista de clientes
+                    threadCliente th=new threadCliente(cli);
+                    th.run();
+                }
+               // clients.clear();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
 
     }
 
