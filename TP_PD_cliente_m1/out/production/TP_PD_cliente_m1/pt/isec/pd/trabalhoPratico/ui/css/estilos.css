@@ -59,5 +59,4 @@ FlowPane {
     -fx-text-fill: #455A64;
     -fx-background-color: transparent;
     -fx-underline: true;
-    -fx-effect: dropshadow( gaussian , rgba(43, 51, 55, 0.5) , 15,0,0,0 );
 }
