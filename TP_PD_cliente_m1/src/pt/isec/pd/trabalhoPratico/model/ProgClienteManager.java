@@ -2,6 +2,9 @@ package pt.isec.pd.trabalhoPratico.model;
 
 import pt.isec.pd.trabalhoPratico.model.data.ProgramaCliente;
 
+import java.io.IOException;
+import java.util.List;
+
 public class ProgClienteManager {
     private ProgramaCliente programaCliente;
 
@@ -9,10 +12,10 @@ public class ProgClienteManager {
         programaCliente = new ProgramaCliente();
     }
 
-    public void login(String email, String password) {
+    public void login(String email, String password) throws IOException {
         programaCliente.login(email, password);
     }
-    public void registar(String nome, String email, String numIdentificacao, String password, String confPass) {
+    public void registar(String nome, String email, String numIdentificacao, String password, String confPass) throws IOException {
         programaCliente.registar(nome, email, numIdentificacao, password, confPass);
     }
     public boolean editarRegisto(){
@@ -46,5 +49,9 @@ public class ProgClienteManager {
 
     public String obterEvento(int eventoSelecionado) {
         return programaCliente.obterEvento(eventoSelecionado);
+    }
+
+    public boolean handShake(List<String> list) {
+        return programaCliente.handShake(list);
     }
 }

@@ -8,6 +8,6 @@ public class MainCliente {
     public static SimpleStringProperty menuSBP = new SimpleStringProperty("MENU");
     public static SimpleStringProperty administradorSBP = new SimpleStringProperty("INDEFINIDO");
     public static void main(String[] args) {
-    Application.launch(MainClienteJFX.class,args);
-}
+        Application.launch(MainClienteJFX.class, args);
+    }
 }

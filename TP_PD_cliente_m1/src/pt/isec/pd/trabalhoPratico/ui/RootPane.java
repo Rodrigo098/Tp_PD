@@ -10,6 +10,8 @@ import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador.ContaAdmini
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.ContaUtilizadorUI;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.RegistoUtilizadorUI;
 
+import java.io.IOException;
+
 public class RootPane extends BorderPane {
     private Button login;
     private Text registar;
@@ -46,7 +48,11 @@ public class RootPane extends BorderPane {
 
     private void registerHandlers() {
         login.setOnAction(e -> {
-            progClienteManager.login(username.getText(), password.getText());
+            try {
+                progClienteManager.login(username.getText(), password.getText());
+            } catch (Exception ex) {
+                MainCliente.menuSBP.set("ERRO");
+            }
             username.setText(null);
             password.setText(null);
         });

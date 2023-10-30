@@ -8,6 +8,8 @@ import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
+import java.io.IOException;
+
 public class RegistoUtilizadorUI extends BorderPane {
     private Button registar, voltar;
     private TextField nomeUtilizador, email, password, confirmar_password, numIdentificacao;
@@ -50,7 +52,11 @@ public class RegistoUtilizadorUI extends BorderPane {
             MainCliente.menuSBP.set("MENU");
         });
         registar.setOnAction(e -> {
-            progClienteManager.registar(nomeUtilizador.getText(), email.getText(), numIdentificacao.getText(), password.getText(), confirmar_password.getText());
+            try {
+                progClienteManager.registar(nomeUtilizador.getText(), email.getText(), numIdentificacao.getText(), password.getText(), confirmar_password.getText());
+            } catch (Exception ex)  {
+                MainCliente.menuSBP.set("ERRO");
+            }
             nomeUtilizador.setText(null);
             email.setText(null);
             password.setText(null);
