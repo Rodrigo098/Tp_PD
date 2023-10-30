@@ -19,5 +19,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="JavaFx" level="application" />
+    <orderEntry type="library" name="libPD21" level="application" />
   </component>
 </module>
