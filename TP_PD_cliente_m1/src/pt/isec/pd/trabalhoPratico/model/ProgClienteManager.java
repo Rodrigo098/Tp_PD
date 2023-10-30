@@ -21,8 +21,8 @@ public class ProgClienteManager {
     public boolean editarRegisto(){
         return programaCliente.editarRegisto();
     }
-    public boolean registarPresença(){
-        return programaCliente.registarPresença();
+    public boolean registarPresença(String codigo){
+        return programaCliente.registarPresença(codigo);
     }
     public String[] consultarPresenças(){
         return programaCliente.consultarPresenças();

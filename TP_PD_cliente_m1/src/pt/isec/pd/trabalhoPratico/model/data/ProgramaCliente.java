@@ -66,11 +66,27 @@ public class ProgramaCliente {
     }
 
 
-    //FUNCIONALIDADES:
-    //COMUNS:
+    ///////////////////////////////////////FUNCIONALIDADES:
+    /////////////////////////COMUNS:
+    public boolean handShake(List<String> list) {
+        if(list.size() != 2){
+            return false;
+        }
+        try(Socket socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1))))
+        {
+            this.socket = socket;
+            return true;
+        }catch(Exception e){
+            return false;
+        }
+    }
     public void login(String email, String password) throws IOException {
         if(password == null || verificaFormato(email))
             return;
+
+        cria o objeto da classe mensagem:
+            tipo - login;
+            conteudo - email, password;
 
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())){
@@ -102,8 +118,12 @@ public class ProgramaCliente {
             socket.close();
         }
     }
+    public void logout() {
+        //desligar comunicação com o servidor
+        System.out.println("até à próxima!");
+    }
 
-    //UTILIZADOR:
+    /////////////////////////UTILIZADOR:
     public void registar(String nome, String email, String numIdentificacao, String password, String confPass) throws IOException {
         if(nome == null || password == null || !password.equals(confPass) || verificaFormato(email) || numIdentificacao == null)
                 return;
@@ -157,20 +177,54 @@ public class ProgramaCliente {
             MainCliente.menuSBP.set("CONTA");*/
     }
 
-    public boolean editarRegisto() {
-        return false;
-    }
+    public boolean registarPresença(String evento) {
+        if(evento == null || evento.isBlank())
+            return false;
 
-    public boolean registarPresença() {
-        //se o utilizador já registou presença
-            //return false;
-        return false;
+        cria o objeto da classe mensagem:
+        tipo - registoPresenca;
+        conteudo - codigoEvento;
+
+        try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+            ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
+        {
+            oout.writeObject(registoPresenca);
+            oout.flush();
+            validacao = (Resposta) oin.readObject();
+
+            if(validacao == null || validacao.getTipo() == "FALHA_REGISTO"){
+                return false;
+            }
+            return true;
+        }catch (Exception e) {
+            return false;
+        }
     }
 
     public String[] consultarPresenças() {
-        return new String[0];
+        cria o objeto da classe resposta:
+        tipo - consultarPresencas;
+
+        try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+            ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
+        {
+            oout.writeObject(consultaPresencas);
+            oout.flush();
+            lista = (Mensagem) oin.readObject();
+
+            // não é preciso porque lá será preenchido que não há registos -> if(lista == null || lista.getTipo() == "FALHA_PROCURA")
+
+            return lista.trim(";");
+        }catch (Exception e) {
+            return new String[]{"Erro na comunicação com o servidor"};
+        }
     }
 
+
+    //////////////////////// FALTA UTILIZADOR:
+    public boolean editarRegisto() {
+        return false;
+    }
     public boolean obterFicheiroCSV() {
         //se há presenças registadas
             //cria ficheiro CSV
@@ -180,12 +234,9 @@ public class ProgramaCliente {
         return false;
     }
 
-    public void logout() {
-        //desligar comunicação com o servidor
-        System.out.println("até à próxima!");
-    }
 
-
+    /////////////////////////ADMINISTRADOR:
+    //////////////////////// FALTA ADMINISTRADOR:
     public String[] obterListaEventos() {
         String [] eventos = new String[listaEventos.size()];
         for(String evento : listaEventos){
@@ -196,18 +247,5 @@ public class ProgramaCliente {
 
     public String obterEvento(int eventoSelecionado) {
         return listaEventos.get(eventoSelecionado);//depois põe-se toString
-    }
-
-    public boolean handShake(List<String> list) {
-        if(list.size() != 2){
-            return false;
-        }
-        try(Socket socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1))))
-        {
-            this.socket = socket;
-            return true;
-        }catch(Exception e){
-            return false;
-        }
     }
 }
