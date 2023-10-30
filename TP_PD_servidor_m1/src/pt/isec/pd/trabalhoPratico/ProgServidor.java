@@ -1,9 +1,6 @@
 package pt.isec.pd.trabalhoPratico;
 
-import pt.isec.pd.trabalhoPratico.classescomunication.Geral;
-import pt.isec.pd.trabalhoPratico.classescomunication.Login;
-import pt.isec.pd.trabalhoPratico.classescomunication.Registo_Cliente;
-import pt.isec.pd.trabalhoPratico.classescomunication.Submissao_codigo;
+import pt.isec.pd.trabalhoPratico.classescomunication.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -32,26 +29,24 @@ class ThreadCliente implements Runnable {
         ) {
             //Quando conecta a primeira vez vai guardar o email
             Geral o =(Geral) in.readObject();
-            if(o instanceof Login){// para descobrir qual a classe estava a pensar em algo para o processamento depois dos dados
+            if(o.getTipo()== Message_types.LOGIN){// para descobrir qual a classe estava a pensar em algo para o processamento depois dos dados
                 Login aux=(Login) o;
                 String password=aux.getPassword();
                 email=aux.getEmail();
-            } else if (o instanceof Registo_Cliente) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
+            } else if (o.getTipo()==Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
                 Registo_Cliente aux=(Registo_Cliente) o;
                 email= aux.getEmail();
+                // A implementar
             }else{
-                out.writeObject("Comando Invalido para estabelecer conexão");
+                out.writeObject("Comando Invalido para estabelecer conexão");// apenas como exemplo
             }
 
             while (!flagStop){
                     Geral message =(Geral) in.readObject();
-                    if(message instanceof Login){// para descobrir qual a classe estava a pensar em algo para o processamento depois dos dados
-                        Login aux=(Login) message;
-                        String password=aux.getPassword();
-                        email=aux.getEmail();
-                    }
-                    out.writeObject("ola");
-                    out.flush();
+                   switch (message.getTipo()){
+                       case LOGIN -> out.writeObject("EXEMPLO");
+                       default -> out.writeObject("Operacao invalida");
+                   }
 
             }
             Client.close();

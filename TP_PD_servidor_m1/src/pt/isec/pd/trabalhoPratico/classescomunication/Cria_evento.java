@@ -16,7 +16,7 @@ public class Cria_evento extends Geral{
         this.horainicio = horainicio;
         this.horafim = horafim;
         Calendar cal=Calendar.getInstance();
-
+        tipo=Message_types.CRIA_EVENTO;
 
     }
 

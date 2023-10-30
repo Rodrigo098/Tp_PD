@@ -9,6 +9,7 @@ public class Submissao_codigo extends Geral{
     public Submissao_codigo(long codigo) {
 
         this.codigo = codigo;
+        tipo=Message_types.SUBMIT_COD;
     }
 
     public long getCodigo() {

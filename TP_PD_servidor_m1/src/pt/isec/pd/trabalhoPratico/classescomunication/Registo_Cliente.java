@@ -9,6 +9,7 @@ public class Registo_Cliente extends Geral{
         this.email = email;
         this.password = password;
         this.num_estudante = num_estudante;
+        tipo=Message_types.REGISTO;
     }
 
     public String getNome() {

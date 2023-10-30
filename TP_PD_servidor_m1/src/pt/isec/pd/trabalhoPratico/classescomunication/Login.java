@@ -6,6 +6,7 @@ public class Login extends Geral{
     public Login(String email, String password) {
         this.email = email;
         this.password = password;
+        tipo=Message_types.LOGIN;
     }
 
     public String getEmail() {
