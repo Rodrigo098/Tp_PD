@@ -3,7 +3,6 @@ package pt.isec.pd.trabalhoPratico.ui;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
@@ -32,7 +31,7 @@ public class MainClienteJFX extends Application {
         }
         //-----------------------------------
 
-        if(clienteManager.handShake(list)) {
+        if(clienteManager.criaSocket(list)) {
             RootPane root = new RootPane(clienteManager);
             Scene scene = new Scene(root, 750, 400);
             String css = this.getClass().getResource("css/estilos.css").toExternalForm();

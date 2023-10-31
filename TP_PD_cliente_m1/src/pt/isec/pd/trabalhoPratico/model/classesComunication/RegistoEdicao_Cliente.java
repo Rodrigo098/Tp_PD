@@ -1,11 +1,11 @@
 package pt.isec.pd.trabalhoPratico.model.classesComunication;
 
-public class Registo_Cliente extends Geral{
+public class RegistoEdicao_Cliente extends Geral{
    private String nome, email, password;
    private long num_estudante;// este aqui criei como long mas talvez usar outro tipo de dados seja preferível
 
-    public Registo_Cliente(String nome, String email, String password, long num_estudante) {
-        super(Message_types.REGISTO);
+    public RegistoEdicao_Cliente(String nome, String email, String password, long num_estudante, Message_types tipo) {
+        super(tipo);
         this.nome = nome;
         this.email = email;
         this.password = password;

@@ -12,28 +12,32 @@ public class ProgClienteManager {
         programaCliente = new ProgramaCliente();
     }
 
+    //COMUM:
     public void login(String email, String password) throws IOException {
         programaCliente.login(email, password);
-    }
-    public void registar(String nome, String email, String numIdentificacao, String password, String confPass) throws IOException {
-        programaCliente.registar(nome, email, numIdentificacao, password, confPass);
-    }
-    public boolean editarRegisto(){
-        return programaCliente.editarRegisto();
-    }
-    public boolean registarPresença(String codigo){
-        return programaCliente.registarPresença(codigo);
-    }
-    public String[] consultarPresenças(){
-        return programaCliente.consultarPresenças();
-    }
-    public boolean obterFicheiroCSV(){
-        return programaCliente.obterFicheiroCSV();
     }
     public void logout() throws IOException {
         programaCliente.logout();
     }
 
+    //UTILIZADOR:
+    public void registar(String nome, String email, String numIdentificacao, String password, String confPass) throws IOException {
+        programaCliente.registar(nome, email, numIdentificacao, password, confPass);
+    }
+    public boolean editarRegisto(String nome, String email, String numIdentificacao, String password, String confPass) throws IOException {
+        return programaCliente.editarRegisto(nome, email, numIdentificacao, password, confPass);
+    }
+    public boolean registarPresença(String codigo){
+        return programaCliente.registarPresença(codigo);
+    }
+    public String[] consultarPresençasUti(){
+        return programaCliente.consultarPresençasUti();
+    }
+    public boolean obterFicheiroCSV(){
+        return programaCliente.obterFicheiroCSV();
+    }
+
+    //ADMINISTRADOR:
     public void obterCSV() {
     }
 
@@ -43,15 +47,11 @@ public class ProgClienteManager {
     public void editarEvento(String evento) {
     }
 
-    public String[] obterListaEventos() {
-        return programaCliente.obterListaEventos();
+    public String[] consultarPresenças() {
+        return programaCliente.consultarPresençasUti();
     }
 
-    public String obterEvento(int eventoSelecionado) {
-        return programaCliente.obterEvento(eventoSelecionado);
-    }
-
-    public boolean handShake(List<String> list) {
+    public boolean criaSocket(List<String> list) {
         return programaCliente.criaSocket(list);
     }
 }

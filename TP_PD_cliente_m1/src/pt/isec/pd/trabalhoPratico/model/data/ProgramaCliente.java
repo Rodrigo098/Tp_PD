@@ -107,7 +107,7 @@ public class ProgramaCliente {
             return;
         }
 
-        Registo_Cliente dadosRegisto = new Registo_Cliente(nome, email, password, numID);
+        RegistoEdicao_Cliente dadosRegisto = new RegistoEdicao_Cliente(nome, email, password, numID, Message_types.REGISTO);
 
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -137,7 +137,7 @@ public class ProgramaCliente {
         if(codigoEvento == null || codigoEvento.isBlank())
             return false;
 
-        Submissao_codigo registoPresenca = new Submissao_codigo(Integer.parseInt(codigoEvento));
+        Consulta_Elimina_GeraCod_SubmeteCod_Evento registoPresenca = new Consulta_Elimina_GeraCod_SubmeteCod_Evento(codigoEvento, Message_types.SUBMICAO_COD);
 
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
@@ -152,7 +152,7 @@ public class ProgramaCliente {
         }
     }
 
-    public String[] consultarPresenças() {
+    public String[] consultarPresençasUti() {
         Geral consultaPresencas = new Geral(Message_types.CONSULTA_PRES_UTILIZADOR);
 
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
@@ -169,40 +169,61 @@ public class ProgramaCliente {
         }
     }
 
+    public boolean editarRegisto(String nome, String email, String numIdentificacao, String password, String confPass) throws IOException {
 
-    //////////////////////// FALTA UTILIZADOR:
-    public boolean editarRegisto() {
-        return false;
+        if(nome == null || password == null || !password.equals(confPass) || verificaFormato(email) || numIdentificacao == null)
+            return false;
+
+        long numID;
+        try {
+            numID = Integer.parseInt(numIdentificacao);//?? como é que ponho para long?
+        } catch (NumberFormatException e) {
+            return false;
+        }
+
+        RegistoEdicao_Cliente dadosRegisto = new RegistoEdicao_Cliente(nome, email, password, numID, Message_types.EDITAR_REGISTO);
+
+        try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+            ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+            oout.writeObject(dadosRegisto);
+            oout.flush();
+            Geral validacao = (Geral) oin.readObject();
+
+            if (validacao == null) {
+                MainCliente.menuSBP.set("ERRO");
+                socket.close();
+            } else {
+                if(validacao.getTipo() == Message_types.VALIDO)
+                    return true;
+                if (validacao.getTipo() == Message_types.ERRO) {
+                    MainCliente.menuSBP.set("ERRO");
+                    socket.close();
+                }
+            }
+        }catch (Exception e) {
+            MainCliente.menuSBP.set("ERRO");
+            socket.close();
+        }
+    return false;
     }
+
     public boolean obterFicheiroCSV() {
         //se há presenças registadas
             //cria ficheiro CSV
             //return true;
         //senão
             //return false;
+
         return false;
     }
 
 
     /////////////////////////ADMINISTRADOR:
-    //////////////////////// FALTA ADMINISTRADOR:
+    //////////////////////// FALTA ADMINISTRADOR
 
+    //Faço amanhã desculpem o atraso :(
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
     /*public String[] obterListaEventos() {
@@ -216,4 +237,3 @@ public class ProgramaCliente {
     /*public String obterEvento(int eventoSelecionado) {
         return listaEventos.get(eventoSelecionado);//depois põe-se toString
     }*/
-}

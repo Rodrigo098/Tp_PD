@@ -1,6 +1,5 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 
-import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -53,7 +52,7 @@ public class ListarEventosUI extends BorderPane {
 
     private void extrairListaEventos() {
         listaEventos.getItems().clear();
-        for (String evento : progClienteManager.obterListaEventos()) {
+        for (String evento : progClienteManager.consultarPresenças()) {
             listaEventos.getItems().add(new String(evento));
         }
     }
