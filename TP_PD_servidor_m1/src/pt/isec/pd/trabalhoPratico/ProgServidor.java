@@ -12,8 +12,9 @@ import java.util.List;
 
 class ThreadCliente implements Runnable {
     Socket Client;
-    boolean flagStop;// flag para terminar a thread
+    boolean flagStop,isadmin;// flag para terminar a thread
     String email;
+
 
     public ThreadCliente(Socket client) {
         Client = client;
@@ -33,6 +34,7 @@ class ThreadCliente implements Runnable {
                 Login aux=(Login) o;
                 String password=aux.getPassword();
                 email=aux.getEmail();
+                // aqui verifico se é o admin e ponho o boolean a true ou false
             } else if (o.getTipo()==Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
                 Registo_Cliente aux=(Registo_Cliente) o;
                 email= aux.getEmail();
@@ -41,13 +43,22 @@ class ThreadCliente implements Runnable {
                 out.writeObject("Comando Invalido para estabelecer conexão");// apenas como exemplo
             }
 
-            while (!flagStop){
-                    Geral message =(Geral) in.readObject();
-                   switch (message.getTipo()){
-                       case LOGIN -> out.writeObject("EXEMPLO");
-                       default -> out.writeObject("Operacao invalida");
-                   }
-
+            if(!isadmin) {
+                while (!flagStop) {
+                    Geral message = (Geral) in.readObject();
+                    switch (message.getTipo()) {
+                        case SUBMIT_COD -> out.writeObject("EXEMPLO");
+                        default -> out.writeObject("Operacao invalida");
+                    }
+                }
+            }else {
+                while (!flagStop) {
+                    Geral message = (Geral) in.readObject();
+                    switch (message.getTipo()) {
+                        case GERA_COD -> out.writeObject("EXEMPLO");
+                        default -> out.writeObject("Operacao invalida");
+                    }
+                }
             }
             Client.close();
 

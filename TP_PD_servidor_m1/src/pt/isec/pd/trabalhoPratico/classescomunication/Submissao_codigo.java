@@ -1,7 +1,7 @@
 package pt.isec.pd.trabalhoPratico.classescomunication;
 
 public class Submissao_codigo extends Geral{
-
+// se trocar para String consigo eliminar esta Classe tmb
     private long codigo;
   //  private static final long serialVersionUID = 1L;
 
