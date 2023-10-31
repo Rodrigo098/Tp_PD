@@ -161,9 +161,9 @@ public class ProgramaCliente {
             oout.writeObject(consultaPresencas);
             oout.flush();
 
-            ConsultaEventos lista = (ConsultaEventos) oin.readObject();
+            ConsultaEventos_EliminaPresencas lista = (ConsultaEventos_EliminaPresencas) oin.readObject();
 
-            return lista.getFiltros();
+            return lista.getLista();
         }catch (Exception e) {
             return new String[]{"Erro na comunicação com o servidor"};
         }

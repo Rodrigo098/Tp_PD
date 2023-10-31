@@ -1,5 +1,3 @@
-package pt.isec.pd.trabalhoPratico;
-
 //import pt.isec.pd.trabalhoPratico.dataaccess.DbManage;
 
 public class MainServidor {
