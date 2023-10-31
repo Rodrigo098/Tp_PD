@@ -5,8 +5,8 @@ public class Consult_Elimin_Event extends Geral{
   private   String nome;
 
     public Consult_Elimin_Event(String nome, Message_types tipo) {
+        super(tipo);
         this.nome = nome;
-        this.tipo=tipo;
     }
 
     public String getNome() {

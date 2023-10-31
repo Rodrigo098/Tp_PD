@@ -4,11 +4,16 @@ import java.io.Serializable;
 
 public abstract class Geral implements Serializable {
     static final long serialVersionUID = 1L;
-    Message_types tipo;
+    private Message_types tipo;
 
+    public Geral(Message_types tipo){
+        this.tipo = tipo;
+    }
     public Message_types getTipo() {
         return tipo;
     }
+
+
     // criar um enum e defino aqui o tipo de mensagem
 //Comuns:
     //login(email,password)

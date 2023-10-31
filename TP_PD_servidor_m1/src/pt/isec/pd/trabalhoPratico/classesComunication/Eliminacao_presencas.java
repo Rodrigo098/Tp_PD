@@ -8,13 +8,17 @@ public class Eliminacao_presencas extends Geral{// podiamos usar esta classe tmb
     private String nome_evento;
 
     public Eliminacao_presencas(String nome_evento,String ... emails) {// assim podem escrever quantos emails quiserem
-        this.nome_evento = nome_evento;
-       this.emails= Arrays.stream(emails).toList();
-       tipo=Message_types.ELIMIN_PRES;
+       super(Message_types.ELIMINA_PRES);
+       this.nome_evento = nome_evento;
+       this.emails = Arrays.stream(emails).toList();;
     }
 
-    public Object[] getEmails() {
-        return emails.toArray();//devolve um array por questões de segurança para nao tar a devolver a referencia da lisraa
+    public String[] getEmails() {
+        String [] emails = new String[this.emails.size()];
+        for (String email : this.emails){
+            emails[this.emails.indexOf(email)] = email;
+        }
+        return emails;//devolve um array por questões de segurança para nao tar a devolver a referencia da lisraa
     }
 
     public String getNome_evento() {

@@ -1,20 +1,14 @@
 package pt.isec.pd.trabalhoPratico.classesComunication;
 
 public class Gera_codigo_eventos extends Geral{
-   private String nomevento;
-    private int validade;
+    private String nomeEvento;
 
-    public Gera_codigo_eventos(String nomevento, int validade) {
-        this.nomevento = nomevento;
-        this.validade = validade;
-        tipo=Message_types.GERA_COD;
+    public Gera_codigo_eventos(String nomeEvento){
+        super(Message_types.GERAR_COD);
+        this.nomeEvento = nomeEvento;
     }
 
     public String getNomevento() {
-        return nomevento;
-    }
-
-    public int getValidade() {
-        return validade;
+        return nomeEvento;
     }
 }
