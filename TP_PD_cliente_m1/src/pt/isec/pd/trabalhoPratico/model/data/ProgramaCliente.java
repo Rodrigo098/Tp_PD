@@ -16,40 +16,6 @@ public class ProgramaCliente {
     private Socket socket;
     public ArrayList<String> listaEventos;//obviamente que não é string mas meanwhile yes
 
-
-    public void mainMethod() throws IOException {
-
-        if(args.length != 2){
-            System.out.println("Sintaxe: java TcpSerializedTimeClientIncomplete serverAddress serverUdpPort");
-            return;
-        }
-//se se criar os objetos na mesma forma cria deadlock por isso se no servidor o input está primeiro e o output
-// está em segundo então no cliente o output deve estar em primeiro e o input em segundo
-        try(Socket socket = new Socket(InetAddress.getByName(args[0]), Integer.parseInt(args[1]));
-            ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-            ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())){
-
-            socket.setSoTimeout(TIMEOUT*1000);
-
-            //Serializa a string TIME_REQUEST para o OutputStream associado a socket
-            oout.writeObject(TIME_REQUEST);
-            oout.flush();
-
-            //Deserializa a resposta recebida em socket
-            response = (Time) oin.readObject();
-
-            if(response == null){
-                System.out.println("O servidor nao enviou qualquer respota antes de"
-                        + " fechar aligacao TCP!");
-            }else{
-                System.out.println("Hora indicada pelo servidor: " + response.getHora() + ":" + response.getMinuto() + ":" + response.getSegundo());
-            }
-
-        }catch(Exception e){
-            System.out.println("Ocorreu um erro no acesso ao socket:\n\t"+e);
-        }
-    }
-
     public ProgramaCliente(){
         //vai
         listaEventos = new ArrayList<>();
