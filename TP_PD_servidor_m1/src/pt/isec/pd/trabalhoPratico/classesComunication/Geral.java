@@ -1,8 +1,10 @@
 package pt.isec.pd.trabalhoPratico.classesComunication;
 
+import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
+
 import java.io.Serializable;
 
-public abstract class Geral implements Serializable {
+public class Geral implements Serializable {
     static final long serialVersionUID = 1L;
     private Message_types tipo;
 
