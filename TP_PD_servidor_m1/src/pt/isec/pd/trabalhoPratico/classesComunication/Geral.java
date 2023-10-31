@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.classescomunication;
+package pt.isec.pd.trabalhoPratico.classesComunication;
 
 import java.io.Serializable;
 

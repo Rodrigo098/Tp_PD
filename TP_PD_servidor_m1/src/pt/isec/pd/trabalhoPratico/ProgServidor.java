@@ -1,6 +1,6 @@
 package pt.isec.pd.trabalhoPratico;
 
-import pt.isec.pd.trabalhoPratico.classescomunication.*;
+import pt.isec.pd.trabalhoPratico.classesComunication.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -29,11 +29,11 @@ class ThreadCliente implements Runnable {
         ) {
             //Quando conecta a primeira vez vai guardar o email
             Geral o =(Geral) in.readObject();
-            if(o.getTipo()== Message_types.LOGIN){// para descobrir qual a classe estava a pensar em algo para o processamento depois dos dados
-                Login aux=(Login) o;
+            if(o.getTipo() == Message_types.LOGIN){// para descobrir qual a classe estava a pensar em algo para o processamento depois dos dados
+                Login aux = (Login) o;
                 String password=aux.getPassword();
                 email=aux.getEmail();
-            } else if (o.getTipo()==Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
+            } else if (o.getTipo() == Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
                 Registo_Cliente aux=(Registo_Cliente) o;
                 email= aux.getEmail();
                 // A implementar

@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.classescomunication;
+package pt.isec.pd.trabalhoPratico.classesComunication;
 
 public class Gera_codigo_eventos extends Geral{
    private String nomevento;

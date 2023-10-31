@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.classescomunication;
+package pt.isec.pd.trabalhoPratico.classesComunication;
 
 public class Submissao_codigo extends Geral{
 

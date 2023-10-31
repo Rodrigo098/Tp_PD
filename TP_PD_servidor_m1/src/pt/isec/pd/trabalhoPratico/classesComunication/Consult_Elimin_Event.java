@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.classescomunication;
+package pt.isec.pd.trabalhoPratico.classesComunication;
 
 public class Consult_Elimin_Event extends Geral{
     // Esta classe seria só usada para enviar o nome do evento para dps o servidor responder conforme a operação
