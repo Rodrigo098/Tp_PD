@@ -37,7 +37,7 @@ class ThreadCliente implements Runnable {
                 // aqui verifico se é o admin e ponho o boolean a true ou false
             } else if (o.getTipo() == Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
 
-                Registo_Cliente aux=(Registo_Cliente) o;
+                RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente) o;
                 email= aux.getEmail();
                 // A implementar
             }else{
@@ -48,7 +48,15 @@ class ThreadCliente implements Runnable {
                 while (!flagStop) {
                     Geral message = (Geral) in.readObject();
                     switch (message.getTipo()) {
-                        case SUBMICAO_COD -> out.writeObject("EXEMPLO");
+                        case EDITAR_REGISTO ->{
+                            out.writeObject("Altera dados na database");
+                            RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente) message;
+                        }
+                        case SUBMICAO_COD -> out.writeObject("Insere dados na database");
+                        case CSV_UTILIZADOR -> {}
+                        case CONSULTA_PRES_UTILIZADOR -> {}
+                        case REGISTO -> {}
+
                         default -> out.writeObject("Operacao invalida");
                     }
                 }
@@ -57,6 +65,16 @@ class ThreadCliente implements Runnable {
                     Geral message = (Geral) in.readObject();
                     switch (message.getTipo()) {
                         case GERAR_COD -> out.writeObject("EXEMPLO");
+                        case UPDATE_INF -> {}
+                        case CRIA_EVENTO -> {}
+                        case EDIT_EVENTO -> {}
+                        case CONSULTA_EVENTOS -> {}
+                        case ELIMINAR_EVENTO -> {}
+                        case INSERE_PRES -> {}
+                        case ELIMINA_PRES -> {}
+                        case CONSULTA_PRES_EVENT -> {}
+                        case CONSULT_EVENT_UTILIZADOR -> {}
+                        case CSV_ADMINISTRADOR -> {}
                         default -> out.writeObject("Operacao invalida");
                     }
                 }

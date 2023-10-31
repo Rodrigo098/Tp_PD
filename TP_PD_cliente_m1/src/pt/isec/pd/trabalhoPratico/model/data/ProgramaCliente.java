@@ -161,7 +161,7 @@ public class ProgramaCliente {
             oout.writeObject(consultaPresencas);
             oout.flush();
 
-            ConsultaEventos_EliminaPresencas lista = (ConsultaEventos_EliminaPresencas) oin.readObject();
+            ConsultaEventos_EliminaPresencas_InserePresencas lista = (ConsultaEventos_EliminaPresencas_InserePresencas) oin.readObject();
 
             return lista.getLista();
         }catch (Exception e) {

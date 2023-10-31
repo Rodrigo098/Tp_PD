@@ -1,6 +1,6 @@
 package pt.isec.pd.trabalhoPratico.classesComunication;
 
-import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
+
 
 import java.io.Serializable;
 
