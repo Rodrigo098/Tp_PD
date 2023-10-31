@@ -1,4 +1,4 @@
-//import pt.isec.pd.trabalhoPratico.dataaccess.DbManage;
+package pt.isec.pd.trabalhoPratico;//import pt.isec.pd.trabalhoPratico.dataaccess.DbManage;
 
 public class MainServidor {
     public static void main(String[] args) {

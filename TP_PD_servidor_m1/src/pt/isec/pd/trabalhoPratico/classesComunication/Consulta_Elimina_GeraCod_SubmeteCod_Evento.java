@@ -13,7 +13,7 @@ public class Consulta_Elimina_GeraCod_SubmeteCod_Evento extends Geral{
     public Consulta_Elimina_GeraCod_SubmeteCod_Evento(String nome, Message_types tipo) {
         super(tipo);
         if(!acepted.contains(tipo))
-            throw new RuntimeException("Tipo invalido");
+            throw new RuntimeException("Tipo invalido");// Podemos não lançar logo uma excepção mas faziamos aqui alguma coisa que impedisse de avançar
         this.nome = nome;
     }
 
