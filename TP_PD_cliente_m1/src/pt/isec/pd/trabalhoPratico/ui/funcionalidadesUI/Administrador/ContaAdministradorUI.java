@@ -11,6 +11,8 @@ import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
+import java.io.IOException;
+
 public class ContaAdministradorUI extends BorderPane {
     static protected SimpleStringProperty opcaoAdmin = new SimpleStringProperty("NADA");
     //Eventos
@@ -54,9 +56,11 @@ public class ContaAdministradorUI extends BorderPane {
             opcaoAdmin.set("LISTAR_EVENTOS");
         });
         logout.setOnAction(e -> {
-            progClienteManager.logout();
-            MainCliente.administradorSBP.set("INDEFINIDO");
-            MainCliente.menuSBP.set("LOGOUT");
+            try {
+                progClienteManager.logout();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
         });
 
         MainCliente.administradorSBP.addListener(observable -> update());

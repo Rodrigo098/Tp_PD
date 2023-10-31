@@ -7,6 +7,8 @@ import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
+import java.io.IOException;
+
 public class ContaUtilizadorUI extends BorderPane {
     private Button listaPresencas, registarPresenca, editarRegisto, obterCSV, logout;
     private ProgClienteManager progClienteManager;
@@ -50,9 +52,11 @@ public class ContaUtilizadorUI extends BorderPane {
             progClienteManager.obterCSV();
         });
         logout.setOnAction(e -> {
-            progClienteManager.logout();
-            MainCliente.administradorSBP.set("INDIFINIDO");
-            MainCliente.menuSBP.set("LOGOUT");
+            try {
+                progClienteManager.logout();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
         });
         MainCliente.administradorSBP.addListener(observable -> update());
     }

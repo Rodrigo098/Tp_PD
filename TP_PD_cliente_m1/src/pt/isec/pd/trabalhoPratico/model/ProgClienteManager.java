@@ -30,7 +30,7 @@ public class ProgClienteManager {
     public boolean obterFicheiroCSV(){
         return programaCliente.obterFicheiroCSV();
     }
-    public void logout(){
+    public void logout() throws IOException {
         programaCliente.logout();
     }
 
@@ -52,6 +52,6 @@ public class ProgClienteManager {
     }
 
     public boolean handShake(List<String> list) {
-        return programaCliente.handShake(list);
+        return programaCliente.criaSocket(list);
     }
 }

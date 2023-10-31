@@ -1,27 +1,26 @@
 package pt.isec.pd.trabalhoPratico.model.data;
 
 import pt.isec.pd.trabalhoPratico.MainCliente;
+import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
 
 public class ProgramaCliente {
     public static final int TIMEOUT = 10; //segundos
     private Socket socket;
-    public ArrayList<String> listaEventos;//obviamente que não é string mas meanwhile yes
+    //public ArrayList<String> listaEventos;//obviamente que não é string mas meanwhile yes
 
     public ProgramaCliente(){
         //vai
-        listaEventos = new ArrayList<>();
-        listaEventos.add("Evento 1");
-        listaEventos.add("Evento 2");
-        listaEventos.add("Evento 3");
+        //listaEventos = new ArrayList<>();
+        //listaEventos.add("Evento 1");
+        //listaEventos.add("Evento 2");
+        //listaEventos.add("Evento 3");
     }
 
     //temos de pôr uma thread que atualiza o arraylist de eventos
@@ -34,7 +33,7 @@ public class ProgramaCliente {
 
     ///////////////////////////////////////FUNCIONALIDADES:
     /////////////////////////COMUNS:
-    public boolean handShake(List<String> list) {
+    public boolean criaSocket(List<String> list) {
         if(list.size() != 2){
             return false;
         }
@@ -50,9 +49,7 @@ public class ProgramaCliente {
         if(password == null || verificaFormato(email))
             return;
 
-        cria o objeto da classe mensagem:
-            tipo - login;
-            conteudo - email, password;
+        Login dadosLogin = new Login(email, password);
 
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())){
@@ -60,18 +57,18 @@ public class ProgramaCliente {
             oout.writeObject(dadosLogin);
             oout.flush();
 
-            validacao = (Resposta) oin.readObject();
+            Geral validacao = (Geral) oin.readObject();
 
             if(validacao == null){
                 MainCliente.menuSBP.set("ERRO");
                 socket.close();
             }else{
                 switch (validacao.getTipo()){
-                    case "ADMINISTRADOR" ->
+                    case ADMINISTRADOR ->
                         MainCliente.administradorSBP.set("ADMINISTRADOR");
-                    case "UTILIZADOR" ->
+                    case UTILIZADOR ->
                         MainCliente.administradorSBP.set("UTILIZADOR");
-                    case "FALHA_AUTENTICACAO" -> {
+                    case INVALIDO, ERRO -> {
                         MainCliente.menuSBP.set("ERRO");
                         socket.close();
                         return;
@@ -84,103 +81,89 @@ public class ProgramaCliente {
             socket.close();
         }
     }
-    public void logout() {
-        //desligar comunicação com o servidor
-        System.out.println("até à próxima!");
+    public void logout() throws IOException {
+        Geral logout = new Geral(Message_types.LOGOUT);
+
+        try(ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())){
+
+            oout.writeObject(logout);
+            oout.flush();
+            MainCliente.menuSBP.set("MENU");
+            MainCliente.administradorSBP.set("INDEFINIDO");
+        }catch (Exception e) {
+            MainCliente.menuSBP.set("ERRO");
+        }
+        socket.close();
     }
 
     /////////////////////////UTILIZADOR:
     public void registar(String nome, String email, String numIdentificacao, String password, String confPass) throws IOException {
         if(nome == null || password == null || !password.equals(confPass) || verificaFormato(email) || numIdentificacao == null)
                 return;
-        int numID;
+        long numID;
         try {
-            numID = Integer.parseInt(numIdentificacao);
+            numID = Integer.parseInt(numIdentificacao);//?? como é que ponho para long?
         } catch (NumberFormatException e) {
             return;
         }
+
+        Registo_Cliente dadosRegisto = new Registo_Cliente(nome, email, password, numID);
+
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-            ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
-        {
+            ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
             oout.writeObject(dadosRegisto);
             oout.flush();
-            validacao = (Resposta) oin.readObject();
+            Geral validacao = (Geral) oin.readObject();
 
-            if(validacao == null){
+            if (validacao == null) {
                 MainCliente.menuSBP.set("ERRO");
                 socket.close();
-            }else{
-                if(validacao.getTipo() == "NOVO_REGISTO") {
+            } else {
+                if (validacao.getTipo() == Message_types.VALIDO) {
                     MainCliente.administradorSBP.set("UTILIZADOR");
                     MainCliente.menuSBP.set("CONTA");
-                }else if(validacao.getTipo() == "FALHA_REGISTO") {
-                        MainCliente.menuSBP.set("ERRO");
-                        socket.close();
-                    }
+                } else {
+                    MainCliente.menuSBP.set("ERRO");
+                    socket.close();
                 }
-            }catch (Exception e) {
-                MainCliente.menuSBP.set("ERRO");
-                socket.close();
             }
-            /*
-            //CÓDIGO A IMPLEMENTAR
-            //procura na BD se existe um username correspondente
-            //se não existir
-            //return false;
-
-            //se existir
-            //verifica a password
-            //se for diferente
-            //return false;
-
-            //se existir email e pass for correspondente:
-            if(email.equals("admin@isec.pt")) {//verificaFormatoEmail[0].equals("admin") é só por agora, depois vai ser o que corresponde na BD
-                MainCliente.administradorSBP.set("ADMINISTRADOR");
-            }
-            else {
-                MainCliente.administradorSBP.set("UTILIZADOR");
-            }
-            MainCliente.menuSBP.set("CONTA");*/
+        }catch (Exception e) {
+            MainCliente.menuSBP.set("ERRO");
+            socket.close();
+        }
     }
 
-    public boolean registarPresença(String evento) {
-        if(evento == null || evento.isBlank())
+    public boolean registarPresença(String codigoEvento) {
+        if(codigoEvento == null || codigoEvento.isBlank())
             return false;
 
-        cria o objeto da classe mensagem:
-        tipo - registoPresenca;
-        conteudo - codigoEvento;
+        Submissao_codigo registoPresenca = new Submissao_codigo(Integer.parseInt(codigoEvento));
 
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
         {
             oout.writeObject(registoPresenca);
             oout.flush();
-            validacao = (Resposta) oin.readObject();
+            Geral validacao = (Geral) oin.readObject();
 
-            if(validacao == null || validacao.getTipo() == "FALHA_REGISTO"){
-                return false;
-            }
-            return true;
+            return validacao.getTipo() == Message_types.VALIDO;
         }catch (Exception e) {
             return false;
         }
     }
 
     public String[] consultarPresenças() {
-        cria o objeto da classe resposta:
-        tipo - consultarPresencas;
+        Geral consultaPresencas = new Geral(Message_types.CONSULTA_PRES_UTILIZADOR);
 
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
         {
             oout.writeObject(consultaPresencas);
             oout.flush();
-            lista = (Mensagem) oin.readObject();
 
-            // não é preciso porque lá será preenchido que não há registos -> if(lista == null || lista.getTipo() == "FALHA_PROCURA")
+            ConsultaEventos lista = (ConsultaEventos) oin.readObject();
 
-            return lista.trim(";");
+            return lista.getFiltros();
         }catch (Exception e) {
             return new String[]{"Erro na comunicação com o servidor"};
         }
@@ -203,15 +186,34 @@ public class ProgramaCliente {
 
     /////////////////////////ADMINISTRADOR:
     //////////////////////// FALTA ADMINISTRADOR:
-    public String[] obterListaEventos() {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*public String[] obterListaEventos() {
         String [] eventos = new String[listaEventos.size()];
         for(String evento : listaEventos){
             eventos[listaEventos.indexOf(evento)] = evento;//depois põe-se toString
         }
         return eventos;
-    }
+    }*/
 
-    public String obterEvento(int eventoSelecionado) {
+    /*public String obterEvento(int eventoSelecionado) {
         return listaEventos.get(eventoSelecionado);//depois põe-se toString
-    }
+    }*/
 }
