@@ -1,7 +1,6 @@
-package pt.isec.trabalhoPratico.dataAccess;
+package tp.isec.pd.trabalhoPratico.dataAccess;
 
 import java.sql.*;
-import org.sqlite.*;
 
 public class DbManage extends Thread{
     private static final String dbAdress = "databasePD.db";

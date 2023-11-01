@@ -1,4 +1,4 @@
-package pt.isec.trabalhoPratico.classesComunication;
+package tp.isec.pd.trabalhoPratico.model;
 
 import java.util.*;
 

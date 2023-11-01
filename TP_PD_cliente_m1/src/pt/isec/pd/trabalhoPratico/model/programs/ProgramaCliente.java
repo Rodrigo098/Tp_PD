@@ -1,26 +1,23 @@
-package pt.isec.pd.trabalhoPratico.model.data;
+package pt.isec.pd.trabalhoPratico.model.programs;
 
 import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Registo;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
 ////////////////////////////////// ATUALIZAÇÃO ASSÍNCRONA ////////////////////////////////////////
 class AtualizacaoAsync implements Runnable {
-    private final ArrayList<Evento> listaEventos, listaRegistos;
+    private final ArrayList<Evento> listaEventos;
+    private final ArrayList<Registo> listaRegistos;
     private final Socket socket;
-    public AtualizacaoAsync(Socket socket, ArrayList<Evento> lista, ArrayList<Evento> listaRegisto) {
+    public AtualizacaoAsync(Socket socket, ArrayList<Evento> lista, ArrayList<Registo> listaRegisto) {
         this.socket = socket;
         this.listaEventos = lista;
         this.listaRegistos = listaRegisto;
@@ -31,18 +28,15 @@ class AtualizacaoAsync implements Runnable {
         do{
             try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream()))
             {
-                RecebeListas novalista = (RecebeListas) oin.readObject();
-                if(novalista.getTipo() == Message_types.UPDATE_EVENTOS) {
-                    synchronized (listaEventos) {
-                        listaEventos.clear();
-                        listaEventos.addAll(Arrays.asList(novalista.getLista()));
-                    }
-                } else {
-                    RecebeListas novalistaRegistos = (RecebeListas) oin.readObject();
-                    synchronized (listaEventos) {
-                        listaRegistos.clear();
-                        listaRegistos.addAll(Arrays.asList(novalistaRegistos.getLista()));
-                    }
+                RecebeListaEventos novalistaE = (RecebeListaEventos) oin.readObject();
+                synchronized (listaEventos) {
+                    listaEventos.clear();
+                    listaEventos.addAll(Arrays.asList(novalistaE.getLista()));
+                }
+                RecebeListaRegistos novalistaR = (RecebeListaRegistos) oin.readObject();
+                synchronized (listaRegistos) {
+                    listaEventos.clear();
+                    listaRegistos.addAll(Arrays.asList(novalistaR.getLista()));
                 }
             } catch (IOException | ClassNotFoundException ignored) {
             }
@@ -53,7 +47,8 @@ class AtualizacaoAsync implements Runnable {
 ///////////////////////////////////////////////////////////////////////////////
 public class ProgramaCliente {
     private Socket socket;
-    private final ArrayList<Evento> listaEventos, listaRegistos;
+    private final ArrayList<Evento> listaEventos;
+    private final ArrayList<Registo> listaRegistos;
 
     public ProgramaCliente(){
         listaEventos = new ArrayList<>();
@@ -111,7 +106,7 @@ public class ProgramaCliente {
                     case ADMINISTRADOR -> {
                         MainCliente.administradorSBP.set("ADMINISTRADOR");
                         try (Socket socket = new Socket(this.socket.getInetAddress(), this.socket.getPort())) {
-                            new Thread(new AtualizacaoAsync(socket, listaEventos)).start();
+                            new Thread(new AtualizacaoAsync(socket, listaEventos, listaRegistos)).start();
                         } catch (Exception e) {
                             MainCliente.menuSBP.set("ERRO");
                             socket.close();
@@ -481,21 +476,21 @@ public class ProgramaCliente {
         }
         return resultados;
     }
-    /*public String[] consultaEventosUtilizador(String utilizador) {
+
+    public ArrayList<String> consultaEventosUtilizador(String utilizador) {
+        if(verificaFormato(utilizador))
+            return null;
+
         ArrayList<String> resultados = new ArrayList<>();
 
-        synchronized(listaEventos){
-            for(Evento e : listaEventos){
-                if(nome.contains(e.getNome()))//e.getNome().contains(s) || e.getLocal().contains(s) || e.getData().contains(s))
-                    resultados.add(e.toString());
-                if(local.contains(e.getLocal()))
-                    resultados.add(e.toString());
-                // ver filtros por data
-                // ver filtros por hora
+        synchronized(listaRegistos){
+            for(Registo r : listaRegistos){
+                if(r.getUtilizador().equals(utilizador))
+                    resultados.add(r.toString());
             }
         }
         return resultados;
-    }*/
+    }
 
 }
 

@@ -1,6 +1,4 @@
-package pt.isec.trabalhoPratico;
-
-import pt.isec.pd.trabalhoPratico.classesComunication.*;
+import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

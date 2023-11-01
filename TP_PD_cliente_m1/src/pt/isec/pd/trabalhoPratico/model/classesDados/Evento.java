@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.model.classesComunication;
+package pt.isec.pd.trabalhoPratico.model.classesDados;
 
 public class Evento {
     private final String nome, local, data, horaInicio, horaFim;

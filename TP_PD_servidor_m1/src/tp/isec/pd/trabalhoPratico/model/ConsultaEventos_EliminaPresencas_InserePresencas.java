@@ -1,6 +1,4 @@
-package pt.isec.trabalhoPratico.classesComunication;
-
-import java.util.Arrays;
+package tp.isec.pd.trabalhoPratico.model;
 
 public class ConsultaEventos_EliminaPresencas_InserePresencas extends Geral{// podiamos usar esta classe tmb para inserir presenças
     private  String []lista;

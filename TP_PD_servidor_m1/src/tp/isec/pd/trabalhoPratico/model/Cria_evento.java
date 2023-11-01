@@ -1,7 +1,6 @@
-package pt.isec.trabalhoPratico.classesComunication;
+package tp.isec.pd.trabalhoPratico.model;
 
 import java.time.LocalTime;
-import java.util.Calendar;
 import java.util.Date;
 
 public class Cria_evento extends Geral{

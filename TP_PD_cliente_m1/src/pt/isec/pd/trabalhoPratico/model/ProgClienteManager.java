@@ -1,7 +1,7 @@
 package pt.isec.pd.trabalhoPratico.model;
 
 import javafx.util.Pair;
-import pt.isec.pd.trabalhoPratico.model.data.ProgramaCliente;
+import pt.isec.pd.trabalhoPratico.model.programs.ProgramaCliente;
 
 import java.io.IOException;
 import java.util.List;

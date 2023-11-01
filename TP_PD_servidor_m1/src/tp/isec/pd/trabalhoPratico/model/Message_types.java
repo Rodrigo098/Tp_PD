@@ -1,4 +1,4 @@
-package pt.isec.trabalhoPratico.classesComunication;
+package tp.isec.pd.trabalhoPratico.model;
 
 public enum Message_types {// varios tipos de mensagens que serão usados, se quiserem podem adicionar mais ou remover(mas remover atenção que pode causar problemas noutras partes do codigo)
     //COMUM
