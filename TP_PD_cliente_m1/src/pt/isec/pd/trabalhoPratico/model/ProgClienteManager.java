@@ -1,5 +1,6 @@
 package pt.isec.pd.trabalhoPratico.model;
 
+import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.model.data.ProgramaCliente;
 
 import java.io.IOException;
@@ -51,7 +52,7 @@ public class ProgClienteManager {
         return programaCliente.consultarPresençasUti();
     }
 
-    public boolean criaSocket(List<String> list) {
+    public Pair<Boolean, String> criaSocket(List<String> list) {
         return programaCliente.criaSocket(list);
     }
 }

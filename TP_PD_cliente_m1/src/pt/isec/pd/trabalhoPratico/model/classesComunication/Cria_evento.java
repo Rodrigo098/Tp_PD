@@ -4,34 +4,14 @@ import java.time.LocalTime;
 import java.util.Date;
 
 public class Cria_evento extends Geral{
-    private String nome, local, data, horaInicio, horaFim;//int não seria mais fácil??
+    private Evento evento;
 
-    public Cria_evento(String nome, String local, String data, String horaInicio, String horaFim, Message_types tipo) {
+    public Cria_evento(Evento evento, Message_types tipo) {
         super(tipo);
-        this.nome = nome;
-        this.local = local;
-        this.data = data;
-        this.horaInicio = horaInicio;
-        this.horaFim = horaFim;
+        this.evento = evento;
     }
 
-    public String getNome() {
-        return nome;
-    }
-
-    public String getLocal() {
-        return local;
-    }
-
-    public String getData() {
-        return data;
-    }
-
-    public String getHorainicio() {
-        return horaInicio;
-    }
-
-    public String getHorafim() {
-        return horaFim;
+    public Evento getEvento() {
+        return evento;
     }
 }

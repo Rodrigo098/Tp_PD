@@ -1,36 +1,61 @@
 package pt.isec.pd.trabalhoPratico.model.data;
 
+import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
+
+////////////////////////////////// ATUALIZAÇÃO ASSÍNCRONA ////////////////////////////////////////
+class AtualizacaoAsync implements Runnable {
+    private final ArrayList<Evento> listaEventos, listaRegistos;
+    private final Socket socket;
+    public AtualizacaoAsync(Socket socket, ArrayList<Evento> lista, ArrayList<Evento> listaRegisto) {
+        this.socket = socket;
+        this.listaEventos = lista;
+        this.listaRegistos = listaRegisto;
+    }
+    @Override
+    public void run() {
+
+        do{
+            try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream()))
+            {
+                RecebeListas novalista = (RecebeListas) oin.readObject();
+                synchronized(listaEventos){
+                    listaEventos.clear();
+                    listaEventos.addAll(Arrays.asList(novalista.getLista()));
+                }
+                RecebeListas novalistaRegistos = (RecebeListas) oin.readObject();
+                synchronized(listaEventos){
+                    listaRegistos.clear();
+                    listaRegistos.addAll(Arrays.asList(novalistaRegistos.getLista()));
+                }
+            } catch (IOException | ClassNotFoundException ignored) {
+            }
+        }while(Thread.currentThread().isAlive());
+
+    }
+}
+///////////////////////////////////////////////////////////////////////////////
 public class ProgramaCliente {
-    public static final int TIMEOUT = 10; //segundos
     private Socket socket;
-    //public ArrayList<String> listaEventos;//obviamente que não é string mas meanwhile yes
+    private final ArrayList<Evento> listaEventos, listaRegistos;
 
     public ProgramaCliente(){
-        //vai
-        //listaEventos = new ArrayList<>();
-        //listaEventos.add("Evento 1");
-        //listaEventos.add("Evento 2");
-        //listaEventos.add("Evento 3");
+        listaEventos = new ArrayList<>();
+        listaRegistos = new ArrayList<>();
     }
-
-    //temos de pôr uma thread que atualiza o arraylist de eventos
 
     //ver se é email:
     public boolean verificaFormato(String email){
@@ -40,18 +65,27 @@ public class ProgramaCliente {
 
     ///////////////////////////////////////FUNCIONALIDADES:
     /////////////////////////COMUNS:
-    public boolean criaSocket(List<String> list) {
-        if(list.size() != 2){
-            return false;
+    public Pair<Boolean, String> criaSocket(List<String> list) {
+        Pair<Boolean, String> pontoSituacao;
+
+        if(list.size() != 2) {
+            try (Socket socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)))) {
+                this.socket = socket;
+                pontoSituacao = new Pair<>(true, "Conexão bem sucedida");
+
+            } catch (IllegalArgumentException e) {
+                pontoSituacao = new Pair<>(false, "Introduziu um porto inválido.");
+            } catch (NullPointerException e) {
+                pontoSituacao = new Pair<>(false, "Introduziu um endereço inválido.");
+            } catch (IOException e) {
+                pontoSituacao = new Pair<>(false, "Ocorreu uma exceção I/O na criação do socket.");
+            }
         }
-        try(Socket socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1))))
-        {
-            this.socket = socket;
-            return true;
-        }catch(Exception e){
-            return false;
-        }
+        else
+            pontoSituacao = new Pair<>(false, "Não foram introduzidos dados suficientes como argumento.");
+        return pontoSituacao;
     }
+
     public void login(String email, String password) {
         if(password == null || verificaFormato(email))
             return;
@@ -71,8 +105,15 @@ public class ProgramaCliente {
                 socket.close();
             }else{
                 switch (validacao.getTipo()){
-                    case ADMINISTRADOR ->
+                    case ADMINISTRADOR -> {
                         MainCliente.administradorSBP.set("ADMINISTRADOR");
+                        try (Socket socket = new Socket(this.socket.getInetAddress(), this.socket.getPort())) {
+                            new Thread(new AtualizacaoAsync(socket, listaEventos)).start();
+                        } catch (Exception e) {
+                            MainCliente.menuSBP.set("ERRO");
+                            socket.close();
+                        }
+                    }
                     case UTILIZADOR ->
                         MainCliente.administradorSBP.set("UTILIZADOR");
                     case INVALIDO, ERRO -> {
@@ -84,6 +125,7 @@ public class ProgramaCliente {
                 MainCliente.menuSBP.set("CONTA");
             }
         }catch (IOException | ClassNotFoundException ignored) {
+            MainCliente.menuSBP.set("ERRO");
         }
     }
     public void logout() {
@@ -237,7 +279,7 @@ public class ProgramaCliente {
         //Data: como será com data picker não será necessária
         //Hora: como será com select não será necessário
 
-        Cria_evento evento = new Cria_evento(nome, local, data, horaInicio, horaFim, tipo);
+        Cria_evento evento = new Cria_evento(new Evento(nome, local, data, horaInicio, horaFim), tipo);
 
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
@@ -282,7 +324,7 @@ public class ProgramaCliente {
         return false;
     }
 
-    public String[] consultaEventos(String filtros) {
+  /*  public String[] consultaEventosFiltros(String filtros) {
         ArrayList<String> filtrosArray = new ArrayList<>();
         Collections.addAll(filtrosArray, filtros.trim().split(" "));
 
@@ -307,7 +349,7 @@ public class ProgramaCliente {
         }
         return new String[]{"Erro"};
     }
-
+*/
     public boolean eliminaInsere_Eventos(Message_types tipo, String nome, String filtros) {
         //o nome do evento é o primeiro filtro
         ArrayList<String> emails = new ArrayList<>();
@@ -358,7 +400,7 @@ public class ProgramaCliente {
             return "Erro";
         }
     }
-
+/*
     public String[] consultaPresencasEvento(String nomeEvento){
         //é um botão que vai buscar o nome do evento selecionado logo não é preciso validação
         Consulta_Elimina_GeraCod_SubmeteCod_Evento consulta = new Consulta_Elimina_GeraCod_SubmeteCod_Evento(nomeEvento, Message_types.CONSULTA_PRES_EVENT);
@@ -404,6 +446,53 @@ public class ProgramaCliente {
         }
         return new String[]{"Erro"};
     }
+*/
+
+
+    /// NOVA VERSAO ##############################################################3
+    public ArrayList<String> consultaEventosFiltros(String nome, String local, String data, String horaInicio, String horaFim) {
+        ArrayList<String> resultados = new ArrayList<>();
+
+        synchronized(listaEventos){
+            for(Evento e : listaEventos){
+                if(nome.contains(e.getNome()))//e.getNome().contains(s) || e.getLocal().contains(s) || e.getData().contains(s))
+                    resultados.add(e.toString());
+                if(local.contains(e.getLocal()))
+                    resultados.add(e.toString());
+                // ver filtros por data
+                // ver filtros por hora
+            }
+        }
+        return resultados;
+    }
+
+    public ArrayList<String> consultaPresencasEvento(String nomeEvento){
+        //é um botão que vai buscar o nome do evento selecionado logo não é preciso validação
+        ArrayList<String> resultados = new ArrayList<>();
+
+        synchronized(listaEventos){
+            for(Evento e : listaEventos){
+                if(nomeEvento.equalsIgnoreCase(e.getNome()))//e.getNome().contains(s) || e.getLocal().contains(s) || e.getData().contains(s))
+                    resultados.add(e.toString());
+            }
+        }
+        return resultados;
+    }
+    /*public String[] consultaEventosUtilizador(String utilizador) {
+        ArrayList<String> resultados = new ArrayList<>();
+
+        synchronized(listaEventos){
+            for(Evento e : listaEventos){
+                if(nome.contains(e.getNome()))//e.getNome().contains(s) || e.getLocal().contains(s) || e.getData().contains(s))
+                    resultados.add(e.toString());
+                if(local.contains(e.getLocal()))
+                    resultados.add(e.toString());
+                // ver filtros por data
+                // ver filtros por hora
+            }
+        }
+        return resultados;
+    }*/
 
 }
 
