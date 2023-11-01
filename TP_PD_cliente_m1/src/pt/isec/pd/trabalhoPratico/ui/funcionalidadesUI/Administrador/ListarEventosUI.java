@@ -52,7 +52,7 @@ public class ListarEventosUI extends BorderPane {
 
     private void extrairListaEventos() {
         listaEventos.getItems().clear();
-        for (String evento : progClienteManager.consultarPresenças()) {
+        for (String evento : progClienteManager.()) {
             listaEventos.getItems().add(new String(evento));
         }
     }

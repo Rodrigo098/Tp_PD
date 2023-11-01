@@ -180,7 +180,7 @@ public class ProgramaCliente {
         }
     }
 
-    public boolean registarPresença(String codigoEvento) {
+    public boolean registarPresenca(String codigoEvento) {
         if(codigoEvento == null || codigoEvento.isBlank())
             return false;
 
@@ -204,7 +204,7 @@ public class ProgramaCliente {
         return false;
     }
 
-    public String[] consultarPresençasUti() {
+    public String[] consultarPresencasUti() {
         Geral consultaPresencas = new Geral(Message_types.CONSULTA_PRES_UTILIZADOR);
 
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
@@ -219,6 +219,16 @@ public class ProgramaCliente {
         } catch (IOException | ClassNotFoundException e) {
             return new String[]{"Erro na comunicação com o servidor"};
         }
+    }
+
+    public boolean obterFicheiroCSV() {
+        //se há presenças registadas
+        //cria ficheiro CSV
+        //return true;
+        //senão
+        //return false;
+
+        return false;
     }
 
     public boolean editarRegisto(String nome, String email, String numIdentificacao, String password, String confPass) {
@@ -256,17 +266,6 @@ public class ProgramaCliente {
         }
         return false;
     }
-
-    public boolean obterFicheiroCSV() {
-        //se há presenças registadas
-            //cria ficheiro CSV
-            //return true;
-        //senão
-            //return false;
-
-        return false;
-    }
-
 
     /////////////////////////ADMINISTRADOR:
     //CRIAR OU EDITAR EVENTO, O ÚLTIMO PARÂMETRO É PARA SABER SE É PARA CRIAR OU EDITAR
@@ -322,32 +321,6 @@ public class ProgramaCliente {
         return false;
     }
 
-  /*  public String[] consultaEventosFiltros(String filtros) {
-        ArrayList<String> filtrosArray = new ArrayList<>();
-        Collections.addAll(filtrosArray, filtros.trim().split(" "));
-
-        ConsultaEventos_EliminaPresencas_InserePresencas interacao =
-                new ConsultaEventos_EliminaPresencas_InserePresencas(Message_types.CONSULTA_EVENTOS, filtros);
-
-        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
-            oout.writeObject(interacao);
-            oout.flush();
-
-            ConsultaEventos_EliminaPresencas_InserePresencas lista = (ConsultaEventos_EliminaPresencas_InserePresencas) oin.readObject();
-
-            if(lista.getTipo() == Message_types.VALIDO)
-                return lista.getLista();
-            if (lista.getTipo() == Message_types.ERRO) {
-                MainCliente.menuSBP.set("ERRO");
-                socket.close();
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            return new String[]{"Erro na comunicação com o servidor"};
-        }
-        return new String[]{"Erro"};
-    }
-*/
     public boolean eliminaInsere_Eventos(Message_types tipo, String nome, String filtros) {
         //o nome do evento é o primeiro filtro
         ArrayList<String> emails = new ArrayList<>();
@@ -429,6 +402,32 @@ public class ProgramaCliente {
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
             oout.writeObject(consulta);
+            oout.flush();
+
+            ConsultaEventos_EliminaPresencas_InserePresencas lista = (ConsultaEventos_EliminaPresencas_InserePresencas) oin.readObject();
+
+            if(lista.getTipo() == Message_types.VALIDO)
+                return lista.getLista();
+            if (lista.getTipo() == Message_types.ERRO) {
+                MainCliente.menuSBP.set("ERRO");
+                socket.close();
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            return new String[]{"Erro na comunicação com o servidor"};
+        }
+        return new String[]{"Erro"};
+    }
+*/
+  /*  public String[] consultaEventosFiltros(String filtros) {
+        ArrayList<String> filtrosArray = new ArrayList<>();
+        Collections.addAll(filtrosArray, filtros.trim().split(" "));
+
+        ConsultaEventos_EliminaPresencas_InserePresencas interacao =
+                new ConsultaEventos_EliminaPresencas_InserePresencas(Message_types.CONSULTA_EVENTOS, filtros);
+
+        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+            oout.writeObject(interacao);
             oout.flush();
 
             ConsultaEventos_EliminaPresencas_InserePresencas lista = (ConsultaEventos_EliminaPresencas_InserePresencas) oin.readObject();
