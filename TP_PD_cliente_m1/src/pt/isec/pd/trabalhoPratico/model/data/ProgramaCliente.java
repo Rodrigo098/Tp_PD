@@ -308,7 +308,7 @@ public class ProgramaCliente {
         return new String[]{"Erro"};
     }
 
-    public boolean eliminaInsere_Eventos(Message_types tipo, String filtros) {
+    public boolean eliminaInsere_Eventos(Message_types tipo, String nome, String filtros) {
         //o nome do evento é o primeiro filtro
         ArrayList<String> emails = new ArrayList<>();
         for (String email : filtros.trim().split(" ")) {
@@ -317,7 +317,7 @@ public class ProgramaCliente {
         }
 
         ConsultaEventos_EliminaPresencas_InserePresencas interacao =
-                new ConsultaEventos_EliminaPresencas_InserePresencas(tipo, emails.toArray(new String[0]));
+                new ConsultaEventos_EliminaPresencas_InserePresencas(tipo, nome, emails.toArray(new String[0]));
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -378,6 +378,31 @@ public class ProgramaCliente {
         }catch (IOException | ClassNotFoundException ignored) {
             return new String[]{"Erro"};
         }
+    }
+    public String[] consultaEventosUtilizador(String utilizador) {
+        if(verificaFormato(utilizador))
+            return new String[]{"Erro"};
+
+        Consulta_Elimina_GeraCod_SubmeteCod_Evento consulta =
+                new Consulta_Elimina_GeraCod_SubmeteCod_Evento(utilizador, Message_types.CONSULTA_EVENTOS);
+
+        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+            oout.writeObject(consulta);
+            oout.flush();
+
+            ConsultaEventos_EliminaPresencas_InserePresencas lista = (ConsultaEventos_EliminaPresencas_InserePresencas) oin.readObject();
+
+            if(lista.getTipo() == Message_types.VALIDO)
+                return lista.getLista();
+            if (lista.getTipo() == Message_types.ERRO) {
+                MainCliente.menuSBP.set("ERRO");
+                socket.close();
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            return new String[]{"Erro na comunicação com o servidor"};
+        }
+        return new String[]{"Erro"};
     }
 
 }

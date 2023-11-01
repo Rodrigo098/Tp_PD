@@ -4,9 +4,10 @@ public class ConsultaEventos_EliminaPresencas_InserePresencas extends Geral{// p
     private String [] lista;
     private String nome_evento;
 
-    public ConsultaEventos_EliminaPresencas_InserePresencas(Message_types tipo, String ... lista) {// assim podem escrever quantos emails quiserem
+    public ConsultaEventos_EliminaPresencas_InserePresencas(Message_types tipo, String nome, String ... lista) {// assim podem escrever quantos emails quiserem
        super(tipo);
        this.lista = lista;
+       nome_evento = nome;
     }
 
     public String[] getLista() {
