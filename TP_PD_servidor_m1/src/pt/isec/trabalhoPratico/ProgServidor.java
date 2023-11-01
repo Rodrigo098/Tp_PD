@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico;
+package pt.isec.trabalhoPratico;
 
 import pt.isec.pd.trabalhoPratico.classesComunication.*;
 

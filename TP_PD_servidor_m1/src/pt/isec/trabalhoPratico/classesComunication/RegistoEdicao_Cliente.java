@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.classesComunication;
+package pt.isec.trabalhoPratico.classesComunication;
 
 public class RegistoEdicao_Cliente extends Geral{
    private String nome, email, password;

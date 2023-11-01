@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.classesComunication;
+package pt.isec.trabalhoPratico.classesComunication;
 
 import java.time.LocalTime;
 import java.util.Calendar;

@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.classesComunication;
+package pt.isec.trabalhoPratico.classesComunication;
 
 public class Login extends Geral{
     private String email, password;

@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.dataaccess;
+package pt.isec.trabalhoPratico.dataAccess;
 
 import java.sql.*;
 import org.sqlite.*;
