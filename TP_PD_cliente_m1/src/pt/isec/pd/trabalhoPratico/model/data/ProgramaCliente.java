@@ -32,14 +32,17 @@ class AtualizacaoAsync implements Runnable {
             try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream()))
             {
                 RecebeListas novalista = (RecebeListas) oin.readObject();
-                synchronized(listaEventos){
-                    listaEventos.clear();
-                    listaEventos.addAll(Arrays.asList(novalista.getLista()));
-                }
-                RecebeListas novalistaRegistos = (RecebeListas) oin.readObject();
-                synchronized(listaEventos){
-                    listaRegistos.clear();
-                    listaRegistos.addAll(Arrays.asList(novalistaRegistos.getLista()));
+                if(novalista.getTipo() == Message_types.UPDATE_EVENTOS) {
+                    synchronized (listaEventos) {
+                        listaEventos.clear();
+                        listaEventos.addAll(Arrays.asList(novalista.getLista()));
+                    }
+                } else {
+                    RecebeListas novalistaRegistos = (RecebeListas) oin.readObject();
+                    synchronized (listaEventos) {
+                        listaRegistos.clear();
+                        listaRegistos.addAll(Arrays.asList(novalistaRegistos.getLista()));
+                    }
                 }
             } catch (IOException | ClassNotFoundException ignored) {
             }
