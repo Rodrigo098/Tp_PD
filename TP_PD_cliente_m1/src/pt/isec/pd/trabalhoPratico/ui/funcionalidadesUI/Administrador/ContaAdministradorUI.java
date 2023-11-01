@@ -56,11 +56,7 @@ public class ContaAdministradorUI extends BorderPane {
             opcaoAdmin.set("LISTAR_EVENTOS");
         });
         logout.setOnAction(e -> {
-            try {
-                progClienteManager.logout();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
+            progClienteManager.logout();
         });
 
         MainCliente.administradorSBP.addListener(observable -> update());

@@ -52,11 +52,7 @@ public class RegistoUtilizadorUI extends BorderPane {
             MainCliente.menuSBP.set("MENU");
         });
         registar.setOnAction(e -> {
-            try {
-                progClienteManager.registar(nomeUtilizador.getText(), email.getText(), numIdentificacao.getText(), password.getText(), confirmar_password.getText());
-            } catch (Exception ex)  {
-                MainCliente.menuSBP.set("ERRO");
-            }
+            progClienteManager.registar(nomeUtilizador.getText(), email.getText(), numIdentificacao.getText(), password.getText(), confirmar_password.getText());
             nomeUtilizador.setText(null);
             email.setText(null);
             password.setText(null);

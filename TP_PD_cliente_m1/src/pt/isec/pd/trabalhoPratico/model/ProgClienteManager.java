@@ -16,21 +16,21 @@ public class ProgClienteManager {
     public void login(String email, String password) throws IOException {
         programaCliente.login(email, password);
     }
-    public void logout() throws IOException {
+    public void logout() {
         programaCliente.logout();
     }
 
     //UTILIZADOR:
-    public void registar(String nome, String email, String numIdentificacao, String password, String confPass) throws IOException {
+    public void registar(String nome, String email, String numIdentificacao, String password, String confPass) {
         programaCliente.registar(nome, email, numIdentificacao, password, confPass);
     }
-    public boolean editarRegisto(String nome, String email, String numIdentificacao, String password, String confPass) throws IOException {
+    public boolean editarRegisto(String nome, String email, String numIdentificacao, String password, String confPass) {
         return programaCliente.editarRegisto(nome, email, numIdentificacao, password, confPass);
     }
-    public boolean registarPresença(String codigo){
+    public boolean registarPresenca(String codigo){
         return programaCliente.registarPresença(codigo);
     }
-    public String[] consultarPresençasUti(){
+    public String[] consultarPresencasUti(){
         return programaCliente.consultarPresençasUti();
     }
     public boolean obterFicheiroCSV(){
@@ -47,7 +47,7 @@ public class ProgClienteManager {
     public void editarEvento(String evento) {
     }
 
-    public String[] consultarPresenças() {
+    public String[] consultarPresencas() {
         return programaCliente.consultarPresençasUti();
     }
 

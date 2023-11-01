@@ -8,6 +8,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class ProgramaCliente {
@@ -45,7 +52,7 @@ public class ProgramaCliente {
             return false;
         }
     }
-    public void login(String email, String password) throws IOException {
+    public void login(String email, String password) {
         if(password == null || verificaFormato(email))
             return;
 
@@ -76,12 +83,10 @@ public class ProgramaCliente {
                 }
                 MainCliente.menuSBP.set("CONTA");
             }
-        }catch (Exception e) {
-            MainCliente.menuSBP.set("ERRO");
-            socket.close();
+        }catch (IOException | ClassNotFoundException ignored) {
         }
     }
-    public void logout() throws IOException {
+    public void logout() {
         Geral logout = new Geral(Message_types.LOGOUT);
 
         try(ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())){
@@ -90,14 +95,18 @@ public class ProgramaCliente {
             oout.flush();
             MainCliente.menuSBP.set("MENU");
             MainCliente.administradorSBP.set("INDEFINIDO");
-        }catch (Exception e) {
+        }catch (IOException e) {
             MainCliente.menuSBP.set("ERRO");
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException ignored) {
+            }
         }
-        socket.close();
     }
 
     /////////////////////////UTILIZADOR:
-    public void registar(String nome, String email, String numIdentificacao, String password, String confPass) throws IOException {
+    public void registar(String nome, String email, String numIdentificacao, String password, String confPass) {
         if(nome == null || password == null || !password.equals(confPass) || verificaFormato(email) || numIdentificacao == null)
                 return;
         long numID;
@@ -127,9 +136,7 @@ public class ProgramaCliente {
                     socket.close();
                 }
             }
-        }catch (Exception e) {
-            MainCliente.menuSBP.set("ERRO");
-            socket.close();
+        }catch (IOException | ClassNotFoundException ignored) {
         }
     }
 
@@ -146,10 +153,15 @@ public class ProgramaCliente {
             oout.flush();
             Geral validacao = (Geral) oin.readObject();
 
-            return validacao.getTipo() == Message_types.VALIDO;
-        }catch (Exception e) {
-            return false;
+            if(validacao.getTipo() == Message_types.VALIDO)
+                return true;
+            if (validacao.getTipo() == Message_types.ERRO) {
+                MainCliente.menuSBP.set("ERRO");
+                socket.close();
+            }
+        } catch (IOException | ClassNotFoundException ignored) {
         }
+        return false;
     }
 
     public String[] consultarPresençasUti() {
@@ -164,12 +176,12 @@ public class ProgramaCliente {
             ConsultaEventos_EliminaPresencas_InserePresencas lista = (ConsultaEventos_EliminaPresencas_InserePresencas) oin.readObject();
 
             return lista.getLista();
-        }catch (Exception e) {
+        } catch (IOException | ClassNotFoundException e) {
             return new String[]{"Erro na comunicação com o servidor"};
         }
     }
 
-    public boolean editarRegisto(String nome, String email, String numIdentificacao, String password, String confPass) throws IOException {
+    public boolean editarRegisto(String nome, String email, String numIdentificacao, String password, String confPass) {
 
         if(nome == null || password == null || !password.equals(confPass) || verificaFormato(email) || numIdentificacao == null)
             return false;
@@ -200,11 +212,9 @@ public class ProgramaCliente {
                     socket.close();
                 }
             }
-        }catch (Exception e) {
-            MainCliente.menuSBP.set("ERRO");
-            socket.close();
+        }catch (ClassNotFoundException | IOException ignored) {
         }
-    return false;
+        return false;
     }
 
     public boolean obterFicheiroCSV() {
@@ -219,9 +229,156 @@ public class ProgramaCliente {
 
 
     /////////////////////////ADMINISTRADOR:
-    //////////////////////// FALTA ADMINISTRADOR
+    //CRIAR OU EDITAR EVENTO, O ÚLTIMO PARÂMETRO É PARA SABER SE É PARA CRIAR OU EDITAR
+    public boolean criarEditar_Evento(String nome, String local, String data, String horaInicio, String horaFim, Message_types tipo) {
+        if(nome == null || local == null || data == null || horaInicio == null || horaFim == null)
+            return false;
 
-    //Faço amanhã desculpem o atraso :(
+        //Data: como será com data picker não será necessária
+        //Hora: como será com select não será necessário
+
+        Cria_evento evento = new Cria_evento(nome, local, data, horaInicio, horaFim, tipo);
+
+        try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+            ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
+        {
+            oout.writeObject(evento);
+            oout.flush();
+            Geral validacao = (Geral) oin.readObject();
+
+            if(validacao.getTipo() == Message_types.VALIDO)
+                return true;
+            if (validacao.getTipo() == Message_types.ERRO) {
+                MainCliente.menuSBP.set("ERRO");
+                socket.close();
+            }
+        } catch (IOException | ClassNotFoundException ignored) {
+        }
+        return false;
+    }
+
+    public boolean eliminarEvento(String nomeEvento) {
+        if(nomeEvento == null || nomeEvento.isBlank())
+            return false;
+
+        Consulta_Elimina_GeraCod_SubmeteCod_Evento evento =
+                new Consulta_Elimina_GeraCod_SubmeteCod_Evento(nomeEvento, Message_types.ELIMINAR_EVENTO);
+
+        try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+            ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
+        {
+            oout.writeObject(evento);
+            oout.flush();
+            Geral validacao = (Geral) oin.readObject();
+
+            if(validacao.getTipo() == Message_types.VALIDO)
+                return true;
+            if (validacao.getTipo() == Message_types.ERRO) {
+                MainCliente.menuSBP.set("ERRO");
+                socket.close();
+            }
+        }catch (IOException | ClassNotFoundException ignored) {
+        }
+        return false;
+    }
+
+    public String[] consultaEventos(String filtros) {
+        ArrayList<String> filtrosArray = new ArrayList<>();
+        Collections.addAll(filtrosArray, filtros.trim().split(" "));
+
+        ConsultaEventos_EliminaPresencas_InserePresencas interacao =
+                new ConsultaEventos_EliminaPresencas_InserePresencas(Message_types.CONSULTA_EVENTOS, filtros);
+
+        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+            oout.writeObject(interacao);
+            oout.flush();
+
+            ConsultaEventos_EliminaPresencas_InserePresencas lista = (ConsultaEventos_EliminaPresencas_InserePresencas) oin.readObject();
+
+            if(lista.getTipo() == Message_types.VALIDO)
+                return lista.getLista();
+            if (lista.getTipo() == Message_types.ERRO) {
+                MainCliente.menuSBP.set("ERRO");
+                socket.close();
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            return new String[]{"Erro na comunicação com o servidor"};
+        }
+        return new String[]{"Erro"};
+    }
+
+    public boolean eliminaInsere_Eventos(Message_types tipo, String filtros) {
+        //o nome do evento é o primeiro filtro
+        ArrayList<String> emails = new ArrayList<>();
+        for (String email : filtros.trim().split(" ")) {
+            if (verificaFormato(email))
+                emails.add(email);
+        }
+
+        ConsultaEventos_EliminaPresencas_InserePresencas interacao =
+                new ConsultaEventos_EliminaPresencas_InserePresencas(tipo, emails.toArray(new String[0]));
+
+        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+            oout.writeObject(interacao);
+            oout.flush();
+
+            Geral validacao = (Geral) oin.readObject();
+
+            if(validacao.getTipo() == Message_types.VALIDO)
+                return true;
+            if (validacao.getTipo() == Message_types.ERRO) {
+                MainCliente.menuSBP.set("ERRO");
+                socket.close();
+            }
+        }catch (IOException | ClassNotFoundException ignored) {
+        }
+        return false;
+    }
+
+    public String gerarCodPresenca(String evento) {
+        //nao é preciso validar o evento porque é um botão que vai buscar o nome do evento selecionado
+
+        Consulta_Elimina_GeraCod_SubmeteCod_Evento geraCod = new Consulta_Elimina_GeraCod_SubmeteCod_Evento(evento, Message_types.GERAR_COD);
+
+        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+            oout.writeObject(geraCod);
+            oout.flush();
+
+            Consulta_Elimina_GeraCod_SubmeteCod_Evento codigo = (Consulta_Elimina_GeraCod_SubmeteCod_Evento) oin.readObject();
+
+            if (codigo.getTipo() == Message_types.ERRO) {
+                MainCliente.menuSBP.set("ERRO");
+                socket.close();
+            }
+            return codigo.getNome();
+        }catch (IOException | ClassNotFoundException ignored) {
+            return "Erro";
+        }
+    }
+
+    public String[] consultaPresencasEvento(String nomeEvento){
+        //é um botão que vai buscar o nome do evento selecionado logo não é preciso validação
+        Consulta_Elimina_GeraCod_SubmeteCod_Evento consulta = new Consulta_Elimina_GeraCod_SubmeteCod_Evento(nomeEvento, Message_types.CONSULTA_PRES_EVENT);
+
+        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+            oout.writeObject(consulta);
+            oout.flush();
+
+            ConsultaEventos_EliminaPresencas_InserePresencas lista = (ConsultaEventos_EliminaPresencas_InserePresencas) oin.readObject();
+
+            if (lista.getTipo() == Message_types.ERRO) {
+                MainCliente.menuSBP.set("ERRO");
+                socket.close();
+            }
+            return lista.getLista();
+        }catch (IOException | ClassNotFoundException ignored) {
+            return new String[]{"Erro"};
+        }
+    }
 
 }
 
