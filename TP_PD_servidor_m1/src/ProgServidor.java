@@ -1,9 +1,7 @@
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Geral;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Login;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
-import pt.isec.pd.trabalhoPratico.model.classesComunication.RegistoEdicao_Cliente;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -11,7 +9,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 class ThreadCliente implements Runnable {
     Socket Client;
@@ -37,7 +34,7 @@ class ThreadCliente implements Runnable {
             try {
                 int availableBytes = in.available();
                 if(availableBytes>0)
-                    System.out.println("HA bytes");
+                    System.out.println("Ha bytes");
                 else
                     System.out.println("Nao ha");
             } catch (IOException e) {
@@ -51,6 +48,19 @@ class ThreadCliente implements Runnable {
                 Object object= in.readObject();
                 o=(Geral) object;
                 System.out.println(o.getTipo());
+
+                if(o.getTipo() == Message_types.LOGIN){
+
+                    try {
+                        // Pausa a execução da thread por 10 segundos, depois é que tenta ler os dados de login
+                        Thread.sleep(10000);
+                        Login loginData = (Login) in.readObject();
+
+                    } catch (InterruptedException e) {
+                        System.out.println("A thread foi interrompida durante o sleep.");
+                    }
+
+                }
             }
 
 
@@ -121,7 +131,7 @@ class ThreadCliente implements Runnable {
 
 public class ProgServidor {
     List<Socket> clients=new ArrayList<>();
-    public void serviço() {
+    public void servico() {
 
             try(ServerSocket socket=new ServerSocket(6001)) {
                 while (true){
@@ -130,6 +140,7 @@ public class ProgServidor {
                     clients.add(cli);// adiciona cliente conectado a lista de clientes
                     ThreadCliente th=new ThreadCliente(cli);
                     th.run();
+                    //new Thread(th).start();
                 }
                // clients.clear();
             } catch (IOException e) {
