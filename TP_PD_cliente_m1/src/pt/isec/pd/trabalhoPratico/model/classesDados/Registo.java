@@ -16,6 +16,6 @@ public class Registo {
     }
     @Override
     public String toString() {
-        return evento.toString() +  "Presenças:\n" + utilizador.toString();
+        return utilizador.toString();
     }
 }

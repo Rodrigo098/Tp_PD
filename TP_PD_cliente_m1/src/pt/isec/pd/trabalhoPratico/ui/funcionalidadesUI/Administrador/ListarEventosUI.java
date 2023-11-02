@@ -1,17 +1,17 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
+
+import java.util.ArrayList;
 
 public class ListarEventosUI extends BorderPane {
     protected static int eventoSelecionado;
-    private Button obterCSV;
-    private ListView listaEventos;
-    private ProgClienteManager progClienteManager;
+    private ListView<String> listaEventos;
+    private final ProgClienteManager progClienteManager;
 
     public ListarEventosUI(ProgClienteManager progClienteManager)  {
         this.progClienteManager = progClienteManager;
@@ -21,15 +21,13 @@ public class ListarEventosUI extends BorderPane {
     }
 
     private void createViews() {
-        obterCSV = new Button("Obter CSV");
-        listaEventos = new ListView<String>();
+        listaEventos = new ListView<>();
         extrairListaEventos();
 
         Label label = new Label("Lista de Eventos");
         label.getStyleClass().add("titulo");
-        VBox vBox = new VBox(listaEventos, obterCSV);
-        this.setCenter(vBox);
         this.setTop(label);
+        this.setCenter(listaEventos);
     }
 
     private void registerHandlers() {
@@ -38,9 +36,6 @@ public class ListarEventosUI extends BorderPane {
                 eventoSelecionado = listaEventos.getSelectionModel().getSelectedIndex();
                 ContaAdministradorUI.opcaoAdmin.set("EDITOR_EVENTOS");
             }
-        });
-        obterCSV.setOnAction(e -> {
-            progClienteManager.obterCSV();
         });
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
     }
@@ -52,8 +47,8 @@ public class ListarEventosUI extends BorderPane {
 
     private void extrairListaEventos() {
         listaEventos.getItems().clear();
-        for (String evento : progClienteManager.()) {
-            listaEventos.getItems().add(new String(evento));
+        for (String evento : progClienteManager.getListaEventos()) {
+            listaEventos.getItems().add(evento);
         }
     }
 }

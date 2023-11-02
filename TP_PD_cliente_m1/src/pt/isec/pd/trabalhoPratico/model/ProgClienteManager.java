@@ -32,19 +32,19 @@ public class ProgClienteManager {
         programaCliente.registar(nome, email, numIdentificacao, password, confPass);
     }
 
-    public boolean registarPresenca(String codigo){
+    public boolean marcarPresenca(String codigo){
         return programaCliente.registarPresenca(codigo);
     }
 
     public String[] consultarPresencasUti(){
         return programaCliente.consultarPresencasUti();
     }
-    public boolean obterFicheiroCSV(){
-        return programaCliente.obterFicheiroCSV();
+    public boolean obterCSV_Uti(){
+        return programaCliente.obterCSV_Uti();
     }
 
-    public boolean editarRegisto(String nome, String email, String numIdentificacao, String password, String confPass) {
-        return programaCliente.editarRegisto(nome, email, numIdentificacao, password, confPass);
+    public boolean editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
+        return programaCliente.editarRegisto(nome, numIdentificacao, password, confPass);
     }
 
     //ADMINISTRADOR:
@@ -52,29 +52,33 @@ public class ProgClienteManager {
         return programaCliente.criarEditar_Evento(nome, local, data, horaInicio, horaFim, tipo);
     }
 
-    public boolean eliminarEvento(String nomeEvento) {
-        return programaCliente.eliminarEvento(nomeEvento);
+    public boolean eliminarEvento(int indiceEvento) {
+        return programaCliente.eliminarEvento(indiceEvento);
     }
 
-    public boolean eliminaInsere_Eventos(Message_types tipo, String nome, String filtros) {
-        return programaCliente.eliminaInsere_Eventos(tipo, nome, filtros);
+    public boolean eliminaInsere_Eventos(Message_types tipo, int indiceEvento, String filtros) {
+        return programaCliente.eliminaInsere_Eventos(tipo, indiceEvento, filtros);
     }
 
-    public String gerarCodPresenca(String evento) {
-        return programaCliente.gerarCodPresenca(evento);
+    public String gerarCodPresenca(int indiceEvento) {
+        return programaCliente.gerarCodPresenca(indiceEvento);
     }
 
+    public ArrayList<String> getListaEventos() {
+        return programaCliente.getListaEventos();
+    }
     public ArrayList<String> consultaEventosFiltros(String nome, String local, String data, String horaInicio, String horaFim){
         return programaCliente.consultaEventosFiltros(nome, local, data, horaInicio, horaFim);
     }
 
-    public ArrayList<String> consultaPresencasEvento(String nomeEvento){
-        return programaCliente.consultaPresencasEvento(nomeEvento);
+    public ArrayList<String> consultaPresencasEvento(int indiceEvento){
+        return programaCliente.consultaPresencasEvento(indiceEvento);
     }
 
     public ArrayList<String> consultaEventosUtilizador(String utilizador){
         return programaCliente.consultaEventosUtilizador(utilizador);
     }
-    public void obterCSV() {
+    public void obterCSV_Admin() {
+        programaCliente.obterCSV_Admin();
     }
 }

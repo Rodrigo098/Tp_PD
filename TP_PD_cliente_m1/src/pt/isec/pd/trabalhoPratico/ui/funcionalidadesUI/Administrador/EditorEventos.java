@@ -2,14 +2,16 @@ package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class EditorEventos extends BorderPane {
-    private Button editarEvento, eliminarEvento, gerarCodigoPresencas, listarPresencas, obterPresencasCSV, eliminarPresencas, inserirPresencas;
-    private ProgClienteManager progClienteManager;
+    private Button editarEvento, eliminarEvento, gerarCodigoPresencas, obterPresencasCSV, eliminarPresencas, inserirPresencas;
+    private final ProgClienteManager progClienteManager;
+    private ListView<String> listaPresencas;
 
     public EditorEventos(ProgClienteManager progClienteManager){
         this.progClienteManager = progClienteManager;
@@ -19,7 +21,6 @@ public class EditorEventos extends BorderPane {
     }
 
     private void createViews() {
-
         gerarCodigoPresencas = new Button("Gerar Código");
         gerarCodigoPresencas.getStyleClass().add("eventoButton");
 
@@ -32,48 +33,41 @@ public class EditorEventos extends BorderPane {
         obterPresencasCSV = new Button("CSV");
         obterPresencasCSV.getStyleClass().add("eventoButton");
 
-        listarPresencas = new Button("Ver Presenças");
-        listarPresencas.getStyleClass().add("eventoButton");
-
         eliminarPresencas = new Button("Eliminar Presenças");
         eliminarPresencas.getStyleClass().add("eventoButton");
 
         inserirPresencas = new Button("Inserir Presenças");
         inserirPresencas.getStyleClass().add("eventoButton");
 
-        FlowPane flowPane = new FlowPane(gerarCodigoPresencas, editarEvento, eliminarEvento, listarPresencas, obterPresencasCSV, eliminarPresencas, inserirPresencas);
-
+        FlowPane flowPane = new FlowPane(gerarCodigoPresencas, editarEvento, eliminarEvento, obterPresencasCSV, eliminarPresencas, inserirPresencas);
         flowPane.setVgap(8);
         flowPane.setHgap(8);
 
-        Label label = new Label("Editor de Eventos");
-        label.getStyleClass().add("titulo");
+        listaPresencas = new ListView<>();
+        extrairListaPresencas();
 
-        VBox vBox = new VBox(new Label("Evento Selecionado: " + progClienteManager.obterEvento(ListarEventosUI.eventoSelecionado)), flowPane);
-
-        this.setCenter(vBox);
-        this.setTop(label);
+        this.setCenter(listaPresencas);
+        this.setBottom(flowPane);
     }
 
     private void registerHandlers() {
         gerarCodigoPresencas.setOnAction(e -> {
-            //progClienteManager.gerarCodigoPresencas(ListarEventosUI.eventoSelecionado);
+            progClienteManager.gerarCodPresenca(ListarEventosUI.eventoSelecionado);
         });
         editarEvento.setOnAction(e -> {
-            //progClienteManager.editarEvento(ListarEventosUI.eventoSelecionado);
+            //faz aparecer textfield e butão
         });
         eliminarEvento.setOnAction(e -> {
-            //progClienteManager.eliminarEvento(ListarEventosUI.eventoSelecionado);
+            progClienteManager.eliminarEvento(ListarEventosUI.eventoSelecionado);
         });
-        listarPresencas.setOnAction(e -> {});
         obterPresencasCSV.setOnAction(e -> {
-            //progClienteManager.obterPresencasCSV(ListarEventosUI.eventoSelecionado);
+            progClienteManager.obterCSV_Admin();
         });
         eliminarPresencas.setOnAction(e -> {
-            //progClienteManager.eliminarPresencas(ListarEventosUI.eventoSelecionado);
+            //faz aparecer textfield e botão
         });
         inserirPresencas.setOnAction(e -> {
-            //progClienteManager.inserirPresencas(presencasAInserir.getText(), ListarEventosUI.eventoSelecionado);
+            //faz aparecer textfield e botão
         });
 
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
@@ -81,5 +75,12 @@ public class EditorEventos extends BorderPane {
 
     private void update() {
         this.setVisible(ContaAdministradorUI.opcaoAdmin.get().equals("EDITOR_EVENTOS"));
+    }
+
+    private void extrairListaPresencas() {
+        listaPresencas.getItems().clear();
+        for (String evento : progClienteManager.consultaPresencasEvento(ListarEventosUI.eventoSelecionado)) {
+            listaPresencas.getItems().add(evento);
+        }
     }
 }

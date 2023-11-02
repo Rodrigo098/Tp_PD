@@ -12,8 +12,8 @@ BorderPane {
     -fx-background-color: rgb(195, 215, 214);
     -fx-alignment: center;
 }
-HBox {
-    -fx-spacing: 40;
+HBox {/**/
+    -fx-spacing: 10;
     -fx-padding: 10;
     -fx-alignment: center;
 }
@@ -22,8 +22,8 @@ HBox {
     -fx-effect: dropshadow( gaussian , rgb(0, 0, 0) , 20,0,0,1 );
     -fx-border-width: 3;
     -fx-border-radius: 25px;
-    -fx-spacing: 15;
-    -fx-padding: 20;
+    -fx-spacing: 10;
+    -fx-padding: 10;
     -fx-alignment: center;
 }
 Button, .titulo {

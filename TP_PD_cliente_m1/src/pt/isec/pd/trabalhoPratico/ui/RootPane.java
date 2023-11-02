@@ -43,6 +43,7 @@ public class RootPane extends BorderPane {
                 new ContaUtilizadorUI(progClienteManager),
                 new ContaAdministradorUI(progClienteManager)
         );
+        stackPane.setMaxHeight(400);
         this.setCenter(stackPane);
     }
 
