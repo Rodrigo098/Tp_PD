@@ -44,7 +44,7 @@ public class EditorEventos extends BorderPane {
         flowPane.setHgap(8);
 
         listaPresencas = new ListView<>();
-        extrairListaPresencas();
+        //extrairListaPresencas();
 
         this.setCenter(listaPresencas);
         this.setBottom(flowPane);

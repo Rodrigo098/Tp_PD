@@ -1,5 +1,9 @@
-import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
+import pt.isec.pd.trabalhoPratico.model.classesComunication.Geral;
+import pt.isec.pd.trabalhoPratico.model.classesComunication.Login;
+import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
+import pt.isec.pd.trabalhoPratico.model.classesComunication.RegistoEdicao_Cliente;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -7,6 +11,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 class ThreadCliente implements Runnable {
     Socket Client;
@@ -27,7 +32,30 @@ class ThreadCliente implements Runnable {
             ObjectInputStream in=new ObjectInputStream(Client.getInputStream())
         ) {
             //Quando conecta a primeira vez vai guardar o email
-            Geral o =(Geral) in.readObject();
+
+
+            try {
+                int availableBytes = in.available();
+                if(availableBytes>0)
+                    System.out.println("HA bytes");
+                else
+                    System.out.println("Nao ha");
+            } catch (IOException e) {
+                System.out.println("The stream is closed");
+                e.getCause().printStackTrace();
+            }
+
+            Geral o=null;
+            while (!flagStop) {
+                System.out.println("O socket ta fechado :"+Client.isClosed());
+                Object object= in.readObject();
+                o=(Geral) object;
+                System.out.println(o.getTipo());
+            }
+
+
+
+        /*
             if(o.getTipo() == Message_types.LOGIN){// para descobrir qual a classe estava a pensar em algo para o processamento depois dos dados
                 Login aux = (Login) o;
                 String password=aux.getPassword();
@@ -79,8 +107,11 @@ class ThreadCliente implements Runnable {
             }
             Client.close();
 
+         */
+
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            System.out.println(Client.isClosed());
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -92,9 +123,10 @@ public class ProgServidor {
     List<Socket> clients=new ArrayList<>();
     public void serviço() {
 
-            try(ServerSocket socket=new ServerSocket()) {
+            try(ServerSocket socket=new ServerSocket(6001)) {
                 while (true){
                     Socket cli=socket.accept();// aceita clientes
+                    cli.setSoTimeout(10000);
                     clients.add(cli);// adiciona cliente conectado a lista de clientes
                     ThreadCliente th=new ThreadCliente(cli);
                     th.run();

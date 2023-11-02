@@ -1,4 +1,4 @@
-package tp.isec.pd.trabalhoPratico.model;
+package pt.isec.pd.trabalhoPratico.model.classesComunication;
 
 import java.time.LocalTime;
 import java.util.Date;

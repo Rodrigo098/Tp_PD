@@ -1,4 +1,4 @@
-package tp.isec.pd.trabalhoPratico.model;
+package pt.isec.pd.trabalhoPratico.model.classesComunication;
 
 public class ConsultaEventos_EliminaPresencas_InserePresencas extends Geral{// podiamos usar esta classe tmb para inserir presenças
     private  String []lista;

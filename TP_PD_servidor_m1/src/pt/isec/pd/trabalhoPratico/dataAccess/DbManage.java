@@ -1,4 +1,4 @@
-package tp.isec.pd.trabalhoPratico.dataAccess;
+package pt.isec.pd.trabalhoPratico.dataAccess;
 
 import java.sql.*;
 

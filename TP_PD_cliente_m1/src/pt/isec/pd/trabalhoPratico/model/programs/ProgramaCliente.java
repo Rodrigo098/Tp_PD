@@ -55,11 +55,14 @@ public class ProgramaCliente {
     private final ArrayList<Evento> listaEventos;
     private final ArrayList<Registo> listaRegistos;
     private final ArrayList<String> listaResultados;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
 
     public ProgramaCliente(){
         listaEventos = new ArrayList<>();
         listaRegistos = new ArrayList<>();
         listaResultados = new ArrayList<>();
+
 
         //teste
         /*Evento e = new Evento("ola", "aqui", "hoje", "agora", "depois");
@@ -84,6 +87,15 @@ public class ProgramaCliente {
 
             try (Socket socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)))) {
                 this.socket = socket;
+                in=new ObjectInputStream(socket.getInputStream());
+                out=new ObjectOutputStream(socket.getOutputStream());
+
+                out.writeObject(new Geral(Message_types.LOGIN));
+                out.flush();
+
+
+
+
                 pontoSituacao = new Pair<>(true, "Conexão bem sucedida");
 
             } catch (IllegalArgumentException e) {
