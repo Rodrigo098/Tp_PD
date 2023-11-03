@@ -85,13 +85,15 @@ public class ProgramaCliente {
         if(list.size() == 2) {
 
 
-            try (Socket socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)))) {
+            try  {
+                Socket socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)));
                 this.socket = socket;
+                System.out.println("Aqui nao");
                 in=new ObjectInputStream(socket.getInputStream());
                 out=new ObjectOutputStream(socket.getOutputStream());
 
-                out.writeObject(new Geral(Message_types.LOGIN));
-                out.flush();
+                System.out.println("Chegou aqui");
+
 
 
 
@@ -114,18 +116,18 @@ public class ProgramaCliente {
     }
 
     public void login(String email, String password) {
-        if(password == null || verificaFormato(email))
-            return;
+        //if(password == null || verificaFormato(email))
+          //  return;
 
         Login dadosLogin = new Login(email, password);
 
-        try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-            ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())){
+        try{
 
-            oout.writeObject(dadosLogin);
-            oout.flush();
+            out.writeObject(dadosLogin);
+            out.flush();
+            System.out.println("FEz isti");
 
-            Geral validacao = (Geral) oin.readObject();
+            Geral validacao = (Geral) in.readObject();
 
             if(validacao == null){
                 MainCliente.menuSBP.set("ERRO");

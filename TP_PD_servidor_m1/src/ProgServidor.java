@@ -1,6 +1,7 @@
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Geral;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Login;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
+import pt.isec.pd.trabalhoPratico.model.classesComunication.RegistoEdicao_Cliente;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -29,51 +30,19 @@ class ThreadCliente implements Runnable {
             ObjectInputStream in=new ObjectInputStream(Client.getInputStream())
         ) {
             //Quando conecta a primeira vez vai guardar o email
+            out.flush();
 
 
-            try {
-                int availableBytes = in.available();
-                if(availableBytes>0)
-                    System.out.println("Ha bytes");
-                else
-                    System.out.println("Nao ha");
-            } catch (IOException e) {
-                System.out.println("The stream is closed");
-                e.getCause().printStackTrace();
-            }
-
-            Geral o=null;
-            while (!flagStop) {
-                System.out.println("O socket ta fechado :"+Client.isClosed());
-                Object object= in.readObject();
-                o=(Geral) object;
-                System.out.println(o.getTipo());
-
-                if(o.getTipo() == Message_types.LOGIN){
-
-                    try {
-                        // Pausa a execução da thread por 10 segundos, depois é que tenta ler os dados de login
-                        Thread.sleep(10000);
-                        Login loginData = (Login) in.readObject();
-
-                    } catch (InterruptedException e) {
-                        System.out.println("A thread foi interrompida durante o sleep.");
-                    }
-
-                }
-            }
-
-
-
-        /*
+            Geral o=(Geral) in.readObject();
             if(o.getTipo() == Message_types.LOGIN){// para descobrir qual a classe estava a pensar em algo para o processamento depois dos dados
                 Login aux = (Login) o;
                 String password=aux.getPassword();
                 email=aux.getEmail();
+                System.out.println(email);
                 // aqui verifico se é o admin e ponho o boolean a true ou false
             } else if (o.getTipo() == Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
 
-                RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente) o;
+                RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente)o;
                 email= aux.getEmail();
                 // A implementar
             }else{
@@ -86,7 +55,7 @@ class ThreadCliente implements Runnable {
                     switch (message.getTipo()) {
                         case EDITAR_REGISTO ->{
                             out.writeObject("Altera dados na database");
-                            RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente) message;
+
                         }
                         case SUBMICAO_COD -> out.writeObject("Insere dados na database");
                         case CSV_UTILIZADOR -> {}
@@ -117,7 +86,7 @@ class ThreadCliente implements Runnable {
             }
             Client.close();
 
-         */
+
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -136,7 +105,7 @@ public class ProgServidor {
             try(ServerSocket socket=new ServerSocket(6001)) {
                 while (true){
                     Socket cli=socket.accept();// aceita clientes
-                    cli.setSoTimeout(10000);
+                    //cli.setSoTimeout(10000);
                     clients.add(cli);// adiciona cliente conectado a lista de clientes
                     ThreadCliente th=new ThreadCliente(cli);
                     th.run();

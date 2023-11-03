@@ -34,6 +34,7 @@ public class MainClienteJFX extends Application {
         //-----------------------------------
         Pair<Boolean, String> conexao = clienteManager.criaSocket(list);
         //if(conexao.getKey()) {
+        System.out.println("TEVE aqui");
             RootPane root = new RootPane(clienteManager);
             Scene scene = new Scene(root, 700, 400);
             String css = this.getClass().getResource("css/estilos.css").toExternalForm();
@@ -41,6 +42,7 @@ public class MainClienteJFX extends Application {
             stage.setMaxHeight(600);
             stage.setScene(scene);
             stage.setTitle(title);
+
             stage.show();
         //}
         /*else{

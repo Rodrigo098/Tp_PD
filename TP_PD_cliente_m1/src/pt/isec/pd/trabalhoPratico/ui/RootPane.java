@@ -22,6 +22,7 @@ public class RootPane extends BorderPane {
         this.progClienteManager = progClienteManager;
         createViews();
         registerHandlers();
+
         update();
     }
 
@@ -40,8 +41,8 @@ public class RootPane extends BorderPane {
         StackPane stackPane = new StackPane(
                 new BorderPane(vBox),
                 new RegistoUtilizadorUI(progClienteManager),
-                new ContaUtilizadorUI(progClienteManager),
-                new ContaAdministradorUI(progClienteManager)
+                //new ContaUtilizadorUI(progClienteManager)
+               new ContaAdministradorUI(progClienteManager)
         );
         stackPane.setMaxHeight(400);
         this.setCenter(stackPane);
