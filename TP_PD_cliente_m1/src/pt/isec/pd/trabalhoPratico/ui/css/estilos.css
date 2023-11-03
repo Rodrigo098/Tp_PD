@@ -13,6 +13,7 @@ Button {
     -fx-font: 18px "Arial Bold";
     -fx-padding: 10 40;
     -fx-text-fill: white;
+    -fx-width: 100%;
     -fx-background-color: #455A64;
     -fx-background-radius: 20px;
     -fx-effect: dropshadow( gaussian , rgb(0, 0, 0) , 20,0,0,1 );
@@ -56,10 +57,15 @@ HBox {
     -fx-text-fill: #455A64;
     -fx-background-color: transparent;
     -fx-underline: true;
+    -fx-effect: dropshadow( gaussian , rgb(0, 0, 0) , 20, 0, 1, 1);
 }
 
 BorderPane {
-    -fx-padding: 100;
-    -fx-background-color: rgb(195, 215, 214);
+    -fx-padding: 50;
+    /*-fx-background-color: rgb(195, 215, 214);*/
     -fx-alignment: center;
+}
+
+.entradaPane {
+    -fx-background-color: radial-gradient(focus-angle 30deg, focus-distance 30%, center 25% 25%, radius 80%, reflect, #BBDEFB, 80CBC4 75%, #FFF176); /*linear-gradient(to center,-color-amber, transparent);*/
 }

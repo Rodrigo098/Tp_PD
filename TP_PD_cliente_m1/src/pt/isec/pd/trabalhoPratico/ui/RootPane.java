@@ -48,6 +48,7 @@ public class RootPane extends BorderPane {
                 new ContaUtilizadorUI(progClienteManager),
                 new ContaAdministradorUI(progClienteManager)
         );
+        this.getStyleClass().add("entradaPane");
         this.setCenter(stackPane);
     }
 
