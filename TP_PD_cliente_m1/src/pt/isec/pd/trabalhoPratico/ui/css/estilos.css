@@ -65,7 +65,9 @@ HBox {
     -fx-background-color: rgb(255,255,255);
     -fx-effect: innershadow( gaussian , rgb(0, 0, 0) , 20,0,1,1 );
 }
-
+.contaUtilizador {
+    -fx-background-color: radial-gradient(focus-angle 10deg, focus-distance 100%, center 100% 0%, radius 80%, repeat, ##DCE775, #B2EBF2, white );
+}
 .titulo {
     -fx-background-color: #90A4AE;
     -fx-effect: dropshadow( gaussian , rgb(1, 1, 1) , 20,0,0,1 );

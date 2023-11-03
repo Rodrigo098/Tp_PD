@@ -53,7 +53,7 @@ public class ContaUtilizadorUI extends BorderPane {
         VBox centralNode = new VBox(tipoConta, stackPane);
         centralNode.setPadding(new Insets(20));
 
-        this.setStyle("-fx-background-color: radial-gradient(focus-angle 10deg, focus-distance 100%, center 100% 0 %, radius 40%, repeat, #78909C, #B2DFDB , #E1F5FE );");
+        this.getStyleClass().add("contaUtilizador");
         this.setCenter(centralNode);
         this.setFocusTraversable(true);
     }
