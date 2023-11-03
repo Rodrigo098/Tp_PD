@@ -62,10 +62,10 @@ public class ProgramaCliente {
         listaResultados = new ArrayList<>();
 
         //teste
-        /*Evento e = new Evento("ola", "aqui", "hoje", "agora", "depois");
+        Evento e = new Evento("ola", "aqui", "hoje", "agora", "depois");
         listaEventos.add(e);
         listaRegistos.add(new Registo(e, new Utilizador("isa", "isa@isec.pt", "11111")));
-        listaResultados.add(e.toString());*/
+        listaResultados.add(e.toString());
     }
 
     //ver se é email:
@@ -91,9 +91,9 @@ public class ProgramaCliente {
             } catch (NullPointerException e) {
                 pontoSituacao = new Pair<>(false, "Introduziu um endereço inválido.");
             } catch (IOException e) {
-                //this.socket = new Socket();
-                //pontoSituacao = new Pair<>(true, "Ocorreu uma exceção I/O na criação do socket.");
-                pontoSituacao = new Pair<>(false, "Ocorreu uma exceção I/O na criação do socket.");
+                this.socket = new Socket();
+                pontoSituacao = new Pair<>(true, "Ocorreu uma exceção I/O na criação do socket.");
+                //pontoSituacao = new Pair<>(false, "Ocorreu uma exceção I/O na criação do socket.");
             }
         }
         else
@@ -102,9 +102,9 @@ public class ProgramaCliente {
     }
 
     public void login(String email, String password) {
-        if(password == null || verificaFormato(email))
+        if(password == null || password.isBlank() || verificaFormato(email))
             return;
-
+/*
         Login dadosLogin = new Login(email, password);
 
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
@@ -141,9 +141,9 @@ public class ProgramaCliente {
             }
         }catch (IOException | ClassNotFoundException ignored) {
             MainCliente.menuSBP.set("ERRO");
-        }
-        //MainCliente.clienteSBP.set("ADMINISTRADOR");
-        //MainCliente.menuSBP.set("CONTA");
+        }*/
+        MainCliente.clienteSBP.set("UTILIZADOR");
+        MainCliente.menuSBP.set("CONTA");
     }
     public void logout() {
         Geral logout = new Geral(Message_types.LOGOUT);

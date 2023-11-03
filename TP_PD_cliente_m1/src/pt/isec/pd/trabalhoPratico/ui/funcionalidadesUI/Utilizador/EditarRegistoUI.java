@@ -37,6 +37,7 @@ public class EditarRegistoUI extends BorderPane {
                              new Label("Número de Identificação:"), numID,
                              new Label("Palavra passe:"), password, confPassword);
 
+        this.setStyle("-fx-background-color: #E3EFF6;");
         this.setCenter(vBox);
         this.setBottom(new HBox(confirmar, cancelar));
     }

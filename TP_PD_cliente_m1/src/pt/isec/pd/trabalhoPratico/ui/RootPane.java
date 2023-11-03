@@ -1,8 +1,12 @@
 package pt.isec.pd.trabalhoPratico.ui;
 
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.effect.BlurType;
+import javafx.scene.effect.InnerShadow;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
@@ -35,7 +39,8 @@ public class RootPane extends BorderPane {
         registar = new Text("Registar");
         registar.getStyleClass().add("links");
 
-        VBox vBox = new VBox(username, password, login, registar);
+        VBox vBox = new VBox(new HBox(new Text("Nome de utilizador: "), username), new HBox(new Text("Password: "), password), login, registar);
+        vBox.getStyleClass().add("sombreamentoBox");
 
         StackPane stackPane = new StackPane(
                 new BorderPane(vBox),
@@ -43,7 +48,6 @@ public class RootPane extends BorderPane {
                 new ContaUtilizadorUI(progClienteManager),
                 new ContaAdministradorUI(progClienteManager)
         );
-        stackPane.setMaxHeight(400);
         this.setCenter(stackPane);
     }
 

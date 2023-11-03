@@ -2,50 +2,47 @@
     -fx-font-family: "Arial";
     -fx-font-size: 15px;
 }
+
 Label {
     -fx-padding: 10 40;
     -fx-background-color: rgba( 255, 255, 255, 0.8);
-    -fx-background-radius: 20px;
+    -fx-background-radius: 25px;
 }
-BorderPane {
-    -fx-padding: 30;
-    -fx-background-color: rgb(195, 215, 214);
-    -fx-alignment: center;
-}
-HBox {/**/
-    -fx-spacing: 10;
-    -fx-padding: 10;
-    -fx-alignment: center;
-}
-.conteudo, VBox {
-    -fx-border-color: #455A64;
-    -fx-effect: dropshadow( gaussian , rgb(0, 0, 0) , 20,0,0,1 );
-    -fx-border-width: 3;
-    -fx-border-radius: 25px;
-    -fx-spacing: 10;
-    -fx-padding: 10;
-    -fx-alignment: center;
-}
-Button, .titulo {
-    -fx-font: 20px "Arial";
+
+Button {
+    -fx-font: 18px "Arial Bold";
     -fx-padding: 10 40;
     -fx-text-fill: white;
     -fx-background-color: #455A64;
     -fx-background-radius: 20px;
-    -fx-effect: innershadow( gaussian , rgba(43, 51, 55, 0.5) , 15,0,0,0 );
-}
-.titulo {
-    -fx-background-color: #90A4AE;
-}
-
-.btnLogout {
-    -fx-font: 15px "Arial";
-    -fx-padding: 10;
-    -fx-background-color: #BF360C;
+    -fx-effect: dropshadow( gaussian , rgb(0, 0, 0) , 20,0,0,1 );
 }
 
 FlowPane {
     -fx-alignment: center;
+}
+
+.sombreamentoBox {
+    -fx-spacing: 20px;
+    -fx-padding: 15;
+    -fx-background-radius: 25px;
+      /*
+    -fx-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    -fx-border-color: #455A64;*/
+    -fx-alignment: center;
+}
+
+HBox {
+    -fx-alignment: center;
+}
+
+.titulo {
+    -fx-background-color: #90A4AE;
+    -fx-effect: dropshadow( gaussian , rgb(1, 1, 1) , 20,0,0,1 );
+}
+
+.btnLogout {
+    -fx-background-color: #BF360C;
 }
 
 .eventoButton {
@@ -55,8 +52,14 @@ FlowPane {
     -fx-background-color: white;
 }
 .links{
-    -fx-font: 12px "Arial";
+    -fx-font: 15px "Arial";
     -fx-text-fill: #455A64;
     -fx-background-color: transparent;
     -fx-underline: true;
+}
+
+BorderPane {
+    -fx-padding: 100;
+    -fx-background-color: rgb(195, 215, 214);
+    -fx-alignment: center;
 }

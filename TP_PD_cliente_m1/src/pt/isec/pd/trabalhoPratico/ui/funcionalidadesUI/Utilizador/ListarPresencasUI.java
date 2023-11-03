@@ -22,6 +22,7 @@ public class ListarPresencasUI extends BorderPane {
         extrairListaEventos();
         gerarCSV = new Button("gerar CSV");
 
+        this.setStyle("-fx-background-color: #E8EFF6;");
         this.setCenter(lista);
         this.setBottom(gerarCSV);
     }
@@ -35,7 +36,7 @@ public class ListarPresencasUI extends BorderPane {
 
     private void update() {
         this.setVisible(ContaUtilizadorUI.opcaoUti.get().equals("LISTAR_PRESENCAS"));
-        extrairListaEventos();
+        if(this.isVisible()) extrairListaEventos();
     }
 
     private void extrairListaEventos() {
