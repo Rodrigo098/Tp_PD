@@ -81,7 +81,9 @@ public class ProgramaCliente {
 
         if(list.size() == 2) {
 
-
+            this.socket = new Socket();
+            pontoSituacao = new Pair<>(true, "Ocorreu uma exceção I/O na criação do socket.");
+/*
             try (Socket socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)))) {
                 this.socket = socket;
                 pontoSituacao = new Pair<>(true, "Conexão bem sucedida");
@@ -93,8 +95,8 @@ public class ProgramaCliente {
             } catch (IOException e) {
                 this.socket = new Socket();
                 pontoSituacao = new Pair<>(true, "Ocorreu uma exceção I/O na criação do socket.");
-                //pontoSituacao = new Pair<>(false, "Ocorreu uma exceção I/O na criação do socket.");
-            }
+                pontoSituacao = new Pair<>(false, "Ocorreu uma exceção I/O na criação do socket.");
+            }*/
         }
         else
             pontoSituacao = new Pair<>(false, "Não foram introduzidos dados suficientes como argumento.");
