@@ -2,6 +2,7 @@ package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
@@ -30,21 +31,22 @@ public class ContaUtilizadorUI extends BorderPane {
     private void createViews() {
         voltar = new Button("Voltar");
         listaPresencas = new Button("Ver Lista de Presenças ");
-        marcarPresenca = new Button("Registar Presença");
-        editarRegisto = new Button("Editar Registo");
+        marcarPresenca = new Button("   Registar Presença   ");
+        editarRegisto = new Button( "    Editar  Registo    ");
         logout = new Button("Logout");
         logout.getStyleClass().add("btnLogout");
 
         VBox vBox0 = new VBox(listaPresencas, marcarPresenca, editarRegisto);
         vBox0.setSpacing(10);
+        vBox0.setMaxWidth(300);
 
         VBox vBox = new VBox(vBox0, logout);
-        vBox.setMaxSize(300,100);
+        vBox.setMaxSize(400,100);
         vBox.getStyleClass().add("menuBotoes");
 
         funcionalidades =  new HBox(voltar, new StackPane(new ListarPresencasUI(progClienteManager), new MarcarPresencaUI(progClienteManager), new EditarRegistoUI(progClienteManager)));
         funcionalidades.setFocusTraversable(true);
-        //funcionalidades.getStyleClass().add("sombreamentoBox");
+        funcionalidades.getStyleClass().add("funcionalidades");
 
         StackPane stackPane = new StackPane(vBox, funcionalidades);
 

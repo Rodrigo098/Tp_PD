@@ -1,6 +1,7 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador;
 
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
@@ -22,7 +23,6 @@ public class ListarPresencasUI extends BorderPane {
         extrairListaEventos();
         gerarCSV = new Button("gerar CSV");
 
-        this.setStyle("-fx-background-color: #E8EFF6;");
         this.setCenter(lista);
         this.setBottom(gerarCSV);
     }

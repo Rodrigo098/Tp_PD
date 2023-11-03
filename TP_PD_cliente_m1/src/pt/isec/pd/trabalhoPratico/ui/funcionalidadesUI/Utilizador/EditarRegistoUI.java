@@ -1,5 +1,6 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador;
 
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -37,7 +38,6 @@ public class EditarRegistoUI extends BorderPane {
                              new Label("Número de Identificação:"), numID,
                              new Label("Palavra passe:"), password, confPassword);
 
-        this.setStyle("-fx-background-color: #E3EFF6;");
         this.setCenter(vBox);
         this.setBottom(new HBox(confirmar, cancelar));
     }

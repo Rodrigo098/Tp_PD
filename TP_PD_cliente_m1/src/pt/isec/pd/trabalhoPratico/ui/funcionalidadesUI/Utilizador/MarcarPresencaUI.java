@@ -29,7 +29,6 @@ public class MarcarPresencaUI extends BorderPane {
 
         VBox vBox = new VBox(new Label("Código do evento:"), codigo);
 
-        this.setStyle("-fx-background-color: #E8aFF6;");
         this.setCenter(vBox);
         this.setBottom(new HBox(submeter, cancelar));
     }
