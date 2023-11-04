@@ -32,7 +32,7 @@ public class EventoUI extends VBox {
     }
 
     private void registerHandlers() {
-        this.setVisible(EditorEventosUI.opcaoEdicao.get().equals("EDITAR"));
+        this.setVisible(EditorEventosUI.opcaoEdicao.get().equals("EDITAR") || ContaAdministradorUI.opcaoAdmin.get().equals("CRIAR_EVENTO"));
     }
 
     private void update(){}
