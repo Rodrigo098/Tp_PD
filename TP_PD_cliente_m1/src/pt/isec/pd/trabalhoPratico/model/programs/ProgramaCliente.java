@@ -125,9 +125,8 @@ public class ProgramaCliente {
 
             out.writeObject(dadosLogin);
             out.flush();
-            System.out.println("FEz isti");
 
-            Geral validacao = (Geral) in.readObject();
+          Geral validacao = (Geral) in.readObject();
 
             if(validacao == null){
                 MainCliente.menuSBP.set("ERRO");

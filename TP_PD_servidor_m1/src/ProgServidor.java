@@ -30,7 +30,7 @@ class ThreadCliente implements Runnable {
             ObjectInputStream in=new ObjectInputStream(Client.getInputStream())
         ) {
             //Quando conecta a primeira vez vai guardar o email
-            out.flush();
+
 
 
             Geral o=(Geral) in.readObject();
@@ -39,6 +39,7 @@ class ThreadCliente implements Runnable {
                 String password=aux.getPassword();
                 email=aux.getEmail();
                 System.out.println(email);
+                out.writeObject(new Geral(Message_types.ADMINISTRADOR));
                 // aqui verifico se é o admin e ponho o boolean a true ou false
             } else if (o.getTipo() == Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
 
