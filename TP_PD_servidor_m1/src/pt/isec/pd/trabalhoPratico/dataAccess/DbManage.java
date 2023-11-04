@@ -4,6 +4,8 @@ import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DbManage {
     private static final String dbAdress = "databasePD.db";
@@ -61,13 +63,9 @@ public class DbManage {
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
             Statement statement = connection.createStatement()){
-          //  int num_est=Integer.parseInt(user.getNumIdentificacao());
-            //Somente para teste de ligação a base de dados
-            /*String createEntryQuery = "INSERT INTO Codigo_Registo (n_codigo_registo,nome_evento) VALUES ('"
-                    + codigo_registo+"','" + nome_evento+ "')";*/
-            //String mail= user.getEmail();
             String GetQuery = "SELECT * FROM Utilizador where email='" + user + "';";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
             ResultSet rs=statement.executeQuery(GetQuery);
+
 
             if(!rs.next())
             {
@@ -99,6 +97,7 @@ public class DbManage {
             if(!rs.next())
             {
                 System.out.println("Couldn't find the value");
+
                 return false;
             }
             else{
@@ -119,8 +118,41 @@ public class DbManage {
         }
 
     }
-    public static boolean submitcod(String codigo,String nome_evento){
+    public static boolean submitcod(String codigo,String nome_evento,String emailuser){
+        try(Connection connection = DriverManager.getConnection(dbUrl);
+
+            Statement statement = connection.createStatement()){
+
+
+            String GetQuery = "SELECT * FROM Codigo_Registo where nome_evento='" + nome_evento + "';";
+            ResultSet rs=statement.executeQuery(GetQuery);
+            int idassiste=0;//eu nao sei o que por aqui;
+            if(!rs.next())
+            {
+                if(rs.getInt("n_codigo_registo")==Integer.parseInt(codigo)){
+                    String createEntryQuery = "INSERT INTO Assiste (assiste_id,nome_evento,email) VALUES ('"
+                            + idassiste+"','" + nome_evento+"','" +emailuser+"')";// qual o valor que é suposto colocar no idassiste??
+
+                    if(statement.executeUpdate(createEntryQuery)<1){
+                        System.out.println("Entry insertion or update failed");
+                        return true;
+                    }
+                    else{
+                        System.out.println("Entry insertion succeeded");
+                        return false;
+                    }
+
+                }
+            }
+            else{
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
         return false;
+
     }
     public static boolean CriaEvento(Evento evento){
         try(Connection connection = DriverManager.getConnection(dbUrl);
@@ -147,6 +179,45 @@ public class DbManage {
         }
 
 
+    }
+    public static String[] Presencas_user(String nome_utilizador){
+        List<String> res=new ArrayList<>();
+        try(Connection connection = DriverManager.getConnection(dbUrl);
+
+            Statement statement = connection.createStatement()){
+            String GetQuery = "SELECT * FROM Assiste where email='" + nome_utilizador + "';";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
+            ResultSet rs=statement.executeQuery(GetQuery);
+
+
+            while (rs.next()){
+             res.add(   rs.getString("nome_evento"));
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        String []devolve= (String[]) res.toArray();
+
+        return devolve;
+
+    }
+    public static String[] Presencas_evento(String nome_evento){
+        List<String> res=new ArrayList<>();
+        try(Connection connection = DriverManager.getConnection(dbUrl);
+
+            Statement statement = connection.createStatement()){
+            String GetQuery = "SELECT * FROM Assiste where email='" + nome_evento + "';";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
+            ResultSet rs=statement.executeQuery(GetQuery);
+
+
+            while (rs.next()){
+                res.add(   rs.getString("email"));
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        String []devolve= (String[]) res.toArray();
+
+        return devolve;
     }
 
 

@@ -1,8 +1,5 @@
 import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
-import pt.isec.pd.trabalhoPratico.model.classesComunication.Geral;
-import pt.isec.pd.trabalhoPratico.model.classesComunication.Login;
-import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
-import pt.isec.pd.trabalhoPratico.model.classesComunication.RegistoEdicao_Cliente;
+import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
 import java.io.IOException;
@@ -90,8 +87,16 @@ class ThreadCliente implements Runnable {
                         case ELIMINAR_EVENTO -> {}
                         case INSERE_PRES -> {}
                         case ELIMINA_PRES -> {}
-                        case CONSULTA_PRES_EVENT -> {}
-                        case CONSULT_EVENT_UTILIZADOR -> {}
+                        case CONSULTA_PRES_EVENT -> {
+                            Consulta_Elimina_GeraCod_SubmeteCod_Evento aux=(Consulta_Elimina_GeraCod_SubmeteCod_Evento)message;
+                            String []res= DbManage.Presencas_evento(aux.getNome());
+                            out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,res));
+                        }
+                        case CONSULT_EVENT_UTILIZADOR -> {
+                           Consulta_Elimina_GeraCod_SubmeteCod_Evento aux=(Consulta_Elimina_GeraCod_SubmeteCod_Evento)message;
+                           String []res= DbManage.Presencas_user(aux.getNome());
+                            out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,res));
+                        }
                         case CSV_ADMINISTRADOR -> {}
                         case LOGOUT ->{break;}
                         default -> out.writeObject("Operacao invalida");
