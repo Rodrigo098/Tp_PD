@@ -1,16 +1,16 @@
 package pt.isec.pd.trabalhoPratico.model.classesComunication;
 
-import pt.isec.pd.trabalhoPratico.model.classesDados.Registo;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Presenca;
 
 public class RecebeListaRegistos extends Geral{
-    private final Registo[] lista;
+    private final Presenca[] lista;
 
-    public RecebeListaRegistos(Message_types tipo, Registo ... lista) {
+    public RecebeListaRegistos(Message_types tipo, Presenca... lista) {
         super(tipo);
         this.lista = lista;
     }
 
-    public Registo[] getLista() {
+    public Presenca[] getLista() {
         return lista;
     }
 }

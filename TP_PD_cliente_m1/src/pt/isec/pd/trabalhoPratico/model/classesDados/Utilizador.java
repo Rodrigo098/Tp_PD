@@ -1,13 +1,6 @@
 package pt.isec.pd.trabalhoPratico.model.classesDados;
 
-public class Utilizador {
-    private final String nome, email, numIdentificacao;
-
-    public Utilizador(String nome, String email, String numIdentificacao) {
-        this.nome = nome;
-        this.email = email;
-        this.numIdentificacao = numIdentificacao;
-    }
+public record Utilizador(String nome, String email, String numIdentificacao) {
     public String getNome() {
         return nome;
     }
@@ -19,6 +12,6 @@ public class Utilizador {
     }
     @Override
     public String toString() {
-        return "Utilizador: " + nome + " (" + email + "), nº " + numIdentificacao;
+        return nome + ";" + numIdentificacao + ";" + email;
     }
 }

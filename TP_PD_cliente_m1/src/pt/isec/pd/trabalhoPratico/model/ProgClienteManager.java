@@ -40,8 +40,8 @@ public class ProgClienteManager {
     public String[] consultarPresencasUti(){
         return programaCliente.consultarPresencasUti();
     }
-    public boolean obterCSV_Uti(){
-        return programaCliente.obterCSV_Uti();
+    public boolean obterCSV_Presencas(String nome) {
+        return programaCliente.obterCSV_Presencas(nome);
     }
 
     public boolean editarRegisto(String nome, String numIdentificacao, String password, String confPass) {

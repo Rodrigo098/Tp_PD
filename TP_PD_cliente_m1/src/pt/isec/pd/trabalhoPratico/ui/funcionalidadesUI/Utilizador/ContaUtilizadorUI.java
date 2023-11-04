@@ -29,7 +29,7 @@ public class ContaUtilizadorUI extends BorderPane {
         voltar.getStyleClass().add("movButton");
         listaPresencas = new Button("Ver Lista de Presenças");
         marcarPresenca = new Button("Registar Presença");
-        editarRegisto = new Button( "Editar Registo");
+        editarRegisto = new Button( "Editar Presenca");
         logout = new Button("Logout");
         logout.getStyleClass().add("btnLogout");
 

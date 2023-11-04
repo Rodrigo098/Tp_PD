@@ -4,11 +4,10 @@ import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
-import pt.isec.pd.trabalhoPratico.model.classesDados.Registo;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Presenca;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -18,12 +17,12 @@ import java.util.*;
 ////////////////////////////////// ATUALIZAÇÃO ASSÍNCRONA ////////////////////////////////////////
 class AtualizacaoAsync implements Runnable {
     private final ArrayList<Evento> listaEventos;
-    private final ArrayList<Registo> listaRegistos;
+    private final ArrayList<Presenca> listaPresencas;
     private final Socket socket;
-    public AtualizacaoAsync(Socket socket, ArrayList<Evento> lista, ArrayList<Registo> listaRegisto) {
+    public AtualizacaoAsync(Socket socket, ArrayList<Evento> lista, ArrayList<Presenca> listaPresenca) {
         this.socket = socket;
         this.listaEventos = lista;
-        this.listaRegistos = listaRegisto;
+        this.listaPresencas = listaPresenca;
     }
     @Override
     public void run() {
@@ -39,9 +38,9 @@ class AtualizacaoAsync implements Runnable {
                     }
                 } else if(novaLista instanceof RecebeListaRegistos lista)
                 {
-                    synchronized (listaRegistos) {
+                    synchronized (listaPresencas) {
                         listaEventos.clear();
-                        listaRegistos.addAll(Arrays.asList(lista.getLista()));
+                        listaPresencas.addAll(Arrays.asList(lista.getLista()));
                     }
                 } else //servidor disse adeus
                     break;
@@ -53,22 +52,24 @@ class AtualizacaoAsync implements Runnable {
 
 ///////////////////////////////////// PROGRAMA CLIENTE ///////////////////////
 public class ProgramaCliente {
+    private static final String CSV_PRESENCAS = "CSV_Presencas_";
+    private static final String CSV_EVENTOS = "CSV_Eventos_";
     private Socket socket;
-    private final ArrayList<Evento> listaEventos;
-    private final ArrayList<Registo> listaRegistos;
-    private final ArrayList<String> listaResultados;
+    private ArrayList<Evento> listaEventos;
+    private ArrayList<Presenca> listaPresencas;
+    private ArrayList<String> listaResultados;
 
     public ProgramaCliente(){
         listaEventos = new ArrayList<>();
-        listaRegistos = new ArrayList<>();
+        listaPresencas = new ArrayList<>();
         listaResultados = new ArrayList<>();
 
         LocalDate data = LocalDate.now();
 
         //teste
-        Evento e = new Evento("ola", "aqui", data, 18, 19);
+        Evento e = new Evento("eu","ola", "aqui", data, 18, 19);
         listaEventos.add(e);
-        listaRegistos.add(new Registo(e, new Utilizador("isa", "isa@isec.pt", "11111")));
+        listaPresencas.add(new Presenca(e, new Utilizador("isa", "isa@isec.pt", "11111")));
         listaResultados.add(e.toString());
     }
 
@@ -132,7 +133,7 @@ public class ProgramaCliente {
                     case ADMINISTRADOR -> {
                         MainCliente.clienteSBP.set("ADMINISTRADOR");
                         try (Socket socket = new Socket(this.socket.getInetAddress(), this.socket.getPort())) {
-                            new Thread(new AtualizacaoAsync(socket, listaEventos, listaRegistos)).start();
+                            new Thread(new AtualizacaoAsync(socket, listaEventos, listaPresencas)).start();
                         } catch (Exception e) {
                             MainCliente.menuSBP.set("ERRO");
                             socket.close();
@@ -243,20 +244,38 @@ public class ProgramaCliente {
 
             ConsultaEventos_EliminaPresencas_InserePresencas lista = (ConsultaEventos_EliminaPresencas_InserePresencas) oin.readObject();
 
+            listaResultados.clear();
+            listaResultados.addAll(Arrays.asList(lista.getLista()));
             return lista.getLista();
         } catch (IOException | ClassNotFoundException e) {
             return new String[]{"Erro na comunicação com o servidor"};
         }
     }
 
-    public boolean obterCSV_Uti() {
-        //se há presenças registadas
-        //cria ficheiro CSV
-        //return true;
-        //senão
-        //return false;
+    public boolean obterCSV_Presencas(String nome) {
+        if(nome == null || nome.isBlank())
+            return false;
+        FileWriter ficheiroCSV = null;
+        try {
+            ficheiroCSV = new FileWriter(CSV_PRESENCAS + nome + ".csv");
 
-        return false;
+            ficheiroCSV.append("Evento,Local,Data,Hora Inicio,Hora Fim\n");
+
+            for(String presenca : listaResultados) {
+                ficheiroCSV.append(presenca);
+            }
+        } catch (Exception e) {
+            return false;
+        } finally {
+            try {
+                assert ficheiroCSV != null;
+                ficheiroCSV.flush();
+                ficheiroCSV.close();
+            } catch (IOException e) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public boolean editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
@@ -309,7 +328,7 @@ public class ProgramaCliente {
         if(horaInicio < horaAtual.getHour())
             return false;
 
-        Cria_evento evento = new Cria_evento(new Evento(nome, local, data, horaInicio, horaFim), tipo);
+        Cria_evento evento = new Cria_evento(new Evento("eu", nome, local, data, horaInicio, horaFim), tipo);
 
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
@@ -331,7 +350,7 @@ public class ProgramaCliente {
 
     public boolean eliminarEvento(int indiceEvento) {
         Consulta_Elimina_GeraCod_SubmeteCod_Evento evento =
-                new Consulta_Elimina_GeraCod_SubmeteCod_Evento(listaEventos.get(indiceEvento).getNome(), Message_types.ELIMINAR_EVENTO);
+                new Consulta_Elimina_GeraCod_SubmeteCod_Evento(listaEventos.get(indiceEvento).getNomeEvento(), Message_types.ELIMINAR_EVENTO);
 
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
@@ -360,7 +379,7 @@ public class ProgramaCliente {
         }
 
         ConsultaEventos_EliminaPresencas_InserePresencas interacao =
-                new ConsultaEventos_EliminaPresencas_InserePresencas(tipo, listaEventos.get(indiceEvento).getNome(), emails.toArray(new String[0]));
+                new ConsultaEventos_EliminaPresencas_InserePresencas(tipo, listaEventos.get(indiceEvento).getNomeEvento(), emails.toArray(new String[0]));
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -382,7 +401,7 @@ public class ProgramaCliente {
 
     public String gerarCodPresenca(int indiceEvento) {
         Consulta_Elimina_GeraCod_SubmeteCod_Evento geraCod =
-        new Consulta_Elimina_GeraCod_SubmeteCod_Evento(listaEventos.get(indiceEvento).getNome(), Message_types.GERAR_COD);
+        new Consulta_Elimina_GeraCod_SubmeteCod_Evento(listaEventos.get(indiceEvento).getNomeEvento(), Message_types.GERAR_COD);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -415,7 +434,7 @@ public class ProgramaCliente {
         listaResultados.clear();
         synchronized(listaEventos){
             for(Evento e : listaEventos){
-                if(nome.contains(e.getNome()))
+                if(nome.contains(e.getNomeEvento()))
                     listaResultados.add(e.toString());
                 if(local.contains(e.getLocal()))
                     listaResultados.add(e.toString());
@@ -427,10 +446,10 @@ public class ProgramaCliente {
     }
 
     public ArrayList<String> consultaPresencasEvento(int indiceEvento){
-        String nomeEvento = listaEventos.get(indiceEvento).getNome();
+        String nomeEvento = listaEventos.get(indiceEvento).getNomeEvento();
         listaResultados.clear();
-        synchronized(listaRegistos){
-            for(Registo r : listaRegistos){
+        synchronized(listaPresencas){
+            for(Presenca r : listaPresencas){
                 if(nomeEvento.equalsIgnoreCase(r.getEvento()))
                     listaResultados.add(r.toString());
             }
@@ -442,8 +461,8 @@ public class ProgramaCliente {
         if(verificaFormato(utilizador))
             return null;
         listaResultados.clear();
-        synchronized(listaRegistos){
-            for(Registo r : listaRegistos){
+        synchronized(listaPresencas){
+            for(Presenca r : listaPresencas){
                 if(r.getUtilizador().equals(utilizador))
                     listaResultados.add(r.toString());
             }
