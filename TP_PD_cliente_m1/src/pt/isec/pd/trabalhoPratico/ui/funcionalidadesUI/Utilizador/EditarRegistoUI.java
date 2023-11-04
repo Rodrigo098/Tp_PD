@@ -1,5 +1,6 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador;
 
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -26,11 +27,11 @@ public class EditarRegistoUI extends BorderPane {
         nome = new TextField();
         nome.setPromptText("novo nome");
         numID = new TextField();
-        numID.setPromptText("novo número de identificação");
+        numID.setPromptText("novo número");
         password = new TextField();
-        password.setPromptText("nova palavra passe");
+        password.setPromptText("nova password");
         confPassword = new TextField();
-        confPassword.setPromptText("confirme a nova palavra passe");
+        confPassword.setPromptText("confirme a password");
 
         confirmar = new Button("Confirmar");
         confirmar.getStyleClass().add("confirmar");
@@ -39,11 +40,12 @@ public class EditarRegistoUI extends BorderPane {
 
         VBox vBox = new VBox(new Text("Nome:"), nome,
                              new Text("Número de Identificação:"), numID,
-                             new Text("Palavra passe:"), password, confPassword);
-
+                             new VBox(new Text("Palavra passe:"), new HBox(password, confPassword)));
+        vBox.setSpacing(5);
         Label label = new Label("Editar Registo");
         label.getStyleClass().add("titulo");
 
+        setMargin(vBox, new javafx.geometry.Insets(10, 0, 0, 0));
         setAlignment(label, javafx.geometry.Pos.CENTER);
         this.setTop(label);
         this.setCenter(vBox);

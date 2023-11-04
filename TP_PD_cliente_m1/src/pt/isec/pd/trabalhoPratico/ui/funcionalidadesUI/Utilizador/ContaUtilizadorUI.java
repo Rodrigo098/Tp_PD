@@ -2,11 +2,7 @@ package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -30,9 +26,9 @@ public class ContaUtilizadorUI extends BorderPane {
 
     private void createViews() {
         voltar = new Button("Voltar");
-        listaPresencas = new Button("Ver Lista de Presenças ");
-        marcarPresenca = new Button("   Registar Presença   ");
-        editarRegisto = new Button( "    Editar  Registo    ");
+        listaPresencas = new Button("Ver Lista de Presenças");
+        marcarPresenca = new Button("Registar Presença");
+        editarRegisto = new Button( "Editar Registo");
         logout = new Button("Logout");
         logout.getStyleClass().add("btnLogout");
 

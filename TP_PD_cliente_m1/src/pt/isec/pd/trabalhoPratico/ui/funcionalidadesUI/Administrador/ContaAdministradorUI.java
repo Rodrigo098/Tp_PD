@@ -10,9 +10,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.EditarRegistoUI;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.ListarPresencasUI;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.MarcarPresencaUI;
 
 public class ContaAdministradorUI extends BorderPane {
     static protected SimpleStringProperty opcaoAdmin = new SimpleStringProperty("NADA");
@@ -49,7 +46,8 @@ public class ContaAdministradorUI extends BorderPane {
 
         funcionalidades =  new HBox(voltar, new StackPane(new ListarEventosUI(progClienteManager),
                                                           new CriarEventoUI(progClienteManager),
-                                                          new ConsultaEventosUtiUI(progClienteManager)));
+                                                          new ConsultaEventosUtiUI(progClienteManager),
+                                                          new EditorEventosUI(progClienteManager)));
         funcionalidades.setFocusTraversable(true);
         funcionalidades.getStyleClass().add("funcionalidades");
 

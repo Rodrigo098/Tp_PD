@@ -3,7 +3,6 @@ package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 

@@ -8,8 +8,6 @@ import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
-import java.io.IOException;
-
 public class RegistoUtilizadorUI extends BorderPane {
     private Button registar, voltar;
     private TextField nomeUtilizador, email, password, confirmar_password, numIdentificacao;

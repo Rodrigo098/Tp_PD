@@ -34,11 +34,9 @@ Button:hover {
 FlowPane {
     -fx-alignment: center;
 }
-
 HBox {
     -fx-alignment: center;
     -fx-spacing: 20px;
-    -fx-padding: 15;
 }
 /* ===================== INICIO ===================== */
 
