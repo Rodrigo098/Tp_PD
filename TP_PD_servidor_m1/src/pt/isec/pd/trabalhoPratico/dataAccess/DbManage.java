@@ -205,7 +205,7 @@ public class DbManage {
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
             Statement statement = connection.createStatement()){
-            String GetQuery = "SELECT * FROM Assiste where email='" + nome_evento + "';";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
+            String GetQuery = "SELECT * FROM Assiste where nome_evento='" + nome_evento + "';";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
             ResultSet rs=statement.executeQuery(GetQuery);
 
 
