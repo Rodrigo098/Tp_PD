@@ -10,6 +10,8 @@ import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 
 
@@ -61,8 +63,10 @@ public class ProgramaCliente {
         listaRegistos = new ArrayList<>();
         listaResultados = new ArrayList<>();
 
+        LocalDate data = LocalDate.now();
+
         //teste
-        Evento e = new Evento("ola", "aqui", "hoje", "agora", "depois");
+        Evento e = new Evento("ola", "aqui", data, 18, 19);
         listaEventos.add(e);
         listaRegistos.add(new Registo(e, new Utilizador("isa", "isa@isec.pt", "11111")));
         listaResultados.add(e.toString());
@@ -70,7 +74,11 @@ public class ProgramaCliente {
 
     //ver se é email:
     public boolean verificaFormato(String email){
-        return email == null || email.split("@|\\.").length != 3;
+        if(email == null || email.isBlank())
+            return true;
+        if(email.indexOf('@') <= 0 || !(email.indexOf('@') <= email.indexOf('.') - 2))
+            return true;
+        return email.split("@|\\.").length != 3;
     }
 
 
@@ -80,7 +88,6 @@ public class ProgramaCliente {
         Pair<Boolean, String> pontoSituacao;
 
         if(list.size() == 2) {
-
             this.socket = new Socket();
             pontoSituacao = new Pair<>(true, "Ocorreu uma exceção I/O na criação do socket.");
 /*
@@ -290,12 +297,17 @@ public class ProgramaCliente {
 
     /////////////////////////ADMINISTRADOR:
     //CRIAR OU EDITAR EVENTO, O ÚLTIMO PARÂMETRO É PARA SABER SE É PARA CRIAR OU EDITAR
-    public boolean criarEditar_Evento(String nome, String local, String data, String horaInicio, String horaFim, Message_types tipo) {
-        if(nome == null || local == null || data == null || horaInicio == null || horaFim == null)
+    public boolean criarEditar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim, Message_types tipo) {
+        if(nome == null || local == null || data == null || horaInicio >= horaFim)
             return false;
 
-        //Data: como será com data picker não será necessária
-        //Hora: como será com select não será necessário
+        LocalDate dataAtual = LocalDate.now();
+        if(data.isBefore(dataAtual))
+            return false;
+
+        LocalTime horaAtual = LocalTime.now();
+        if(horaInicio < horaAtual.getHour())
+            return false;
 
         Cria_evento evento = new Cria_evento(new Evento(nome, local, data, horaInicio, horaFim), tipo);
 
@@ -343,7 +355,7 @@ public class ProgramaCliente {
         //o nome do evento é o primeiro filtro
         ArrayList<String> emails = new ArrayList<>();
         for (String email : filtros.trim().split(" ")) {
-            if (verificaFormato(email))
+            if (!verificaFormato(email))
                 emails.add(email);
         }
 

@@ -1,9 +1,13 @@
 package pt.isec.pd.trabalhoPratico.model.classesDados;
 
-public class Evento {
-    private final String nome, local, data, horaInicio, horaFim;
+import java.time.LocalDate;
 
-    public Evento(String nome, String local, String data, String horaInicio, String horaFim) {
+public class Evento {
+    private final String nome, local;
+    private final int horaInicio, horaFim;
+    private final LocalDate data;
+
+    public Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim) {
         this.nome = nome;
         this.local = local;
         this.data = data;
@@ -13,13 +17,13 @@ public class Evento {
     public String getNome() {
         return nome;
     }
-    public String getData() {
+    public LocalDate getData() {
         return data;
     }
-    public String getHoraFim() {
+    public int getHoraFim() {
         return horaFim;
     }
-    public String getHoraInicio() {
+    public int getHoraInicio() {
         return horaInicio;
     }
     public String getLocal() {
@@ -27,6 +31,6 @@ public class Evento {
     }
     @Override
     public String toString() {
-        return "Evento " + nome + ": localizado em " + local + " no dia " + data + " das " + horaInicio + " às " + horaFim;
+        return "Evento " + nome + ": localizado em " + local + " no dia " + data.toString() + " das " + horaInicio + " às " + horaFim;
     }
 }

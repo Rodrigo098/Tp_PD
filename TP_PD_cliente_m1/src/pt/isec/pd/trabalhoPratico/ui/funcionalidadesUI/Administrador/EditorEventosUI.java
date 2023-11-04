@@ -1,18 +1,18 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class EditorEventosUI extends BorderPane {
+    protected static SimpleStringProperty opcaoEdicao = new SimpleStringProperty("NADA");
     private Button editarEvento, eliminarEvento, gerarCodigoPresencas, obterPresencasCSV, eliminarPresencas, inserirPresencas;
-    private final ProgClienteManager progClienteManager;
     private ListView<String> listaPresencas;
+    private EventoUI eventoUI;
+    private final ProgClienteManager progClienteManager;
 
     public EditorEventosUI(ProgClienteManager progClienteManager){
         this.progClienteManager = progClienteManager;
@@ -47,13 +47,15 @@ public class EditorEventosUI extends BorderPane {
         listaPresencas = new ListView<>();
         extrairListaPresencas();
 
+        eventoUI = new EventoUI();
+
         Label label = new Label("Editar Eventos");
         label.getStyleClass().add("titulo");
 
         setAlignment(label, javafx.geometry.Pos.CENTER);
         setMargin(listaPresencas, new javafx.geometry.Insets(20, 0, 10, 0));
         this.setTop(label);
-        this.setCenter(listaPresencas);
+        this.setCenter(new StackPane(listaPresencas, eventoUI));
         this.setBottom(flowPane);
     }
 

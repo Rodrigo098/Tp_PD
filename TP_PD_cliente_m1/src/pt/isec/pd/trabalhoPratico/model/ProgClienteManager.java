@@ -5,6 +5,7 @@ import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
 import pt.isec.pd.trabalhoPratico.model.programs.ProgramaCliente;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +49,7 @@ public class ProgClienteManager {
     }
 
     //ADMINISTRADOR:
-    public boolean criarEditar_Evento(String nome, String local, String data, String horaInicio, String horaFim, Message_types tipo){
+    public boolean criarEditar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim, Message_types tipo){
         return programaCliente.criarEditar_Evento(nome, local, data, horaInicio, horaFim, tipo);
     }
 

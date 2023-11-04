@@ -1,21 +1,20 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 
 import javafx.geometry.Insets;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
 
+import java.sql.Time;
+
 
 public class CriarEventoUI extends BorderPane {
-    private TextField nomeEvento, local;
     private Button confirmar, cancelar;
-    ProgClienteManager progClienteManager;
+    private EventoUI eventoUI;
+    private final ProgClienteManager progClienteManager;
+
 
     public CriarEventoUI(ProgClienteManager progClienteManager) {
         this.progClienteManager = progClienteManager;
@@ -25,11 +24,6 @@ public class CriarEventoUI extends BorderPane {
     }
 
     private void createViews() {
-        nomeEvento = new TextField();
-        nomeEvento.setPromptText("nome do evento");
-        local = new TextField();
-        local.setPromptText("local do evento");
-
         confirmar = new Button("Confirmar");
         confirmar.getStyleClass().add("confirmar");
         cancelar = new Button("Cancelar");
@@ -38,18 +32,17 @@ public class CriarEventoUI extends BorderPane {
         Label label = new Label("Criar Evento");
         label.getStyleClass().add("titulo");
 
-        VBox vBox = new VBox(new Text("Nome:"), nomeEvento, new Text("Local:"), local);
-        vBox.setSpacing(10);
+        eventoUI = new EventoUI();
 
-        setMargin(vBox, new Insets(10, 10, 10, 10));
+        setMargin(eventoUI, new Insets(10, 10, 10, 10));
         setAlignment(label, javafx.geometry.Pos.CENTER);
         this.setTop(label);
-        this.setCenter(vBox);
+        this.setCenter(eventoUI);
         this.setBottom(new HBox(confirmar, cancelar));
     }
     private void registerHandlers() {
         confirmar.setOnAction( e -> {
-            progClienteManager.criarEditar_Evento(nomeEvento.getText(), local.getText(), "12/8/2023", "14", "16", Message_types.CRIA_EVENTO);
+            progClienteManager.criarEditar_Evento(eventoUI.nomeEvento.getText(), eventoUI.local.getText(), eventoUI.data.getValue(), eventoUI.horaInicio.getValue(), eventoUI.horaFim.getValue(), Message_types.CRIA_EVENTO);
         });
         cancelar.setOnAction(e -> {
             ContaAdministradorUI.opcaoAdmin.set("NADA");
