@@ -24,6 +24,7 @@ public class CriarEventoUI extends BorderPane {
     }
 
     private void createViews() {
+        eventoUI = new EventoUI();
         confirmar = new Button("Confirmar");
         confirmar.getStyleClass().add("confirmar");
         cancelar = new Button("Cancelar");
@@ -31,8 +32,6 @@ public class CriarEventoUI extends BorderPane {
 
         Label label = new Label("Criar Evento");
         label.getStyleClass().add("titulo");
-
-        eventoUI = new EventoUI();
 
         setMargin(eventoUI, new Insets(10, 10, 10, 10));
         setAlignment(label, javafx.geometry.Pos.CENTER);
@@ -51,6 +50,7 @@ public class CriarEventoUI extends BorderPane {
     }
 
     private void update() {
+        eventoUI.setVisible(ContaAdministradorUI.opcaoAdmin.get().equals("CRIAR_EVENTO"));
         this.setVisible(ContaAdministradorUI.opcaoAdmin.get().equals("CRIAR_EVENTO"));
     }
 }

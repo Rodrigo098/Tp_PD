@@ -29,6 +29,7 @@ public class ContaAdministradorUI extends BorderPane {
     //-----------------------------------------------------------------
     private void createViews() {
         voltar = new Button("Voltar");
+        voltar.getStyleClass().add("movButton");
         criarEvento = new Button("Criar Evento");
         listarEventos = new Button("Lista Eventos");
         eventosUti = new Button("Eventos Utilizador");

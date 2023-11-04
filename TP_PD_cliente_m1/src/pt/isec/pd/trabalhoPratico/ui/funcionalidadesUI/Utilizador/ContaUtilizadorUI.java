@@ -26,6 +26,7 @@ public class ContaUtilizadorUI extends BorderPane {
 
     private void createViews() {
         voltar = new Button("Voltar");
+        voltar.getStyleClass().add("movButton");
         listaPresencas = new Button("Ver Lista de Presenças");
         marcarPresenca = new Button("Registar Presença");
         editarRegisto = new Button( "Editar Registo");

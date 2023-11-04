@@ -77,7 +77,7 @@ HBox {
 
 .titulo {
     -fx-background-color: #90A4AE;
-    -fx-padding: 10;
+    -fx-padding: 5 40;
     -fx-font-size: 25px;
     -fx-effect: dropshadow( gaussian , rgb(1, 1, 1) , 20,0,0,1 );
 }
@@ -106,14 +106,10 @@ HBox {
 .eventoButton {
     -fx-font: 12px "Arial";
     -fx-text-fill: black;
-    -fx-padding: 7;
+    -fx-padding: 7 15;
     -fx-background-color: #90A4AE;
 }
 
-.delimitada {
-    -fx-border-color: #78909C;
-    -fx-border-width: 3px;
-    -fx-border-radius: 25px;
-    -fx-spacing: 20px;
-    -fx-padding: 10;
+.movButton {
+    -fx-padding: 5 10;
 }

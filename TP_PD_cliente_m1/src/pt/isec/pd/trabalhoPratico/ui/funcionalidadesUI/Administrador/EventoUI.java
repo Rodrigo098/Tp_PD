@@ -1,10 +1,11 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
 public class EventoUI extends VBox {
@@ -26,15 +27,16 @@ public class EventoUI extends VBox {
         horaInicio = new Spinner<>(0, 24, 9);
         horaFim = new Spinner<>(0, 24, 10);
 
+        this.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
         this.getChildren().addAll(new Text("Nome:"), nomeEvento, new Text("Local:"), local, new HBox(new Text("Data: "), data, new Text("De: "), horaInicio, new Text("Até: "), horaFim));
         this.setSpacing(10);
         this.setMaxWidth(400);
     }
 
     private void registerHandlers() {
-        this.setVisible(EditorEventosUI.opcaoEdicao.get().equals("EDITAR") || ContaAdministradorUI.opcaoAdmin.get().equals("CRIAR_EVENTO"));
     }
 
-    private void update(){}
+    private void update(){
+    }
 
 }
