@@ -25,10 +25,17 @@ public class MarcarPresencaUI extends BorderPane {
         codigo.setPromptText("codigo do evento");
 
         submeter = new Button("Submeter");
+        submeter.getStyleClass().add("confirmar");
         cancelar = new Button("Cancelar");
+        cancelar.getStyleClass().add("cancelar");
 
         VBox vBox = new VBox(new Label("Código do evento:"), codigo);
 
+        Label label = new Label("Marcar Presença");
+        label.getStyleClass().add("titulo");
+
+        setAlignment(label, javafx.geometry.Pos.CENTER);
+        this.setTop(label);
         this.setCenter(vBox);
         this.setBottom(new HBox(submeter, cancelar));
     }

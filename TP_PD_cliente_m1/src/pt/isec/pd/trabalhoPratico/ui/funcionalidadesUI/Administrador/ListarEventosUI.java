@@ -1,5 +1,6 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
@@ -26,6 +27,9 @@ public class ListarEventosUI extends BorderPane {
 
         Label label = new Label("Lista de Eventos");
         label.getStyleClass().add("titulo");
+
+        setMargin(listaEventos, new Insets(20, 0, 5, 0));
+        setAlignment(label, javafx.geometry.Pos.CENTER);
         this.setTop(label);
         this.setCenter(listaEventos);
     }

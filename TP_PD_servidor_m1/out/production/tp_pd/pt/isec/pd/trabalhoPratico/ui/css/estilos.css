@@ -11,6 +11,7 @@ BorderPane {
 
 Label {
     -fx-padding: 10 40;
+    -fx-font: 20px "Arial Bold";
     -fx-background-color: rgba( 255, 255, 255, 0.8);
     -fx-background-radius: 25px;
 }
@@ -23,6 +24,11 @@ Button {
     -fx-background-color: #455A64;
     -fx-background-radius: 20px;
     -fx-effect: dropshadow( gaussian , rgb(1, 1, 1) , 20,0,2,1 );
+}
+
+Button:hover {
+    -fx-background-color: rgba(255,255,255,0.8);
+    -fx-text-fill: #455A64;
 }
 
 FlowPane {
@@ -48,6 +54,7 @@ HBox {
     -fx-background-color: rgba(255,255,255,1);
     -fx-effect: innershadow( gaussian , rgb(0, 0, 0) , 20,0,1,1 );
 }
+
 .links{
     -fx-font: 15px "Arial";
     -fx-underline: true;
@@ -62,13 +69,21 @@ HBox {
     -fx-background-color: rgb(255,255,255);
     -fx-effect: innershadow( gaussian , rgb(0, 0, 0) , 20,0,1,1 );
 }
+
 .contaUtilizador {
-    -fx-background-color: radial-gradient(focus-angle 10deg, focus-distance 90%, center 80% 50%, radius 80%, repeat, #DCE775, #B2EBF2);
+    -fx-background-color: radial-gradient(focus-angle 10deg, focus-distance 90%, center 90% 20%, radius 50%, repeat, #DCE775, #B2EBF2);
 }
+.contaAdministrador {
+    -fx-background-color: radial-gradient(focus-angle 100deg, focus-distance 90%, center 0% 80%, radius 50%, repeat, #FFF176, #F8BBD0);
+}
+
 .titulo {
     -fx-background-color: #90A4AE;
+    -fx-padding: 10;
+    -fx-font-size: 25px;
     -fx-effect: dropshadow( gaussian , rgb(1, 1, 1) , 20,0,0,1 );
 }
+
 .funcionalidades {
     -fx-alignment: top-center;
     -fx-spacing: 50px;
@@ -77,8 +92,17 @@ HBox {
     -fx-background-color: rgba(255,255,255,1);
     -fx-effect: innershadow( gaussian , rgb(55, 71, 79) , 20,0,1,1 );
 }
+
 .btnLogout {
     -fx-background-color: #BF360C;
+}
+
+.cancelar {
+    -fx-background-color: #E53935;
+}
+
+.confirmar {
+    -fx-background-color: #8BC34A;
 }
 
 .eventoButton {
@@ -86,4 +110,12 @@ HBox {
     -fx-text-fill: black;
     -fx-padding: 7;
     -fx-background-color: #90A4AE;
+}
+
+.delimitada {
+    -fx-border-color: #78909C;
+    -fx-border-width: 3px;
+    -fx-border-radius: 25px;
+    -fx-spacing: 20px;
+    -fx-padding: 10;
 }

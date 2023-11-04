@@ -7,6 +7,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class EditarRegistoUI extends BorderPane {
@@ -32,12 +33,19 @@ public class EditarRegistoUI extends BorderPane {
         confPassword.setPromptText("confirme a nova palavra passe");
 
         confirmar = new Button("Confirmar");
+        confirmar.getStyleClass().add("confirmar");
         cancelar = new Button("Cancelar");
+        cancelar.getStyleClass().add("cancelar");
 
-        VBox vBox = new VBox(new Label("Nome:"), nome,
-                             new Label("Número de Identificação:"), numID,
-                             new Label("Palavra passe:"), password, confPassword);
+        VBox vBox = new VBox(new Text("Nome:"), nome,
+                             new Text("Número de Identificação:"), numID,
+                             new Text("Palavra passe:"), password, confPassword);
 
+        Label label = new Label("Editar Registo");
+        label.getStyleClass().add("titulo");
+
+        setAlignment(label, javafx.geometry.Pos.CENTER);
+        this.setTop(label);
         this.setCenter(vBox);
         this.setBottom(new HBox(confirmar, cancelar));
     }

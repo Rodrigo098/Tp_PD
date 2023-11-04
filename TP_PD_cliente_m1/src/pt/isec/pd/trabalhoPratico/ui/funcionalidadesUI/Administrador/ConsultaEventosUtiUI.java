@@ -1,5 +1,6 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -33,10 +34,13 @@ public class ConsultaEventosUtiUI extends BorderPane {
         Label label = new Label("Lista de eventos presenciados por:");
         label.getStyleClass().add("titulo");
 
-        VBox vBox = new VBox(label, new HBox(utilizador, listar), listaEventos);
+        VBox vBox = new VBox(new HBox(utilizador, listar), listaEventos, obterCSV);
+        vBox.getStyleClass().add("delimitada");
 
+        setMargin(vBox, new Insets(10, 10, 10, 10));
+        setAlignment(label, javafx.geometry.Pos.CENTER);
+        this.setTop(label);
         this.setCenter(vBox);
-        this.setBottom(obterCSV);
     }
 
     private void registerHandlers() {

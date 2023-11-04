@@ -35,7 +35,9 @@ public class RegistoUtilizadorUI extends BorderPane {
         numIdentificacao.setPromptText("Numero de Identificação");
 
         registar = new Button("Criar registo");
+        registar.getStyleClass().add("confirmar");
         voltar = new Button("Voltar");
+        voltar.getStyleClass().add("cancelar");
 
         HBox hBox = new HBox(voltar, registar);
         HBox hBox1 = new HBox(nomeUtilizador, email);

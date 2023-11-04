@@ -1,9 +1,11 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class ListarPresencasUI extends BorderPane {
@@ -23,6 +25,12 @@ public class ListarPresencasUI extends BorderPane {
         extrairListaEventos();
         gerarCSV = new Button("gerar CSV");
 
+        Label label = new Label("Lista de Presenças");
+        label.getStyleClass().add("titulo");
+
+        setMargin(lista, new Insets(20, 0, 10, 0));
+        setAlignment(label, javafx.geometry.Pos.CENTER);
+        this.setTop(label);
         this.setCenter(lista);
         this.setBottom(gerarCSV);
     }
