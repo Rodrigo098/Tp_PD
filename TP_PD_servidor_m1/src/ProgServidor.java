@@ -1,7 +1,9 @@
+import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Geral;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Login;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.RegistoEdicao_Cliente;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -39,12 +41,16 @@ class ThreadCliente implements Runnable {
                 String password=aux.getPassword();
                 email=aux.getEmail();
                 System.out.println(email);
-                out.writeObject(new Geral(Message_types.ADMINISTRADOR));
+                if(DbManage.autentica_user(email,password))
+                    out.writeObject(new Geral(Message_types.ADMINISTRADOR));
+                else out.writeObject(new Geral(Message_types.INVALIDO));
                 // aqui verifico se é o admin e ponho o boolean a true ou false
             } else if (o.getTipo() == Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
 
                 RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente)o;
                 email= aux.getEmail();
+                Utilizador user=new Utilizador(aux.getNome(),aux.getEmail(),aux.getNum_estudante());
+                DbManage.Registonovouser(user,aux.getPassword());
                 // A implementar
             }else{
                 out.writeObject("Comando Invalido para estabelecer conexão");// apenas como exemplo
@@ -55,13 +61,19 @@ class ThreadCliente implements Runnable {
                     Geral message = (Geral) in.readObject();
                     switch (message.getTipo()) {
                         case EDITAR_REGISTO ->{
-                            out.writeObject("Altera dados na database");
+                            RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente)message;
+                            Utilizador user=new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
+                          if(  DbManage.edita_registo(user,aux.getPassword())){
+                              out.writeObject(new Geral(Message_types.VALIDO));
+                          }else
+                              out.writeObject(new Geral(Message_types.ERRO));
+
 
                         }
                         case SUBMICAO_COD -> out.writeObject("Insere dados na database");
                         case CSV_UTILIZADOR -> {}
                         case CONSULTA_PRES_UTILIZADOR -> {}
-                        case REGISTO -> {}
+                        case LOGOUT -> {break;}
 
                         default -> out.writeObject("Operacao invalida");
                     }
@@ -81,6 +93,7 @@ class ThreadCliente implements Runnable {
                         case CONSULTA_PRES_EVENT -> {}
                         case CONSULT_EVENT_UTILIZADOR -> {}
                         case CSV_ADMINISTRADOR -> {}
+                        case LOGOUT ->{break;}
                         default -> out.writeObject("Operacao invalida");
                     }
                 }
@@ -94,6 +107,8 @@ class ThreadCliente implements Runnable {
             System.out.println(Client.isClosed());
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
+        }finally {
+            System.out.println("Cliente "+ email +"terminado");
         }
 
     }
