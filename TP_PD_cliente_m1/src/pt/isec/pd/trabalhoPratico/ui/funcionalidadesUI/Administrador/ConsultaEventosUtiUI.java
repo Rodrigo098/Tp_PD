@@ -27,6 +27,7 @@ public class ConsultaEventosUtiUI extends BorderPane {
         utilizador = new TextField();
         utilizador.setPromptText("Email do utilizador");
         obterCSV = new Button("Obter CSV");
+        obterCSV.setDisable(true);
         listar = new Button("listar");
         listaEventos = new ListView<>();
         extrairListaEventos();
@@ -34,22 +35,25 @@ public class ConsultaEventosUtiUI extends BorderPane {
         Label label = new Label("Lista de eventos presenciados por:");
         label.getStyleClass().add("titulo");
 
-        VBox vBox = new VBox(new HBox(utilizador, listar), listaEventos, obterCSV);
-        vBox.getStyleClass().add("delimitada");
+        VBox vBox = new VBox(new HBox(utilizador, listar), listaEventos);
+        vBox.setSpacing(10);
 
         setMargin(vBox, new Insets(10, 10, 10, 10));
         setAlignment(label, javafx.geometry.Pos.CENTER);
         this.setTop(label);
         this.setCenter(vBox);
+        this.setBottom(obterCSV);
     }
 
     private void registerHandlers() {
         listar.setOnAction(e -> {
             extrairListaEventos();
             listaEventos.setVisible(true);
+            obterCSV.setDisable(false);
         });
         obterCSV.setOnAction(e -> {
             progClienteManager.obterCSV_Admin();
+            obterCSV.setDisable(true);
         });
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
     }

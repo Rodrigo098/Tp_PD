@@ -39,13 +39,14 @@ public class CriarEventoUI extends BorderPane {
         Label label = new Label("Criar Evento");
         label.getStyleClass().add("titulo");
 
-        VBox vBox = new VBox(new VBox(new Text("Nome:"), nomeEvento, new Text("Local:"), local), new HBox(confirmar, cancelar));
-        vBox.getStyleClass().add("delimitada");
+        VBox vBox = new VBox(new Text("Nome:"), nomeEvento, new Text("Local:"), local);
+        vBox.setSpacing(10);
 
         setMargin(vBox, new Insets(10, 10, 10, 10));
         setAlignment(label, javafx.geometry.Pos.CENTER);
         this.setTop(label);
         this.setCenter(vBox);
+        this.setBottom(new HBox(confirmar, cancelar));
     }
     private void registerHandlers() {
         confirmar.setOnAction( e -> {
