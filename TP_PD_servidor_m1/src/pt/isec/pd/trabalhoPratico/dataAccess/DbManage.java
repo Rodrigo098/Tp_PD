@@ -18,8 +18,8 @@ public class DbManage extends Thread{
             //Somente para teste de ligação a base de dados
             /*String createEntryQuery = "INSERT INTO Codigo_Registo (n_codigo_registo,nome_evento) VALUES ('"
                     + codigo_registo+"','" + nome_evento+ "')";*/
-            String createEntryQuery = "INSERT INTO Assiste (assiste_id,nome_evento,email) VALUES ('"
-                    + codigo_registo+"','" + nome_evento+ "','"+email+"')";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
+            String createEntryQuery = "INSERT INTO Versao (versao_id,descricao) VALUES ('"
+                    + codigo_registo+"','" + email+"')";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
 
             if(statement.executeUpdate(createEntryQuery)<1){
                 System.out.println("Entry insertion or update failed");
