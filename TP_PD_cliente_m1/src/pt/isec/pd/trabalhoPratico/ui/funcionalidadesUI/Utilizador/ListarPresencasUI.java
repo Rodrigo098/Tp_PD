@@ -10,8 +10,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
+import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador.FiltrosUI;
 
 public class ListarPresencasUI extends BorderPane {
+    private FiltrosUI filtros;
     private Text resultadoCSV;
     private TextField nomeFicheiro;
     private Button gerarCSV;
@@ -26,6 +28,7 @@ public class ListarPresencasUI extends BorderPane {
     }
 
     private void createViews() {
+        filtros = new FiltrosUI();
         lista = new ListView<>();
         extrairListaEventos();
         gerarCSV = new Button("gerar CSV");
@@ -39,11 +42,14 @@ public class ListarPresencasUI extends BorderPane {
         setMargin(lista, new Insets(20, 0, 10, 0));
         setAlignment(label, javafx.geometry.Pos.CENTER);
         this.setTop(label);
-        this.setCenter(lista);
+        this.setCenter(new VBox(filtros, lista));
         this.setBottom(new HBox(new VBox(nomeFicheiro, resultadoCSV), gerarCSV));
     }
 
     private void registerHandlers() {
+        filtros.procurar.setOnAction( e -> {
+            extrairListaEventos();
+        });
         gerarCSV.setOnAction( e -> {
             resultadoCSV.setText(progClienteManager.obterCSV_Presencas(nomeFicheiro.getText()) ? "CSV gerado com sucesso" : "Erro ao gerar CSV");
         });
@@ -57,7 +63,7 @@ public class ListarPresencasUI extends BorderPane {
 
     private void extrairListaEventos() {
         lista.getItems().clear();
-        for (String evento : progClienteManager.consultarPresencasUti()) {
+        for (String evento : progClienteManager.obterListaConsultaUtilizador(filtros.getNomeEvento(), filtros.getLocal(), filtros.getLimData1(), filtros.getLimData2(), filtros.getHoraInicio(), filtros.getHoraFim())) {
             lista.getItems().add(evento);
         }
     }

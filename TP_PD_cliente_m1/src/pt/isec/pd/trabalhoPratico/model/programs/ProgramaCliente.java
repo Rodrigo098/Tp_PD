@@ -152,7 +152,7 @@ public class ProgramaCliente {
         }catch (IOException | ClassNotFoundException ignored) {
             MainCliente.menuSBP.set("ERRO");
         }*/
-        MainCliente.clienteSBP.set("UTILIZADOR");
+        MainCliente.clienteSBP.set("ADMINISTRADOR");
         MainCliente.menuSBP.set("CONTA");
     }
     public void logout() {
@@ -233,8 +233,9 @@ public class ProgramaCliente {
         return false;
     }
 
-    public String[] consultarPresencasUti() {
-        Geral consultaPresencas = new Geral(Message_types.CONSULTA_PRES_UTILIZADOR);
+    public String[] obterListaConsultaUtilizador(String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim) {
+
+        ConsultaFiltros consultaPresencas = new ConsultaFiltros(Message_types.CONSULTA_PRES_UTILIZADOR, nome, local, limData1, limData2, horaInicio, horaFim);
 
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
@@ -244,8 +245,6 @@ public class ProgramaCliente {
 
             ConsultaEventos_EliminaPresencas_InserePresencas lista = (ConsultaEventos_EliminaPresencas_InserePresencas) oin.readObject();
 
-            listaResultados.clear();
-            listaResultados.addAll(Arrays.asList(lista.getLista()));
             return lista.getLista();
         } catch (IOException | ClassNotFoundException e) {
             return new String[]{"Erro na comunicação com o servidor"};
@@ -253,28 +252,7 @@ public class ProgramaCliente {
     }
 
     public boolean obterCSV_Presencas(String nome) {
-        if(nome == null || nome.isBlank())
-            return false;
-        FileWriter ficheiroCSV = null;
-        try {
-            ficheiroCSV = new FileWriter(CSV_PRESENCAS + nome + ".csv");
 
-            ficheiroCSV.append("Evento,Local,Data,Hora Inicio,Hora Fim\n");
-
-            for(String presenca : listaResultados) {
-                ficheiroCSV.append(presenca);
-            }
-        } catch (Exception e) {
-            return false;
-        } finally {
-            try {
-                assert ficheiroCSV != null;
-                ficheiroCSV.flush();
-                ficheiroCSV.close();
-            } catch (IOException e) {
-                return false;
-            }
-        }
         return true;
     }
 
@@ -371,7 +349,7 @@ public class ProgramaCliente {
     }
 
     public boolean eliminaInsere_Eventos(Message_types tipo, int indiceEvento, String filtros) {
-        //o nome do evento é o primeiro filtro
+        //o nome do evento é o segundo parâmetro
         ArrayList<String> emails = new ArrayList<>();
         for (String email : filtros.trim().split(" ")) {
             if (!verificaFormato(email))
@@ -430,7 +408,7 @@ public class ProgramaCliente {
         return listaResultados;
     }
 
-    public ArrayList<String> consultaEventosFiltros(String nome, String local, String data, String horaInicio, String horaFim) {
+    public ArrayList<String> obterListaConsultaAdministrador(String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim) {
         listaResultados.clear();
         synchronized(listaEventos){
             for(Evento e : listaEventos){
@@ -442,7 +420,7 @@ public class ProgramaCliente {
                 // ver filtros por hora
             }
         }
-        return listaResultados;
+        return new ArrayList<String>(listaResultados);
     }
 
     public ArrayList<String> consultaPresencasEvento(int indiceEvento){
@@ -454,7 +432,7 @@ public class ProgramaCliente {
                     listaResultados.add(r.toString());
             }
         }
-        return listaResultados;
+        return new ArrayList<String>(listaResultados);
     }
 
     public ArrayList<String> consultaEventosUtilizador(String utilizador) {
@@ -467,11 +445,33 @@ public class ProgramaCliente {
                     listaResultados.add(r.toString());
             }
         }
-        return listaResultados;
+        return new ArrayList<String>(listaResultados);
     }
 
-    public void obterCSV_Admin(){
-        //cria ficheiro usando listaResultados
+    public boolean obterCSV_Admin(String nome) {
+        if(nome == null || nome.isBlank())
+            return false;
+        FileWriter ficheiroCSV = null;
+        try {
+            ficheiroCSV = new FileWriter(CSV_PRESENCAS + nome + ".csv");
+
+            ficheiroCSV.append("Evento,Local,Data,Hora Inicio,Hora Fim\n");
+
+            for(String presenca : listaResultados) {
+                ficheiroCSV.append(presenca);
+            }
+        } catch (Exception e) {
+            return false;
+        } finally {
+            try {
+                assert ficheiroCSV != null;
+                ficheiroCSV.flush();
+                ficheiroCSV.close();
+            } catch (IOException e) {
+                return false;
+            }
+        }
+        return true;
     }
 }
 

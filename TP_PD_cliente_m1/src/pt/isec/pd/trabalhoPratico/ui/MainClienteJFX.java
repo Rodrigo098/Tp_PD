@@ -35,7 +35,7 @@ public class MainClienteJFX extends Application {
         Pair<Boolean, String> conexao = clienteManager.criaSocket(list);
         //if(conexao.getKey()) {
             RootPane root = new RootPane(clienteManager);
-            Scene scene = new Scene(root, 700, 400);
+            Scene scene = new Scene(root, 700, 500);
             String css = this.getClass().getResource("css/estilos.css").toExternalForm();
             scene.getStylesheets().add(css);
             stage.setMaxHeight(600);

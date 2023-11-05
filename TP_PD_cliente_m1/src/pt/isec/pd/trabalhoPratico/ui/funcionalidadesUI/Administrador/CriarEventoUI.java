@@ -41,7 +41,7 @@ public class CriarEventoUI extends BorderPane {
     }
     private void registerHandlers() {
         confirmar.setOnAction( e -> {
-            progClienteManager.criarEditar_Evento(eventoUI.nomeEvento.getText(), eventoUI.local.getText(), eventoUI.data.getValue(), eventoUI.horaInicio.getValue(), eventoUI.horaFim.getValue(), Message_types.CRIA_EVENTO);
+            progClienteManager.criarEditar_Evento(eventoUI.getNomeEvento(), eventoUI.getLocal(), eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim(), Message_types.CRIA_EVENTO);
         });
         cancelar.setOnAction(e -> {
             ContaAdministradorUI.opcaoAdmin.set("NADA");

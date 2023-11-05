@@ -109,7 +109,14 @@ HBox {
     -fx-padding: 7 15;
     -fx-background-color: #90A4AE;
 }
-
 .movButton {
     -fx-padding: 5 10;
+}
+.procurar {
+  -fx-background-image: url("magnifier.png");
+  -fx-background-size: 30px 30px;
+  -fx-background-repeat: no-repeat;
+  -fx-background-position: center;
+  -fx-background-color: rgb(255,255,255);
+  -fx-padding: 1;
 }

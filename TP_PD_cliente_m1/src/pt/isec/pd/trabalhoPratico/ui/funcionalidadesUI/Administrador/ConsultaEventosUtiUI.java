@@ -47,12 +47,11 @@ public class ConsultaEventosUtiUI extends BorderPane {
 
     private void registerHandlers() {
         listar.setOnAction(e -> {
-            extrairListaEventos();
-            listaEventos.setVisible(true);
-            obterCSV.setDisable(false);
+            listaEventos.setVisible(extrairListaEventos());
+            obterCSV.setDisable(!listaEventos.isVisible());
         });
         obterCSV.setOnAction(e -> {
-            progClienteManager.obterCSV_Admin();
+            progClienteManager.obterCSV_Admin("presencasRegistadas_" + utilizador.getText());
             obterCSV.setDisable(true);
         });
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());

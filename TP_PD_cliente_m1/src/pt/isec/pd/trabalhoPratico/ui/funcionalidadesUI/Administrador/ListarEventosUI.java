@@ -4,12 +4,12 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
-
-import java.util.ArrayList;
 
 public class ListarEventosUI extends BorderPane {
     protected static int eventoSelecionado;
+    private FiltrosUI filtros;
     private ListView<String> listaEventos;
     private final ProgClienteManager progClienteManager;
 
@@ -21,6 +21,7 @@ public class ListarEventosUI extends BorderPane {
     }
 
     private void createViews() {
+        filtros = new FiltrosUI();
         listaEventos = new ListView<>();
         extrairListaEventos();
 
@@ -30,7 +31,7 @@ public class ListarEventosUI extends BorderPane {
         setMargin(listaEventos, new Insets(20, 0, 5, 0));
         setAlignment(label, javafx.geometry.Pos.CENTER);
         this.setTop(label);
-        this.setCenter(listaEventos);
+        this.setCenter(new VBox(filtros, listaEventos));
     }
 
     private void registerHandlers() {
@@ -39,6 +40,9 @@ public class ListarEventosUI extends BorderPane {
                 eventoSelecionado = listaEventos.getSelectionModel().getSelectedIndex();
                 ContaAdministradorUI.opcaoAdmin.set("EDITOR_EVENTOS");
             }
+        });
+        filtros.procurar.setOnAction( e -> {
+            extrairListaEventos();
         });
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
     }

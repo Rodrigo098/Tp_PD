@@ -37,8 +37,8 @@ public class ProgClienteManager {
         return programaCliente.registarPresenca(codigo);
     }
 
-    public String[] consultarPresencasUti(){
-        return programaCliente.consultarPresencasUti();
+    public String[] obterListaConsultaUtilizador(String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim){
+        return programaCliente.obterListaConsultaUtilizador(nome, local, limData1, limData2, horaInicio, horaFim);
     }
     public boolean obterCSV_Presencas(String nome) {
         return programaCliente.obterCSV_Presencas(nome);
@@ -53,6 +53,9 @@ public class ProgClienteManager {
         return programaCliente.criarEditar_Evento(nome, local, data, horaInicio, horaFim, tipo);
     }
 
+    public ArrayList<String> obterListaConsultaAdministrador(String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim){
+        return programaCliente.obterListaConsultaAdministrador(nome, local, limData1, limData2, horaInicio, horaFim);
+    }
     public boolean eliminarEvento(int indiceEvento) {
         return programaCliente.eliminarEvento(indiceEvento);
     }
@@ -68,18 +71,14 @@ public class ProgClienteManager {
     public ArrayList<String> getListaEventos() {
         return programaCliente.getListaEventos();
     }
-    public ArrayList<String> consultaEventosFiltros(String nome, String local, String data, String horaInicio, String horaFim){
-        return programaCliente.consultaEventosFiltros(nome, local, data, horaInicio, horaFim);
-    }
 
     public ArrayList<String> consultaPresencasEvento(int indiceEvento){
         return programaCliente.consultaPresencasEvento(indiceEvento);
     }
-
     public ArrayList<String> consultaEventosUtilizador(String utilizador){
         return programaCliente.consultaEventosUtilizador(utilizador);
     }
-    public void obterCSV_Admin() {
-        programaCliente.obterCSV_Admin();
+    public void obterCSV_Admin(String nome) {
+        programaCliente.obterCSV_Admin(nome);
     }
 }

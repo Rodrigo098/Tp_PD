@@ -8,10 +8,12 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
+import java.time.LocalDate;
+
 public class EventoUI extends VBox {
-    protected TextField nomeEvento, local;
-    protected DatePicker data;
-    protected Spinner<Integer> horaInicio, horaFim;
+    private TextField nomeEvento, local;
+    private DatePicker data;
+    private Spinner<Integer> horaInicio, horaFim;
     public EventoUI() {
         createViews();
         registerHandlers();
@@ -28,7 +30,7 @@ public class EventoUI extends VBox {
         horaFim = new Spinner<>(0, 24, 10);
 
         this.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
-        this.getChildren().addAll(new Text("Nome:"), nomeEvento, new Text("Local:"), local, new HBox(new Text("Data: "), data, new Text("De: "), horaInicio, new Text("Até: "), horaFim));
+        this.getChildren().addAll(new Text("Nome:"), nomeEvento, new Text("Local:"), local, new HBox(new Text("Data:"), data, new Text("De:"), horaInicio, new Text("Até:"), horaFim));
         this.setSpacing(10);
         this.setMaxWidth(400);
     }
@@ -39,4 +41,19 @@ public class EventoUI extends VBox {
     private void update(){
     }
 
+    public LocalDate getData() {
+        return data.getValue();
+    }
+    public String getNomeEvento() {
+        return nomeEvento.getText();
+    }
+    public String getLocal() {
+        return local.getText();
+    }
+    public int getHoraInicio() {
+        return horaInicio.getValue();
+    }
+    public int getHoraFim() {
+        return horaFim.getValue();
+    }
 }
