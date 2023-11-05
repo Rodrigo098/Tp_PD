@@ -41,7 +41,7 @@ public class EditarRegistoUI extends BorderPane {
         VBox vBox = new VBox(new Text("Nome:"), nome,
                              new Text("Número de Identificação:"), numID,
                              new VBox(new Text("Palavra passe:"), new HBox(password, confPassword)));
-        vBox.setSpacing(5);
+        vBox.setSpacing(10);
         Label label = new Label("Editar Registo");
         label.getStyleClass().add("titulo");
 

@@ -1,10 +1,13 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
@@ -37,12 +40,22 @@ public class RegistoUtilizadorUI extends BorderPane {
         voltar = new Button("Voltar");
         voltar.getStyleClass().add("cancelar");
 
-        HBox hBox = new HBox(voltar, registar);
-        HBox hBox1 = new HBox(nomeUtilizador, email);
-        HBox hBox2 = new HBox(password, confirmar_password);
-        VBox vBox = new VBox(hBox1, numIdentificacao, hBox2, hBox);
+        Label label = new Label("Registar-se na aplicação");
+        label.getStyleClass().add("titulo");
 
-        this.setStyle("-fx-background-color: #78909C; -fx-padding: 30;");
+        HBox hBox = new HBox(voltar, registar);
+        HBox hBox1 = new HBox(new Text("Nome:"), nomeUtilizador, new Text("Email:"), email);
+        HBox hBox2 =  new HBox(new Text("Nº.Identificação"), numIdentificacao);
+        HBox hBox3 = new HBox(new Text("Password:"), password, confirmar_password);
+        VBox info = new VBox(hBox1, hBox2, hBox3);
+        info.setSpacing(10);
+        VBox vBox = new VBox(label, info, hBox);
+        VBox.setMargin(info, new Insets(30, 0, 30, 0));
+
+        vBox.getStyleClass().add("sombreamentoBox");
+
+        setMargin(vBox, new Insets(60, 50, 60, 50));
+        this.getStyleClass().add("entradaPane");
         this.setCenter(vBox);
         this.setFocusTraversable(true);
     }

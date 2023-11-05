@@ -49,8 +49,8 @@ public class RootPane extends BorderPane {
 
         StackPane stackPane = new StackPane(
                 new BorderPane(vBox),
-                new RegistoUtilizadorUI(progClienteManager),
                 new ContaUtilizadorUI(progClienteManager),
+                new RegistoUtilizadorUI(progClienteManager),
                 new ContaAdministradorUI(progClienteManager)
         );
         this.getStyleClass().add("entradaPane");

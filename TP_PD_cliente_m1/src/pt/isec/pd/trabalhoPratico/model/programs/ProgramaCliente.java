@@ -152,7 +152,7 @@ public class ProgramaCliente {
         }catch (IOException | ClassNotFoundException ignored) {
             MainCliente.menuSBP.set("ERRO");
         }*/
-        MainCliente.clienteSBP.set("ADMINISTRADOR");
+        MainCliente.clienteSBP.set("UTILIZADOR");
         MainCliente.menuSBP.set("CONTA");
     }
     public void logout() {
