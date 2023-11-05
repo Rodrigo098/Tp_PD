@@ -243,7 +243,7 @@ public class ProgramaCliente {
             oout.writeObject(consultaPresencas);
             oout.flush();
 
-            ConsultaEventos_EliminaPresencas_InserePresencas lista = (ConsultaEventos_EliminaPresencas_InserePresencas) oin.readObject();
+            EliminaPresencas_InserePresencas lista = (EliminaPresencas_InserePresencas) oin.readObject();
 
             return lista.getLista();
         } catch (IOException | ClassNotFoundException e) {
@@ -356,8 +356,8 @@ public class ProgramaCliente {
                 emails.add(email);
         }
 
-        ConsultaEventos_EliminaPresencas_InserePresencas interacao =
-                new ConsultaEventos_EliminaPresencas_InserePresencas(tipo, listaEventos.get(indiceEvento).getNomeEvento(), emails.toArray(new String[0]));
+        EliminaPresencas_InserePresencas interacao =
+                new EliminaPresencas_InserePresencas(tipo, listaEventos.get(indiceEvento).getNomeEvento(), emails.toArray(new String[0]));
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -497,7 +497,7 @@ public class ProgramaCliente {
             oout.writeObject(consulta);
             oout.flush();
 
-            ConsultaEventos_EliminaPresencas_InserePresencas lista = (ConsultaEventos_EliminaPresencas_InserePresencas) oin.readObject();
+            EliminaPresencas_InserePresencas lista = (EliminaPresencas_InserePresencas) oin.readObject();
 
             if (lista.getTipo() == Message_types.ERRO) {
                 MainCliente.menuSBP.set("ERRO");
@@ -520,7 +520,7 @@ public class ProgramaCliente {
             oout.writeObject(consulta);
             oout.flush();
 
-            ConsultaEventos_EliminaPresencas_InserePresencas lista = (ConsultaEventos_EliminaPresencas_InserePresencas) oin.readObject();
+            EliminaPresencas_InserePresencas lista = (EliminaPresencas_InserePresencas) oin.readObject();
 
             if(lista.getTipo() == Message_types.VALIDO)
                 return lista.getLista();
@@ -538,15 +538,15 @@ public class ProgramaCliente {
         ArrayList<String> filtrosArray = new ArrayList<>();
         Collections.addAll(filtrosArray, filtros.trim().split(" "));
 
-        ConsultaEventos_EliminaPresencas_InserePresencas interacao =
-                new ConsultaEventos_EliminaPresencas_InserePresencas(Message_types.CONSULTA_EVENTOS, filtros);
+        EliminaPresencas_InserePresencas interacao =
+                new EliminaPresencas_InserePresencas(Message_types.CONSULTA_EVENTOS, filtros);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
             oout.writeObject(interacao);
             oout.flush();
 
-            ConsultaEventos_EliminaPresencas_InserePresencas lista = (ConsultaEventos_EliminaPresencas_InserePresencas) oin.readObject();
+            EliminaPresencas_InserePresencas lista = (EliminaPresencas_InserePresencas) oin.readObject();
 
             if(lista.getTipo() == Message_types.VALIDO)
                 return lista.getLista();
