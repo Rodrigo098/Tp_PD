@@ -1,5 +1,6 @@
 package pt.isec.pd.trabalhoPratico.ui;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -39,8 +40,12 @@ public class RootPane extends BorderPane {
         registar = new Text("Registar");
         registar.getStyleClass().add("links");
 
-        VBox vBox = new VBox(new HBox(new Text("Nome de utilizador: "), username), new HBox(new Text("Password: "), password), login, registar);
+        Label label = new Label("Entrar na aplicação");
+        label.getStyleClass().add("titulo");
+
+        VBox vBox = new VBox(label, new HBox(new Text("Nome de utilizador: "), username), new HBox(new Text("Password: "), password), login, registar);
         vBox.getStyleClass().add("sombreamentoBox");
+        VBox.setMargin(label, new Insets(0, 10, 30, 10));
 
         StackPane stackPane = new StackPane(
                 new BorderPane(vBox),
