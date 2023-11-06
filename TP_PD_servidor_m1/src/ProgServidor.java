@@ -1,5 +1,6 @@
 import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
 import java.io.IOException;
@@ -30,16 +31,18 @@ class ThreadCliente implements Runnable {
         ) {
             //Quando conecta a primeira vez vai guardar o email
 
-
-
             Geral o=(Geral) in.readObject();
+
+            //Comandos de Registo e Login
             if(o.getTipo() == Message_types.LOGIN){// para descobrir qual a classe estava a pensar em algo para o processamento depois dos dados
                 Login aux = (Login) o;
                 String password=aux.getPassword();
                 email=aux.getEmail();
                 System.out.println(email);
+
                 if(DbManage.autentica_user(email,password))
                     out.writeObject(new Geral(Message_types.ADMINISTRADOR));
+
                 else out.writeObject(new Geral(Message_types.INVALIDO));
                 // aqui verifico se é o admin e ponho o boolean a true ou false
             } else if (o.getTipo() == Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
@@ -53,6 +56,7 @@ class ThreadCliente implements Runnable {
                 out.writeObject("Comando Invalido para estabelecer conexão");// apenas como exemplo
             }
 
+            //Comandos para os utilizadores normais
             if(!isadmin) {
                 while (!flagStop) {
                     Geral message = (Geral) in.readObject();
@@ -60,7 +64,7 @@ class ThreadCliente implements Runnable {
                         case EDITAR_REGISTO ->{
                             RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente)message;
                             Utilizador user=new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
-                          if(  DbManage.edita_registo(user,aux.getPassword())){
+                          if(DbManage.edita_registo(user,aux.getPassword())){
                               out.writeObject(new Geral(Message_types.VALIDO));
                           }else
                               out.writeObject(new Geral(Message_types.ERRO));
@@ -76,17 +80,88 @@ class ThreadCliente implements Runnable {
                     }
                 }
             }else {
+                //Comandos para o admin
                 while (!flagStop) {
                     Geral message = (Geral) in.readObject();
                     switch (message.getTipo()) {
-                        case GERAR_COD -> out.writeObject("EXEMPLO");
-                        case UPDATE_INF -> {}
-                        case CRIA_EVENTO -> {}
-                        case EDIT_EVENTO -> {}
-                        case CONSULTA_EVENTOS -> {}
-                        case ELIMINAR_EVENTO -> {}
-                        case INSERE_PRES -> {}
-                        case ELIMINA_PRES -> {}
+                        case CRIA_EVENTO -> {
+                            //Falta a validacao do admin
+                            Cria_evento evento = (Cria_evento) message;
+                          if(DbManage.Cria_evento(evento.getNome(), evento.getLocal(), evento.getData(), evento.getHorainicio(), evento.getHorafim())){
+                                out.writeObject(new Geral(Message_types.VALIDO));
+                          }
+                          else{
+                              out.writeObject(new Geral(Message_types.ERRO));
+                          }
+
+                        }
+                        case EDIT_EVENTO -> {
+                            //Estou a reutilizar a classe Cria_evento mas...
+                            //Vamos ter um problema aqui por causa do nome do evento. Se ele for alterável é necessário saber o nome atual do evento e o novo nome portanto precisa-se de mais um campo
+                            //Cria-se outra classe?
+
+                            String eventoId = "nome do evento";
+                            Cria_evento evento = (Cria_evento) message;
+
+                            if(DbManage.Edita_evento(evento, eventoId)){
+                                out.writeObject(new Geral(Message_types.VALIDO));
+                                //ATT: ESTOU UM POUCO CONFUSA COM ESSAS CLASSES DE COMUNICAÇÃO E AS DE DADOS.
+                                //Aqui posso apenas dizer que a alteração foi valida ou mando mais alguma coisa?
+                            }
+                            else{
+                                out.writeObject(new Geral(Message_types.ERRO));
+                            }
+                        }
+                        case ELIMINAR_EVENTO -> {
+                            Consulta_Elimina_GeraCod_SubmeteCod_Evento aux=(Consulta_Elimina_GeraCod_SubmeteCod_Evento)message;
+                            if(DbManage.Elimina_evento(aux.getNome())){
+                                out.writeObject(new Geral(Message_types.VALIDO));
+                            }
+                            else{
+                                out.writeObject(new Geral(Message_types.ERRO));
+                            }
+                        }
+                        case CONSULTA_EVENTOS -> {
+                            //Vou usar o cria_evento só pq sim, mas cada campo preenchido vai funcionar como um filtro, logo a classe a utilizar pode vir vazia
+                            Cria_evento aux=(Cria_evento)message;
+                            String [] eventosConsultados= DbManage.Consulta_eventos(aux);
+
+                            //Falta mandar isso em condições como resposta para o cliente, pq aqui não faz sentido o nome do evento
+                            //Talvez seja necessário outra classe... Idk. Vou deixar assim por enquanto
+                            out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,eventosConsultados));
+                        }
+                        case GERAR_COD ->{
+                            //Vai ser necessário outra classe também, acho eu. Vou fazer assim agr só para testar
+                            Cria_evento aux=(Cria_evento)message;
+                            int validade = 30; //validade em minutos
+                            int code =DbManage.GeraCodigoRegisto(aux,validade);
+                            if (code != 0){
+                                //Enviar o codigo gerado
+                            }
+                            else{
+                                out.writeObject(new Geral(Message_types.ERRO));
+                            }
+                        }
+                        case UPDATE_INF -> {} //Esta é para o quê supostamente?
+
+                        case INSERE_PRES ->  {
+                            ConsultaEventos_EliminaPresencas_InserePresencas aux=(ConsultaEventos_EliminaPresencas_InserePresencas)message;
+                             if(DbManage.InserePresencas(aux.getNome_evento(),aux.getEmails())){
+                                 out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome_evento(),Message_types.VALIDO));
+                             }
+                             else{
+                                 out.writeObject(new Geral(Message_types.ERRO));
+                             }
+                        }
+                        case ELIMINA_PRES -> {
+                            ConsultaEventos_EliminaPresencas_InserePresencas aux=(ConsultaEventos_EliminaPresencas_InserePresencas)message;
+                            if(DbManage.EliminaPresencas(aux.getNome_evento(),aux.getEmails())){
+                                out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome_evento(),Message_types.VALIDO));
+                            }
+                            else{
+                                out.writeObject(new Geral(Message_types.ERRO));
+                            }
+                        }
                         case CONSULTA_PRES_EVENT -> {
                             Consulta_Elimina_GeraCod_SubmeteCod_Evento aux=(Consulta_Elimina_GeraCod_SubmeteCod_Evento)message;
                             String []res= DbManage.Presencas_evento(aux.getNome());
@@ -97,7 +172,7 @@ class ThreadCliente implements Runnable {
                            String []res= DbManage.Presencas_user(aux.getNome());
                             out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,res));
                         }
-                        case CSV_ADMINISTRADOR -> {}
+                        case CSV_ADMINISTRADOR -> {} //Serão necessários 2 ficheiros csv
                         case LOGOUT ->{break;}
                         default -> out.writeObject("Operacao invalida");
                     }
