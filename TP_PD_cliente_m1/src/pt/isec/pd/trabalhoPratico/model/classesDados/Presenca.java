@@ -12,4 +12,8 @@ public record Presenca(Evento evento, Utilizador utilizador) {
     public String toString() {
         return utilizador.toString();
     }
+
+    public String getEventoInfo() {
+        return evento.toString();
+    }
 }

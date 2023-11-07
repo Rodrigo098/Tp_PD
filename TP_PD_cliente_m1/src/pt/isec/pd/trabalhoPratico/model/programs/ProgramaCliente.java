@@ -136,14 +136,12 @@ public class ProgramaCliente {
                             new Thread(new AtualizacaoAsync(socket, listaEventos, listaPresencas)).start();
                         } catch (Exception e) {
                             MainCliente.menuSBP.set("ERRO");
-                            socket.close();
                         }
                     }
                     case UTILIZADOR ->
                         MainCliente.clienteSBP.set("UTILIZADOR");
                     case INVALIDO, ERRO -> {
                         MainCliente.menuSBP.set("ERRO");
-                        socket.close();
                         return;
                     }
                 }
@@ -195,14 +193,12 @@ public class ProgramaCliente {
 
             if (validacao == null) {
                 MainCliente.menuSBP.set("ERRO");
-                socket.close();
             } else {
                 if (validacao.getTipo() == Message_types.VALIDO) {
                     MainCliente.clienteSBP.set("UTILIZADOR");
                     MainCliente.menuSBP.set("CONTA");
                 } else {
                     MainCliente.menuSBP.set("ERRO");
-                    socket.close();
                 }
             }
         }catch (IOException | ClassNotFoundException ignored) {
@@ -226,7 +222,6 @@ public class ProgramaCliente {
                 return true;
             if (validacao.getTipo() == Message_types.ERRO) {
                 MainCliente.menuSBP.set("ERRO");
-                socket.close();
             }
         } catch (IOException | ClassNotFoundException ignored) {
         }
@@ -257,6 +252,7 @@ public class ProgramaCliente {
     }
 
     public boolean editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
+        MainCliente.menuSBP.set("NADA");
 
         if(nome == null || password == null || !password.equals(confPass) || numIdentificacao == null)
             return false;
@@ -278,13 +274,11 @@ public class ProgramaCliente {
 
             if (validacao == null) {
                 MainCliente.menuSBP.set("ERRO");
-                socket.close();
             } else {
                 if(validacao.getTipo() == Message_types.VALIDO)
                     return true;
                 if (validacao.getTipo() == Message_types.ERRO) {
                     MainCliente.menuSBP.set("ERRO");
-                    socket.close();
                 }
             }
         }catch (ClassNotFoundException | IOException ignored) {
@@ -295,6 +289,7 @@ public class ProgramaCliente {
     /////////////////////////ADMINISTRADOR:
     //CRIAR OU EDITAR EVENTO, O ÚLTIMO PARÂMETRO É PARA SABER SE É PARA CRIAR OU EDITAR
     public boolean criarEditar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim, Message_types tipo) {
+        MainCliente.menuSBP.set("NADA");
         if(nome == null || local == null || data == null || horaInicio >= horaFim)
             return false;
 
@@ -319,7 +314,6 @@ public class ProgramaCliente {
                 return true;
             if (validacao.getTipo() == Message_types.ERRO) {
                 MainCliente.menuSBP.set("ERRO");
-                socket.close();
             }
         } catch (IOException | ClassNotFoundException ignored) {
         }
@@ -327,6 +321,7 @@ public class ProgramaCliente {
     }
 
     public boolean eliminarEvento(int indiceEvento) {
+        MainCliente.menuSBP.set("NADA");
         Consulta_Elimina_GeraCod_SubmeteCod_Evento evento =
                 new Consulta_Elimina_GeraCod_SubmeteCod_Evento(listaEventos.get(indiceEvento).getNomeEvento(), Message_types.ELIMINAR_EVENTO);
 
@@ -341,7 +336,6 @@ public class ProgramaCliente {
                 return true;
             if (validacao.getTipo() == Message_types.ERRO) {
                 MainCliente.menuSBP.set("ERRO");
-                socket.close();
             }
         }catch (IOException | ClassNotFoundException ignored) {
         }
@@ -349,6 +343,7 @@ public class ProgramaCliente {
     }
 
     public boolean eliminaInsere_Eventos(Message_types tipo, int indiceEvento, String filtros) {
+        MainCliente.menuSBP.set("NADA");
         //o nome do evento é o segundo parâmetro
         ArrayList<String> emails = new ArrayList<>();
         for (String email : filtros.trim().split(" ")) {
@@ -370,7 +365,6 @@ public class ProgramaCliente {
                 return true;
             if (validacao.getTipo() == Message_types.ERRO) {
                 MainCliente.menuSBP.set("ERRO");
-                socket.close();
             }
         }catch (IOException | ClassNotFoundException ignored) {
         }
@@ -378,6 +372,7 @@ public class ProgramaCliente {
     }
 
     public String gerarCodPresenca(int indiceEvento) {
+        MainCliente.menuSBP.set("NADA");
         Consulta_Elimina_GeraCod_SubmeteCod_Evento geraCod =
         new Consulta_Elimina_GeraCod_SubmeteCod_Evento(listaEventos.get(indiceEvento).getNomeEvento(), Message_types.GERAR_COD);
 
@@ -390,7 +385,6 @@ public class ProgramaCliente {
 
             if (codigo.getTipo() == Message_types.ERRO) {
                 MainCliente.menuSBP.set("ERRO");
-                socket.close();
             }
             return codigo.getNome();
         }catch (IOException | ClassNotFoundException ignored) {
@@ -436,13 +430,18 @@ public class ProgramaCliente {
     }
 
     public ArrayList<String> consultaEventosUtilizador(String utilizador) {
-        if(verificaFormato(utilizador))
-            return null;
         listaResultados.clear();
-        synchronized(listaPresencas){
-            for(Presenca r : listaPresencas){
-                if(r.getUtilizador().equals(utilizador))
-                    listaResultados.add(r.toString());
+        if(verificaFormato(utilizador)){
+            listaResultados.add("Formato de email inválido.");
+        }
+        else if(listaPresencas.size() == 0)
+            listaResultados.add("Não existem presenças registadas.");
+        else {
+            synchronized (listaPresencas) {
+                for (Presenca r : listaPresencas) {
+                    if (r.getUtilizador().equals(utilizador))
+                        listaResultados.add(r.getEventoInfo());
+                }
             }
         }
         return new ArrayList<String>(listaResultados);

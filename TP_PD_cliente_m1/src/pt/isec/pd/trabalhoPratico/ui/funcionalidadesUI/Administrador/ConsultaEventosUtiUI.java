@@ -10,6 +10,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
+import java.util.ArrayList;
+
 public class ConsultaEventosUtiUI extends BorderPane {
     private TextField utilizador;
     private Button obterCSV, listar;

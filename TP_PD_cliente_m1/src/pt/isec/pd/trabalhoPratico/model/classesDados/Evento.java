@@ -20,6 +20,6 @@ public record Evento(String criador, String nomeEvento, String local, LocalDate 
     }
     @Override
     public String toString() {
-        return nomeEvento + ";" + local + ";" + data.toString() + ";" + horaInicio + ";" + horaFim;
+        return nomeEvento + "; " + local + "; " + data.toString() + "; " + horaInicio;
     }
 }
