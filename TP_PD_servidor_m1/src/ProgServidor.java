@@ -1,5 +1,6 @@
 import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
 import java.io.IOException;
@@ -10,18 +11,21 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import static pt.isec.pd.trabalhoPratico.dataAccess.DbManage.PresencasCSV;
+
 class ThreadCliente implements Runnable {
     Socket Client;
     boolean flagStop,isadmin;// flag para terminar a thread
     String email;
+
+    List <Evento> eventosPresencasUser = new ArrayList<>();
+    List <Evento> eventosPresencasAdmin = new ArrayList<>();
 
 
     public ThreadCliente(Socket client) {
         Client = client;
         flagStop=false;
     }
-
-
 
     @Override
     public void run() {
@@ -44,7 +48,8 @@ class ThreadCliente implements Runnable {
 
                 else out.writeObject(new Geral(Message_types.INVALIDO));
                 // aqui verifico se é o admin e ponho o boolean a true ou false
-            } else if (o.getTipo() == Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
+            }
+            else if (o.getTipo() == Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
 
                 RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente)o;
                 email= aux.getEmail();
@@ -68,12 +73,28 @@ class ThreadCliente implements Runnable {
                           }else
                               out.writeObject(new Geral(Message_types.ERRO));
 
-
                         }
                         case SUBMICAO_COD -> out.writeObject("Insere dados na database");
-                        case CSV_UTILIZADOR -> {}
-                        case CONSULTA_PRES_UTILIZADOR -> {}
-                        case LOGOUT -> {break;}
+
+                        case CONSULTA_PRES_UTILIZADOR -> {
+                            Consulta_Elimina_GeraCod_SubmeteCod_Evento aux=(Consulta_Elimina_GeraCod_SubmeteCod_Evento)message;
+
+                            //Depois temos que mandar aí a classe com os critérios/filtros e substituir esses parametros extras
+                            List<Evento> eventosAssistidos = DbManage.ConsultaPresencas_user(aux.getNome(), "Nome do evento","local",null,null,null);
+                            eventosPresencasUser.addAll(eventosAssistidos); //vou utilizar o eventos presenças user para fazer o ficheiro csv do utilizador
+                            //Mandarmos isso pela classe que recebe a lista de eventos
+                            //out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,eventosAssistidos));
+                        }
+
+                        case CSV_UTILIZADOR -> {
+                            DbManage.PresencasCSV(eventosPresencasUser,"minhasPresencas.csv");
+                            out.writeObject(new Geral(Message_types.VALIDO));
+                        }
+
+                        case LOGOUT -> {
+                                out.writeObject(new Geral(Message_types.VALIDO));
+                                flagStop = true; // termina a thread
+                        }
 
                         default -> out.writeObject("Operacao invalida");
                     }
@@ -123,11 +144,12 @@ class ThreadCliente implements Runnable {
                         case CONSULTA_EVENTOS -> {
                             //Vou usar o cria_evento só pq sim, mas cada campo preenchido vai funcionar como um filtro, logo a classe a utilizar pode vir vazia
                             Cria_evento aux=(Cria_evento)message;
-                            String [] eventosConsultados= DbManage.Consulta_eventos(aux);
+                            List <Evento> eventosConsultados = DbManage.Consulta_eventos(aux);
 
                             //Falta mandar isso em condições como resposta para o cliente, pq aqui não faz sentido o nome do evento
                             //Talvez seja necessário outra classe... Idk. Vou deixar assim por enquanto
-                            out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,eventosConsultados));
+
+                            //out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,eventosConsultados));
                         }
                         case GERAR_COD ->{
                             //Vai ser necessário outra classe também, acho eu. Vou fazer assim agr só para testar
@@ -168,11 +190,23 @@ class ThreadCliente implements Runnable {
                         }
                         case CONSULT_EVENT_UTILIZADOR -> {
                            Consulta_Elimina_GeraCod_SubmeteCod_Evento aux=(Consulta_Elimina_GeraCod_SubmeteCod_Evento)message;
-                           String []res= DbManage.Presencas_user(aux.getNome());
-                            out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,res));
+
+                           //Os outros argumentos são os filtros que podem ser utilizados
+                            List<Evento> eventosAssistidos = DbManage.ConsultaPresencas_user(aux.getNome(),"Nome do evento","local",null,null,null);
+
+                            eventosPresencasAdmin.addAll(eventosAssistidos);
+                            //Mandarmos isso pela classe que recebe a lista de eventos
+                            //out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,eventosAssistidos));
                         }
-                        case CSV_ADMINISTRADOR -> {} //Serão necessários 2 ficheiros csv
-                        case LOGOUT ->{break;}
+                        case CSV_ADMINISTRADOR -> {
+                            PresencasCSV(eventosPresencasAdmin,"presencasUtilizadores.csv");
+                            out.writeObject(new Geral(Message_types.VALIDO));
+                        } //Serão necessários 2 ficheiros csv
+
+                        case LOGOUT ->{
+                                out.writeObject(new Geral(Message_types.VALIDO));
+                                flagStop = true; // termina a thread
+                        }
                         default -> out.writeObject("Operacao invalida");
                     }
                 }

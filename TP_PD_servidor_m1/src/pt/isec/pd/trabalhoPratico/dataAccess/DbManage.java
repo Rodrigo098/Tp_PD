@@ -4,7 +4,11 @@ import pt.isec.pd.trabalhoPratico.model.classesComunication.Cria_evento;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -184,24 +188,62 @@ public class DbManage {
 
 
     }
-    public static String[] Presencas_user(String nome_utilizador){
-        List<String> res=new ArrayList<>();
-        try(Connection connection = DriverManager.getConnection(dbUrl);
 
-            Statement statement = connection.createStatement()){
-            String GetQuery = "SELECT * FROM Assiste where email='" + nome_utilizador + "';";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
-            ResultSet rs=statement.executeQuery(GetQuery);
+
+    //Alterei esta classe para retornar os eventos em que o utilizador tem presenças registadas
+    //E para conter já os filtros
+    public static List <Evento> ConsultaPresencas_user(String nome_utilizador,String nome_evento,String local, Date data,LocalTime horaInicio, LocalTime horaFim){
+        List<Evento> eventosAssistidos =new ArrayList<>();
+
+        try(Connection connection = DriverManager.getConnection(dbUrl);
+            Statement statement = connection.createStatement()) {
+            String FiltroEventosUser = "SELECT * FROM Evento " +
+                    "INNER JOIN Assiste ON Evento.nome_evento = Assiste.nome_evento " +
+                    "WHERE Assiste.email = '" + nome_utilizador + "' ";
+
+            //ResultSet rs = statement.executeQuery(FiltroEventosUser);
+
+            if (nome_evento != null && !nome_evento.isEmpty()) {
+                FiltroEventosUser += "AND Evento.nome_evento LIKE '%" + nome_evento + "%' ";
+            }
+
+            if (local != null && !local.isEmpty()) {
+                FiltroEventosUser += "AND Evento.local LIKE '%" + local + "%' ";
+            }
+
+            if (data != null) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+                String dataString = dateFormat.format(data); //Alterei isso para termos a data nesse formato, facilita os testes mas sempre se pode alterar
+                FiltroEventosUser += " AND data_realizacao = '" + dataString + "'";
+            }
+
+            if (horaInicio != null) {
+                FiltroEventosUser += " AND hora_inicio = '" + horaInicio + "'";
+            }
+
+            if (horaFim!= null) {
+                FiltroEventosUser += " AND hora_fim = '" + horaFim + "'";
+            }
+
+            ResultSet rs = statement.executeQuery(FiltroEventosUser);
+
 
 
             while (rs.next()){
-             res.add(   rs.getString("nome_evento"));
+                String nomeEvento = rs.getString("nome_evento");
+                String localEvento = rs.getString("local");
+                String dataRealizacao = rs.getString("data_realizacao");
+                String horaInicioEvento = rs.getString("hora_inicio");
+                String horaFimEvento = rs.getString("hora_fim");
+
+                Evento evento = new Evento(nomeEvento,localEvento, dataRealizacao, horaInicioEvento, horaFimEvento );
+                eventosAssistidos.add(evento);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        String []devolve= (String[]) res.toArray();
 
-        return devolve;
+        return eventosAssistidos;
 
     }
     public static String[] Presencas_evento(String nome_evento){
@@ -209,9 +251,8 @@ public class DbManage {
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
             Statement statement = connection.createStatement()){
-            String GetQuery = "SELECT * FROM Assiste where nome_evento='" + nome_evento + "';";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
+            String GetQuery = "SELECT * FROM Assiste where nome_evento='" + nome_evento + "';";
             ResultSet rs=statement.executeQuery(GetQuery);
-
 
             while (rs.next()){
                 res.add(rs.getString("email"));
@@ -229,9 +270,11 @@ public class DbManage {
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
             Statement statement = connection.createStatement()){
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+            String dataString = dateFormat.format(data); //Alterei isso para termos a data nesse formato, facilita os testes
 
             String createEntryQuery = "INSERT INTO Evento (nome_evento,local,data_realizacao,hora_inicio,hora_fim) VALUES ('"
-                    + nome+"','" + local+"','" +data+"','" +horainicio+"','" +horafim+"')";
+                    + nome+"','" + local+"','" +dataString+"','" +horainicio+"','" +horafim+"')";
 
             if(statement.executeUpdate(createEntryQuery)<1){
                 System.out.println("Erro na criacao do evento");
@@ -245,7 +288,6 @@ public class DbManage {
         }
     return true;
     }
-
 
     public static boolean Edita_evento(Cria_evento evento, String antigoNome) {
         try (Connection connection = DriverManager.getConnection(dbUrl);
@@ -269,7 +311,9 @@ public class DbManage {
                 }
             } else {
                 // Se não houver presenças edita todos os campos
-                String updateEventQuery = "UPDATE Evento SET data_realizacao = '" + evento.getData() + "', hora_inicio = '" + evento.getHorainicio() + "', hora_fim = '" + evento.getHorafim() + "', nome_evento = '" + evento.getNome() + "', local = '" + evento.getLocal()+ "' WHERE nome_evento = '" + antigoNome
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+                String dataString = dateFormat.format(evento.getData()); //Alterei isso para termos a data nesse formato, facilita os testes mas sempre se pode alterar
+                String updateEventQuery = "UPDATE Evento SET data_realizacao = '" + dataString + "', hora_inicio = '" + evento.getHorainicio() + "', hora_fim = '" + evento.getHorafim() + "', nome_evento = '" + evento.getNome() + "', local = '" + evento.getLocal()+ "' WHERE nome_evento = '" + antigoNome
                         + "'";
 
                 if (statement.executeUpdate(updateEventQuery) < 1) {
@@ -315,8 +359,9 @@ public class DbManage {
         return true;
     }
 
-    public static String[] Consulta_eventos(Cria_evento evento) {
+    public static List <Evento> Consulta_eventos(Cria_evento evento) {
         List<Evento> eventos = new ArrayList<>();
+
 
         try (Connection connection = DriverManager.getConnection(dbUrl);
              Statement statement = connection.createStatement()) {
@@ -324,7 +369,7 @@ public class DbManage {
             String filtroEvento = "SELECT * FROM Evento WHERE 1=1"; // Começa com "1=1" para mostrar todos resultados
                                                                   // A medida que campos forem não null ele inclui na pesquisa
 
-            if (evento.getNome() != null && !evento.getNome() .isEmpty()) {
+            if (evento.getNome() != null && !evento.getNome().isEmpty()) {
                 filtroEvento += " AND nome_evento LIKE '%" + evento.getNome()  + "%'";
             }
 
@@ -333,36 +378,38 @@ public class DbManage {
             }
 
             if (evento.getData() != null) {
-                filtroEvento += " AND data_realizacao = '" + evento.getData() + "'";
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+                String dataString = dateFormat.format(evento.getData()); //Alterei isso para termos a data nesse formato, facilita os testes mas sempre se pode alterar
+                filtroEvento += " AND data_realizacao = '" + dataString + "'";
             }
 
             if (evento.getHorainicio() != null) {
                 filtroEvento += " AND hora_inicio = '" + evento.getHorainicio() + "'";
             }
 
-            if (evento.getHorafim() != null) {
+            if (evento.getHorafim()!= null) {
                 filtroEvento += " AND hora_fim = '" + evento.getHorafim() + "'";
             }
 
             ResultSet resultSet = statement.executeQuery(filtroEvento);
 
             while (resultSet.next()) {
+                //Para extrair a data e hora do sqlLite tem que ser com .getstring e também é o que temos na classe evento
                 String nome = resultSet.getString("nome_evento");
                 String local = resultSet.getString("local");
-                Date dataRealizacao = resultSet.getDate("data_realizacao");
-                LocalTime horaInicio = resultSet.getTime("hora_inicio").toLocalTime();
-                LocalTime horaFim = resultSet.getTime("hora_fim").toLocalTime();
+                String data_realizacao = resultSet.getString("data_realizacao");
+                String horaInicio = resultSet.getString("hora_inicio");
+                String horaFim = resultSet.getString("hora_fim");
 
-                //Acabei por converter os campos de data e hora para string pq vi que está assim na classe, mas precisamos de ver isso
-                Evento evento_result = new Evento(nome,local, dataRealizacao.toString(), horaInicio.toString(), horaFim.toString());
+                Evento evento_result = new Evento(nome,local, data_realizacao, horaInicio, horaFim);
                 eventos.add(evento_result);
             }
 
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        String [] res = (String[]) eventos.toArray();
-        return res;
+
+        return eventos;
     }
 
     public static boolean InserePresencas(String nomeEvento, String[] emails) {
@@ -380,7 +427,7 @@ public class DbManage {
             for (String emailEstudante : emails) {
                 // Verificar se os estudantes da lista existem na db
 
-                String verificaEstudanteQuery = "SELECT COUNT(*) FROM Usuario WHERE email = ?";
+                String verificaEstudanteQuery = "SELECT COUNT(*) FROM Utilizador WHERE email = ?";
                 PreparedStatement alunoStatement = connection.prepareStatement(verificaEstudanteQuery);
                 alunoStatement.setString(1, emailEstudante);
                 int estudantesEncontrados = alunoStatement.executeQuery().getInt(1);
@@ -395,7 +442,7 @@ public class DbManage {
                     int rowsAffected = presencaStatement.executeUpdate();
 
                     if (rowsAffected == 1) {
-                        System.out.println("Presenca do estudante " + emailEstudante + "no evento" + nomeEvento + " registada com sucesso");
+                        System.out.println("A presenca do estudante " + emailEstudante + " no evento " + nomeEvento + " foi registada com sucesso");
                     } else {
                         System.out.println("Erro ao registar a presença do estudante " + emailEstudante + ".");
                         return false;
@@ -425,9 +472,9 @@ public class DbManage {
                 int rowsAffected = eliminaPresencaStatement.executeUpdate();
 
                 if (rowsAffected == 1) {
-                    System.out.println("A Presença do estudante " + emailEstudante +"do evento" + nomeEvento + " foi eliminada com sucesso.");
+                    System.out.println("A Presença do estudante " + emailEstudante +" do evento " + nomeEvento + " foi eliminada com sucesso.");
                 } else {
-                    System.out.println("Nao foi encontrada a presenca do estudante" + emailEstudante + "no evento " + nomeEvento + ".");
+                    System.out.println("Nao foi encontrada a presenca do estudante " + emailEstudante + " no evento " + nomeEvento + ".");
                 }
             }
             return true;
@@ -440,55 +487,76 @@ public class DbManage {
 //Gerar codigo (Este é complicadinho =D)
 
     public static int GeraCodigoRegisto(Cria_evento evento, int validadeMinutos) {
-        try (Connection connection = DriverManager.getConnection(dbUrl)) {
-            Statement statement = connection.createStatement();
+        //Estou a utilizar o PreparedStatement pq é necessário para passar valores dinâmicos por parametros (para consultas)
+        String verificaEventoQuery = "SELECT data_realizacao, hora_inicio, hora_fim FROM Evento WHERE nome_evento = ?";
+
+        try (Connection connection = DriverManager.getConnection(dbUrl);
+         PreparedStatement eventoStatement = connection.prepareStatement(verificaEventoQuery)) {
+            //Statement statement = connection.createStatement();
 
             // Para verificar se o evento  se encontra a decorrer
-            String verificaEventoQuery = "SELECT data_realizacao, hora_inicio, hora_fim FROM Evento WHERE nome_evento = " + evento.getNome();
-            ResultSet eventoResult = statement.executeQuery(verificaEventoQuery);
+            eventoStatement.setString(1, evento.getNome());
+            ResultSet resultSet = eventoStatement.executeQuery();
 
-            if (eventoResult.next()) {
-                Date dataRealizacao = eventoResult.getDate("data_realizacao");
-                Date horaInicio = eventoResult.getTime("hora_inicio");
-                Date horaFim = eventoResult.getTime("hora_fim");
+
+            if (resultSet.next()) {
+                String dataRealizacao = resultSet.getString("data_realizacao");
+                String horaInicio = resultSet.getString("hora_inicio");
+                String horaFim = resultSet.getString("hora_fim");
+
+                // Estou a criar um objeto SimpleDateFormat para analisar a data e hora no formato correto
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+                Date dataRealizacaoInicio = dateFormat.parse(dataRealizacao + " "+ horaInicio);
+                Date dataRealizacaoDateFim = dateFormat.parse(dataRealizacao + " "+ horaFim);
 
                 // Estou a combinar a data do evento com a hora de início e fim para obter o horário de início e fim do evento
-                long dataInicioMillis = dataRealizacao.getTime() + horaInicio.getTime();
-                long dataFimMillis = dataRealizacao.getTime() + horaFim.getTime();
+                long dataInicioMillis = dataRealizacaoInicio.getTime();
+                long dataFimMillis = dataRealizacaoDateFim.getTime();
 
-                //Estou a obter a data atual
+                //Estou a obter a data e hora atual para comparar se o evento se encontra a decorrer
                 Date dataAtual = new Date();
                 long dataAtualMillis = dataAtual.getTime();
+
+                System.out.println(dataAtualMillis);
+                System.out.println(dataInicioMillis);
+                System.out.println(dataFimMillis);
 
                 //Se estiver dentro do intervalo de tempo, então o evento se encontra a decorrer
                 if (dataAtualMillis >= dataInicioMillis && dataAtualMillis <= dataFimMillis) {
 
+
                     // Se tiver códigos anteriores para o evento, então ele vai colocar a validade desses à 0
-                    String expiraCodigosAnterioresQuery = "UPDATE Codigo_Registo SET validade = 0 WHERE nome_evento = " + evento.getNome();
-                    statement.executeUpdate(expiraCodigosAnterioresQuery);
+                    String expiraCodigosAnterioresQuery = "UPDATE Codigo_Registo SET validade = 0 WHERE nome_evento = ?";
+                    PreparedStatement expiraStatement = connection.prepareStatement(expiraCodigosAnterioresQuery);
+                    expiraStatement.setString(1, evento.getNome()); // Define o valor do nome_evento para o ? da query
+                    expiraStatement.executeUpdate();
 
                     // Depois de expirar os codigos anteriores, ele vai gerar um novo código
                     int codigo = geraCodigoAleatorio();
-
 
                    //Calcula o tempo de validade para o sistema saber quando deve expirar o código (a informacao não fica armazenada apenas com os minutos dados pelo utilizador
                     //Armazena então com o tipo Timestamp, e alterei assim a bd
                     long validadeMillis = validadeMinutos * 60 * 1000;
                     Timestamp horarioValidade = new Timestamp(dataAtualMillis + validadeMillis);
 
-                    String insereCodigoQuery = "INSERT INTO Codigo_Registo (n_codigo_registo, nome_evento, validade) VALUES ('" + codigo + "', " + evento.getNome() + ", '" + horarioValidade + "')";
-                    statement.executeUpdate(insereCodigoQuery);
+                    String insereCodigoQuery = "INSERT INTO Codigo_Registo (n_codigo_registo, nome_evento, validade) VALUES (?, ?, ?)";
+                    PreparedStatement insereStatement = connection.prepareStatement(insereCodigoQuery);
+                    insereStatement.setInt(1, codigo);
+                    insereStatement.setString(2, evento.getNome());
+                    insereStatement.setTimestamp(3, horarioValidade); //Estou a salvar em TimeStamp porque é melhor para verificar a validade do codigo
+                    insereStatement.executeUpdate();
 
                     return codigo;
+
                 } else {
                     System.out.println("O evento não esta a decorrer no momento");
                     return 0;
                 }
             } else {
-                System.out.println("Evento nao encontrado");
+                System.out.println("O Evento nao foi encontrado");
                 return 0;
             }
-        } catch (SQLException e) {
+        } catch (SQLException | ParseException e) {
             System.out.println(e.getMessage());
             return 0;
         }
@@ -507,7 +575,42 @@ public class DbManage {
         return cod;
     }
 
+    //Ficheiro CSV
+    public static void PresencasCSV(List<Evento> eventos,String csvFile ) {
+        String csvSplit = ","; // Delimitador!!
 
+        try (FileWriter writer = new FileWriter(csvFile)) {
+            // Escrita do cabeçalho:
+             writer.append("Nome do Evento");
+             writer.append(csvSplit);
+             writer.append("Local");
+             writer.append(csvSplit);
+             writer.append("Data de Realizacao");
+             writer.append(csvSplit);
+             writer.append("Hora de Inicio");
+             writer.append(csvSplit);
+             writer.append("Hora de Fim");
+             writer.append("\n");
+
+             //Escrita dos dados obtidos da base de dados:
+            for (Evento evento : eventos) {
+                writer.append(evento.getNome());
+                writer.append(csvSplit);
+                writer.append(evento.getLocal());
+                writer.append(csvSplit);
+                writer.append(evento.getData());
+                writer.append(csvSplit);
+                writer.append(evento.getHoraInicio());
+                writer.append(csvSplit);
+                writer.append(evento.getHoraFim());
+                writer.append("\n");
+            }
+
+            System.out.println("Ficheiro CSV criado com sucesso");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
 
 
