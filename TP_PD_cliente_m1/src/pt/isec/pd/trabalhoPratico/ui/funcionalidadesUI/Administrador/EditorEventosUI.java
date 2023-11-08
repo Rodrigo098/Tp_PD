@@ -1,6 +1,7 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 
 import com.sun.scenario.effect.impl.prism.PrImage;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -12,6 +13,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
+import pt.isec.pd.trabalhoPratico.model.programs.AtualizacaoAsync;
 
 public class EditorEventosUI extends BorderPane {
     protected static SimpleStringProperty opcaoEdicao = new SimpleStringProperty("LISTA");
@@ -29,6 +31,7 @@ public class EditorEventosUI extends BorderPane {
         this.progClienteManager = progClienteManager;
         createViews();
         registerHandlers();
+        extrairListaPresencas();
         update();
         update2();
     }
@@ -65,7 +68,6 @@ public class EditorEventosUI extends BorderPane {
         mais.getStyleClass().add("eventoButton");
 
         listaPresencas = new ListView<>();
-        extrairListaPresencas();
 
         resultado = new TextField();
 
@@ -95,7 +97,7 @@ public class EditorEventosUI extends BorderPane {
             opcaoEdicao.set(opcoes[indice++ % opcoes.length]);
         });
         gerarCodigoPresencas.setOnAction(e -> {
-            resultado.setText(progClienteManager.gerarCodPresenca(ListarEventosUI.eventoSelecionado));
+            resultado.setText(progClienteManager.gerarCodPresenca(listaPresencas.getSelectionModel().getSelectedItem()));
         });
         editarEvento.setOnAction(e -> {
             resultado.setText(progClienteManager.criarEditar_Evento(eventoUI.getNomeEvento(), eventoUI.getLocal(),
@@ -115,12 +117,14 @@ public class EditorEventosUI extends BorderPane {
                               "Presenças eliminadas com sucesso!" : "Presenças não eliminadas!");
         });
         inserirPresencas.setOnAction(e -> {
-            resultado.setText(progClienteManager.eliminaInsere_Eventos(Message_types.INSERE_PRES, ListarEventosUI.eventoSelecionado, emailsTextField.getText()) ?
+            resultado.setText(progClienteManager.eliminaInsere_Eventos(Message_types.INSERE_PRES,
+                              ListarEventosUI.eventoSelecionado, emailsTextField.getText()) ?
                               "Presenças inseridas com sucesso!" : "Presenças não inseridas!");
         });
 
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
         opcaoEdicao.addListener(observable -> update2());
+        AtualizacaoAsync.atualizacao.addListener(evt -> Platform.runLater(this::extrairListaPresencas));
     }
 
     private void update() {

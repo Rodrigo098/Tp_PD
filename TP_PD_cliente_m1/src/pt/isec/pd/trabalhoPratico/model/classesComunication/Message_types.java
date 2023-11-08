@@ -17,5 +17,5 @@ public enum Message_types {// varios tipos de mensagens que serão usados, se qu
     ERRO, INVALIDO, VALIDO, ADMINISTRADOR, UTILIZADOR,
 
     //ASYNC
-    UPDATE_EVENTOS, UPDATE_REGISTOS
+    ATUALIZACAO
 }

@@ -10,6 +10,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
+import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador.FiltrosUI;
 
 public class ListarPresencasUI extends BorderPane {
@@ -63,7 +64,7 @@ public class ListarPresencasUI extends BorderPane {
 
     private void extrairListaEventos() {
         lista.getItems().clear();
-        for (String evento : progClienteManager.obterListaConsultaUtilizador(filtros.getNomeEvento(), filtros.getLocal(), filtros.getLimData1(), filtros.getLimData2(), filtros.getHoraInicio(), filtros.getHoraFim())) {
+        for (String evento : progClienteManager.obterListaConsulta(Message_types.CONSULTA_PRES_UTILIZADOR, filtros.getNomeEvento(), filtros.getLocal(), filtros.getLimData1(), filtros.getLimData2(), filtros.getHoraInicio(), filtros.getHoraFim())) {
             lista.getItems().add(evento);
         }
     }

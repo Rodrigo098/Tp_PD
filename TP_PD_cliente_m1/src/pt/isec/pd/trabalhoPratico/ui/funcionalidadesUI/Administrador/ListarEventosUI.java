@@ -1,14 +1,17 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
+import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
+import pt.isec.pd.trabalhoPratico.model.programs.AtualizacaoAsync;
 
 public class ListarEventosUI extends BorderPane {
-    protected static int eventoSelecionado;
+    protected static String eventoSelecionado;
     private FiltrosUI filtros;
     private ListView<String> listaEventos;
     private final ProgClienteManager progClienteManager;
@@ -17,13 +20,13 @@ public class ListarEventosUI extends BorderPane {
         this.progClienteManager = progClienteManager;
         createViews();
         registerHandlers();
+        extrairListaEventos();
         update();
     }
 
     private void createViews() {
         filtros = new FiltrosUI();
         listaEventos = new ListView<>();
-        extrairListaEventos();
 
         Label label = new Label("Lista de Eventos");
         label.getStyleClass().add("titulo");
@@ -37,7 +40,7 @@ public class ListarEventosUI extends BorderPane {
     private void registerHandlers() {
         listaEventos.setOnMouseClicked( mouseEvent -> {
             if(mouseEvent.getClickCount() == 2){
-                eventoSelecionado = listaEventos.getSelectionModel().getSelectedIndex();
+                eventoSelecionado = listaEventos.getSelectionModel().getSelectedItem();
                 ContaAdministradorUI.opcaoAdmin.set("EDITOR_EVENTOS");
             }
         });
@@ -45,6 +48,7 @@ public class ListarEventosUI extends BorderPane {
             extrairListaEventos();
         });
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
+        AtualizacaoAsync.atualizacao.addListener(evt -> Platform.runLater(this::extrairListaEventos));
     }
 
     private void update() {
@@ -54,7 +58,7 @@ public class ListarEventosUI extends BorderPane {
 
     private void extrairListaEventos() {
         listaEventos.getItems().clear();
-        for (String evento : progClienteManager.getListaEventos()) {
+        for (String evento : progClienteManager.obterListaConsulta(Message_types.CONSULTA_EVENTOS, filtros.getNomeEvento(), filtros.getLocal(), filtros.getLimData1(), filtros.getLimData2(), filtros.getHoraInicio(), filtros.getHoraFim())) {
             listaEventos.getItems().add(evento);
         }
     }

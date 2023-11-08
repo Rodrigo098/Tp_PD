@@ -27,10 +27,10 @@ public class MessageBox extends VBox {
     }
 
     private void registerHandlers() {
-        MainCliente.menuSBP.addListener(e -> update());
-        erro.setOnAction(e -> this.setVisible(false));
+        MainCliente.messageBox.addListener(e -> update());
+        erro.setOnAction(e -> MainCliente.messageBox.set(false));
     }
     private void update(){
-        this.setVisible(MainCliente.menuSBP.get() == "ERRO");
+        this.setVisible(MainCliente.messageBox.get());
     }
 }
