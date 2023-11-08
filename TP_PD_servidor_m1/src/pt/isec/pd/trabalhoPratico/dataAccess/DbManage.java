@@ -23,67 +23,48 @@ public class DbManage {
         int codigo_registo = 1;
         String nome_evento = "Evento1";
         String email="email";
-/*
-        try(Connection connection = DriverManager.getConnection(dbUrl);
-
-         Statement statement = connection.createStatement()){
-
-            //Somente para teste de ligação a base de dados
-            /*String createEntryQuery = "INSERT INTO Codigo_Registo (n_codigo_registo,nome_evento) VALUES ('"
-                    + codigo_registo+"','" + nome_evento+ "')";
-            String createEntryQuery = "INSERT INTO Versao (versao_id,descricao) VALUES ('"
-                    + codigo_registo+"','" + email+"')";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
-
-            if(statement.executeUpdate(createEntryQuery)<1){
-                System.out.println("Entry insertion or update failed");
-            }
-            else{
-                System.out.println("Entry insertion succeeded");
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }*/
-
     }
-    public static void Registonovouser(Utilizador user,String password){
+    public static boolean Registonovouser(Utilizador user,String password){
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
             Statement statement = connection.createStatement()){
             int num_est=Integer.parseInt(user.getNumIdentificacao());
-            //Somente para teste de ligação a base de dados
-            /*String createEntryQuery = "INSERT INTO Codigo_Registo (n_codigo_registo,nome_evento) VALUES ('"
-                    + codigo_registo+"','" + nome_evento+ "')";*/
             String createEntryQuery = "INSERT INTO Utilizador (email,nome,numero_estudante,palavra_passe) VALUES ('"
                     + user.getEmail()+"','" + user.getNome()+"','" +num_est+"','" +password+"')";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
 
             if(statement.executeUpdate(createEntryQuery)<1){
                 System.out.println("Entry insertion or update failed");
+                return false;
             }
             else{
                 System.out.println("Entry insertion succeeded");
+                return true;
+
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+            return false;
         }
 
     }
     public static boolean autentica_user(String user, String password){
         try(Connection connection = DriverManager.getConnection(dbUrl);
+            Statement statement = connection.createStatement())
+        {
+            String verificaEstudanteQuery = "SELECT * FROM Utilizador WHERE email = ?";
+            PreparedStatement alunoStatement = connection.prepareStatement(verificaEstudanteQuery);
+           alunoStatement.setString(1, user);
+            ResultSet rs=alunoStatement.executeQuery();
 
-            Statement statement = connection.createStatement()){
-            String GetQuery = "SELECT * FROM Utilizador where email='" + user + "';";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
-            ResultSet rs=statement.executeQuery(GetQuery);
-
-
-            if(!rs.next())
-            {
-                System.out.println("Couldn't find the value");
-                return false;
-            }
-            else{
+            if(rs.isBeforeFirst())
+            {   rs.next();
                 System.out.println(rs.getString("email"));
                 System.out.println(rs.getString("palavra_passe"));
                 return rs.getString("palavra_passe").equals(password);// devolve true se a password for a mesma
+            }
+            else{ System.out.println("Couldn't find any user");
+                return false;
+
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -102,13 +83,8 @@ public class DbManage {
             String GetQuery = "SELECT * FROM Utilizador where email='" + mail + "';";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
             ResultSet rs=statement.executeQuery(GetQuery);
 
-            if(!rs.next())
-            {
-                System.out.println("Couldn't find the value");
-
-                return false;
-            }
-            else{
+            if(rs.isBeforeFirst())
+            {   rs.next();
                 System.out.println(rs.getString("email"));
                 int num_est=Integer.parseInt(rs.getString("numero_estudante"));
                 String updateQuery = "UPDATE Utilizador SET nome=?, numero_estudante=?, palavra_passe=? WHERE email=?";
@@ -120,46 +96,75 @@ public class DbManage {
                 preparedStatement.executeUpdate();
                 return true;
             }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
-
-    }
-    public static boolean submitcod(String codigo,String nome_evento,String emailuser){
-        try(Connection connection = DriverManager.getConnection(dbUrl);
-
-            Statement statement = connection.createStatement()){
-
-
-            String GetQuery = "SELECT * FROM Codigo_Registo where nome_evento='" + nome_evento + "';";
-            ResultSet rs=statement.executeQuery(GetQuery);
-            int idassiste=0;//eu nao sei o que por aqui;
-            if(!rs.next())
-            {
-                if(rs.getInt("n_codigo_registo")==Integer.parseInt(codigo)){
-                    String createEntryQuery = "INSERT INTO Assiste (assiste_id,nome_evento,email) VALUES ('"
-                            + idassiste+"','" + nome_evento+"','" +emailuser+"')";// qual o valor que é suposto colocar no idassiste??
-
-                    if(statement.executeUpdate(createEntryQuery)<1){
-                        System.out.println("Entry insertion or update failed");
-                        return true;
-                    }
-                    else{
-                        System.out.println("Entry insertion succeeded");
-                        return false;
-                    }
-
-                }
-            }
             else{
+               System.out.println("Couldn't find the any user");
                 return false;
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             return false;
         }
-        return false;
+
+    }
+    public static boolean submitcod(int codigo,String nome_evento,String emailuser){
+        try(Connection connection = DriverManager.getConnection(dbUrl);
+            Statement statement = connection.createStatement())
+        {
+            String verificaEstudanteQuery = "SELECT COUNT(*) FROM Utilizador WHERE email = ?";
+            PreparedStatement alunoStatement = connection.prepareStatement(verificaEstudanteQuery);
+            alunoStatement.setString(1, emailuser);
+            int estudantesEncontrados = alunoStatement.executeQuery().getInt(1);
+            if(estudantesEncontrados<1)
+            {
+                System.out.println("Estudante inexistente");
+                return false;
+            }
+
+            String verificasejaseincreveuQuery="SELECT COUNT(*) FROM Assiste where nome_evento=? AND email=?";
+            PreparedStatement verstatemente=connection.prepareStatement(verificasejaseincreveuQuery);
+            verstatemente.setString(1,nome_evento);
+            verstatemente.setString(2,emailuser);
+            if(verstatemente.executeQuery().getInt(1)>=1){
+
+                System.out.println("[Erro] Aluno ja inscrito");
+                return false;
+            }
+
+
+            String GetQuery = "SELECT * FROM Codigo_Registo where nome_evento='" + nome_evento + "';";
+            ResultSet rs=statement.executeQuery(GetQuery);
+
+
+            if(rs.isBeforeFirst())
+            {   rs.next();
+                if(rs.getInt("n_codigo_registo")==codigo && rs.getTimestamp("validade").getTime()>0 ){
+                    String createEntryQuery = "INSERT INTO Assiste (nome_evento,email) VALUES ('"
+                            + nome_evento+"','" +emailuser+"')";// qual o valor que é suposto colocar no idassiste??
+
+                    if(statement.executeUpdate(createEntryQuery)<1){
+                        System.out.println("Entry insertion or update failed");
+                        return false;
+                    }
+                    else{
+                        System.out.println("Entry insertion succeeded");
+                        return true;
+                    }
+
+                }else{
+                    System.out.println("Codigo invalido");
+                    return false;
+                }
+            }
+            else{
+                System.out.println("Nao ha nenhum evento com esse nome");
+                return false;
+            }
+        } catch (SQLException e) {
+
+            System.out.println(e.getMessage());
+            return false;
+        }
+
 
     }
     public static boolean CriaEvento(Evento evento){
@@ -167,9 +172,7 @@ public class DbManage {
 
             Statement statement = connection.createStatement()){
 
-            //Somente para teste de ligação a base de dados
-            /*String createEntryQuery = "INSERT INTO Codigo_Registo (n_codigo_registo,nome_evento) VALUES ('"
-                    + codigo_registo+"','" + nome_evento+ "')";*/
+
             String createEntryQuery = "INSERT INTO Evento (nome_evento,local,data_realizacao,hora_inicio,hora_fim) VALUES ('"
                     + evento.getNome()+"','" + evento.getLocal()+"','" +evento.getData()+"','" +evento.getHoraInicio()+"','" +evento.getHoraFim()+"')";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
 
@@ -246,13 +249,19 @@ public class DbManage {
         return eventosAssistidos;
 
     }
-    public static String[] Presencas_evento(String nome_evento){
+    public static List<String>Presencas_evento(String nome_evento){
         List<String> res = new ArrayList<>();
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
             Statement statement = connection.createStatement()){
             String GetQuery = "SELECT * FROM Assiste where nome_evento='" + nome_evento + "';";
             ResultSet rs=statement.executeQuery(GetQuery);
+            if(!rs.isBeforeFirst())
+            {
+                System.out.println("Nenhum evento encontrado");
+                return null;
+
+            }
 
             while (rs.next()){
                 res.add(rs.getString("email"));
@@ -260,9 +269,11 @@ public class DbManage {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        String []devolve= (String[]) res.toArray();
 
-        return devolve;
+
+
+
+        return res ;
     }
 
 //----------------------------------------------------------------------------Novas funções para o Admin
@@ -427,10 +438,10 @@ public class DbManage {
             for (String emailEstudante : emails) {
                 // Verificar se os estudantes da lista existem na db
 
-                String verificaEstudanteQuery = "SELECT COUNT(*) FROM Utilizador WHERE email = ?";
-                PreparedStatement alunoStatement = connection.prepareStatement(verificaEstudanteQuery);
-                alunoStatement.setString(1, emailEstudante);
-                int estudantesEncontrados = alunoStatement.executeQuery().getInt(1);
+                    String verificaEstudanteQuery = "SELECT COUNT(*) FROM Utilizador WHERE email = ?";
+                    PreparedStatement alunoStatement = connection.prepareStatement(verificaEstudanteQuery);
+                    alunoStatement.setString(1, emailEstudante);
+                    int estudantesEncontrados = alunoStatement.executeQuery().getInt(1);
 
                 if (eventosEncontrados == 1 && estudantesEncontrados == 1) {
                     // Se o evento e o aluno existirem insere a presença
@@ -525,9 +536,9 @@ public class DbManage {
                 if (dataAtualMillis >= dataInicioMillis && dataAtualMillis <= dataFimMillis) {
 
 
-                    // Se tiver códigos anteriores para o evento, então ele vai colocar a validade desses à 0
-                    String expiraCodigosAnterioresQuery = "UPDATE Codigo_Registo SET validade = 0 WHERE nome_evento = ?";
-                    PreparedStatement expiraStatement = connection.prepareStatement(expiraCodigosAnterioresQuery);
+                    // Eu alterei para passar a eliminar os codigos antigos e substituir pelos novos, nao me parece muito logico guarda-los, dps diz me o que achas
+                    String EliminaCodigosAnterioresQuery = "Delete From Codigo_Registo WHERE nome_evento = ?";
+                    PreparedStatement expiraStatement = connection.prepareStatement(EliminaCodigosAnterioresQuery);
                     expiraStatement.setString(1, evento.getNome()); // Define o valor do nome_evento para o ? da query
                     expiraStatement.executeUpdate();
 
@@ -545,6 +556,7 @@ public class DbManage {
                     insereStatement.setString(2, evento.getNome());
                     insereStatement.setTimestamp(3, horarioValidade); //Estou a salvar em TimeStamp porque é melhor para verificar a validade do codigo
                     insereStatement.executeUpdate();
+                    System.out.println("Inseriu o codigo na database");
 
                     return codigo;
 

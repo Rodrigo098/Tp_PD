@@ -74,6 +74,15 @@ class ThreadCliente implements Runnable {
                               out.writeObject(new Geral(Message_types.ERRO));
 
                         }
+                        case REGISTO -> {
+                            RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente) message;
+                            Utilizador user=new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
+                            if(DbManage.Registonovouser(user,aux.getPassword())){
+                                out.writeObject(new Geral(Message_types.VALIDO));
+                            }else
+                                out.writeObject(new Geral(Message_types.ERRO));
+
+                        }
                         case SUBMICAO_COD -> out.writeObject("Insere dados na database");
 
                         case CONSULTA_PRES_UTILIZADOR -> {
@@ -185,7 +194,11 @@ class ThreadCliente implements Runnable {
                         }
                         case CONSULTA_PRES_EVENT -> {
                             Consulta_Elimina_GeraCod_SubmeteCod_Evento aux=(Consulta_Elimina_GeraCod_SubmeteCod_Evento)message;
-                            String []res= DbManage.Presencas_evento(aux.getNome());
+                            List<String> cenas=DbManage.Presencas_evento(aux.getNome());
+                            String[]res=new String[cenas.size()];
+                            for (int i = 0; i <cenas.size() ; i++) {
+                                res[i]= cenas.get(i);
+                            }
                             out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,res));
                         }
                         case CONSULT_EVENT_UTILIZADOR -> {
