@@ -1,11 +1,11 @@
-package pt.isec.pd.trabalhoPratico.model.programs;
+package pt.isec.pd.trabalhoPratico.model.classesPrograma;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.util.Pair;
-import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
-import pt.isec.pd.trabalhoPratico.model.classesDados.Presenca;
-import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -16,27 +16,56 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+///////////////////////////////////// ATUALIZACAO ASSINCRONA ///////////////////////
+class AtualizacaoAsync implements Runnable {
+    private final Socket socket;
+    public AtualizacaoAsync(Socket socket) {
+        this.socket = socket;
+    }
+    @Override
+    public void run() {
+
+        do{
+            try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream()))
+            {
+                Object novaAtualizacao = oin.readObject();
+                if(novaAtualizacao instanceof Geral g)
+                    if(g.getTipo() == Message_types.ATUALIZACAO)
+                        ProgramaCliente.atualizacao.setValue(ProgramaCliente.atualizacao.getValue() + 1);
+            } catch (IOException | ClassNotFoundException ignored) {
+                synchronized(ProgramaCliente.erro) {
+                    ProgramaCliente.setErro();
+                }
+            }
+        }while(Thread.currentThread().isAlive());
+    }
+}
 ///////////////////////////////////// PROGRAMA CLIENTE ///////////////////////
 public class ProgramaCliente {
+    protected static SimpleIntegerProperty atualizacao = new SimpleIntegerProperty(0);
+    private final SimpleStringProperty logado = new SimpleStringProperty("ENTRADA");
+    protected static SimpleIntegerProperty erro = new SimpleIntegerProperty(0);
     private Socket socket;
-    private ArrayList<Evento> listaEventos;
-    private ArrayList<Presenca> listaPresencas;
-    private ArrayList<String> listaResultados;
 
     public ProgramaCliente() {
-        listaEventos = new ArrayList<>();
-        listaPresencas = new ArrayList<>();
-        listaResultados = new ArrayList<>();
-
-        LocalDate data = LocalDate.now();
-
-        //teste
-        Evento e = new Evento("eu", "ola", "aqui", data, 18, 19);
-        listaEventos.add(e);
-        listaPresencas.add(new Presenca(e, new Utilizador("isa", "isa@isec.pt", "11111")));
-        listaResultados.add(e.toString());
     }
-
+    ////////////////////////////////////////////////////////////////////
+    public void addLogadoListener(InvalidationListener listener) {
+        logado.addListener(listener);
+    }
+    public void addAtualizacaoListener(InvalidationListener listener) {
+        atualizacao.addListener(listener);
+    }
+    public void addErroListener(InvalidationListener listener) {
+        erro.addListener(listener);
+    }
+    protected static synchronized void setErro() {
+        System.out.println("ERRO");
+        erro.set(erro.getValue() + 1);
+    }
+    public String getLogado() {
+        return logado.getValue();
+    }
     //ver se é email:
     public boolean verificaFormato(String email) {
         if (email == null || email.isBlank())
@@ -45,7 +74,6 @@ public class ProgramaCliente {
             return true;
         return email.split("@|\\.").length != 3;
     }
-
 
     ///////////////////////////////////////FUNCIONALIDADES:
     /////////////////////////COMUNS:
@@ -79,7 +107,6 @@ public class ProgramaCliente {
             return;
 /*
         Login dadosLogin = new Login(email, password);
-
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())){
 
@@ -90,7 +117,7 @@ public class ProgramaCliente {
 
                 switch (validacao.getTipo()){
                     case ADMINISTRADOR -> {
-                        MainCliente.clienteSBP.set("ADMINISTRADOR");
+                        tipo = "ADMINISTRADOR";
                         try (Socket socket = new Socket(this.socket.getInetAddress(), this.socket.getPort())) {
                             new Thread(new AtualizacaoAsync(socket)).start();
                         } catch (Exception e) {
@@ -98,38 +125,36 @@ public class ProgramaCliente {
                         }
                     }
                     case UTILIZADOR ->
-                        MainCliente.clienteSBP.set("UTILIZADOR");
+                        tipo = "UTILIZADOR";
                     case INVALIDO, ERRO -> {
-                        MainCliente.messageBox.set(true);
+                        setErro();
                         return;
                     }
                 }
-                MainCliente.menuSBP.set("CONTA");
             }
         }catch (IOException | ClassNotFoundException ignored) {
-            MainCliente.messageBox.set(true);
+            erro.set(true);
         }*/
-        MainCliente.clienteSBP.set("ADMINISTRADOR");
-        MainCliente.menuSBP.set("CONTA");
+        logado.set("ADMINISTRADOR");
     }
 
     public void logout() {
-        Geral logout = new Geral(Message_types.LOGOUT);
-
+        /*Geral logout = new Geral(Message_types.LOGOUT);
         try (ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
 
             oout.writeObject(logout);
             oout.flush();
-            MainCliente.menuSBP.set("MENU");
-            MainCliente.clienteSBP.set("INDEFINIDO");
+            logado = "ENTRADA";
         } catch (IOException e) {
-            MainCliente.messageBox.set(true);
+            setErro();
         } finally {
             try {
                 socket.close();
             } catch (IOException ignored) {
+                setErro();
             }
-        }
+        }*/
+        logado.set("ENTRADA");
     }
 
     public String[] obterListaConsulta(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim) {
@@ -145,7 +170,7 @@ public class ProgramaCliente {
             if(lista.getTipo() == Message_types.VALIDO)
                 return lista.getLista();
         } catch (IOException | ClassNotFoundException e) {
-            MainCliente.messageBox.set(true);
+            setErro();
             return new String[]{"Erro na comunicação com o servidor"};
         }
         return new String[]{"Erro"};
@@ -153,6 +178,7 @@ public class ProgramaCliente {
 
     /////////////////////////UTILIZADOR:
     public void registar(String nome, String email, String numIdentificacao, String password, String confPass) {
+
         if (nome == null || password == null || !password.equals(confPass) || verificaFormato(email) || numIdentificacao == null)
             return;
         long numID;
@@ -161,7 +187,6 @@ public class ProgramaCliente {
         } catch (NumberFormatException e) {
             return;
         }
-
         RegistoEdicao_Cliente dadosRegisto = new RegistoEdicao_Cliente(nome, email, password, numID, Message_types.REGISTO);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
@@ -171,11 +196,10 @@ public class ProgramaCliente {
             Geral validacao = (Geral) oin.readObject();
 
             if (validacao.getTipo() == Message_types.VALIDO) {
-                MainCliente.clienteSBP.set("UTILIZADOR");
-                MainCliente.menuSBP.set("CONTA");
+                logado.set("UTILIZADOR");
             }
         } catch (IOException | ClassNotFoundException ignored) {
-            MainCliente.messageBox.set(true);
+            setErro();
         }
     }
 
@@ -193,11 +217,8 @@ public class ProgramaCliente {
 
             if (validacao.getTipo() == Message_types.VALIDO)
                 return true;
-            if (validacao.getTipo() == Message_types.ERRO) {
-                MainCliente.menuSBP.set("ERRO");
-            }
         } catch (IOException | ClassNotFoundException ignored) {
-            MainCliente.messageBox.set(true);
+            setErro();
         }
         return false;
     }
@@ -230,7 +251,7 @@ public class ProgramaCliente {
             if (validacao.getTipo() == Message_types.VALIDO)
                 return true;
         } catch (ClassNotFoundException | IOException ignored) {
-            MainCliente.messageBox.set(true);
+            setErro();
         }
         return false;
     }
@@ -263,7 +284,7 @@ public class ProgramaCliente {
             if (validacao.getTipo() == Message_types.VALIDO)
                 return true;
         } catch (IOException | ClassNotFoundException ignored) {
-            MainCliente.messageBox.set(true);
+            setErro();
         }
         return false;
     }
@@ -281,7 +302,7 @@ public class ProgramaCliente {
             if (validacao.getTipo() == Message_types.VALIDO)
                 return true;
         } catch (IOException | ClassNotFoundException ignored) {
-            MainCliente.messageBox.set(true);
+            setErro();
         }
         return false;
     }
@@ -306,7 +327,7 @@ public class ProgramaCliente {
             if (validacao.getTipo() == Message_types.VALIDO)
                 return true;
         } catch (IOException | ClassNotFoundException ignored) {
-            MainCliente.messageBox.set(true);
+            setErro();
         }
         return false;
     }
@@ -326,7 +347,7 @@ public class ProgramaCliente {
                 return codigo.getNome();
             }
         } catch (IOException | ClassNotFoundException ignored) {
-            MainCliente.messageBox.set(true);
+            setErro();
             return "Erro de comunicação com o servidor";
         }
         return "Erro";
@@ -347,7 +368,7 @@ public class ProgramaCliente {
                 if (lista.getTipo() == Message_types.VALIDO)
                     return lista.getLista();
             } catch (IOException | ClassNotFoundException ignored) {
-                MainCliente.messageBox.set(true);
+                setErro();
                 return new String[]{"Erro na comunicação com o servidor"};
             }
         }
@@ -369,7 +390,7 @@ public class ProgramaCliente {
                 if (lista.getTipo() == Message_types.VALIDO)
                     return lista.getLista();
             } catch (IOException | ClassNotFoundException e) {
-                MainCliente.messageBox.set(true);
+                setErro();
                 return new String[]{"Erro na comunicação com o servidor"};
             }
         }
@@ -380,39 +401,15 @@ public class ProgramaCliente {
         return false;
     }
 }
-
-
-    /*public String[] obterListaEventos() {
-        String [] eventos = new String[listaEventos.size()];
-        for(String evento : listaEventos){
-            eventos[listaEventos.indexOf(evento)] = evento;//depois põe-se toString
-        }
-        return eventos;
-    }*/
-
-    /*public String obterEvento(int eventoSelecionado) {
-        return listaEventos.get(eventoSelecionado);//depois põe-se toString
-    }*/
 /*
-    public String[] consultaPresencasEvento(String nomeEvento){
-        //é um botão que vai buscar o nome do evento selecionado logo não é preciso validação
-        Consulta_Elimina_GeraCod_SubmeteCod_Evento consulta = new Consulta_Elimina_GeraCod_SubmeteCod_Evento(nomeEvento, Message_types.CONSULTA_PRES_EVENT);
+        listaEventos = new ArrayList<>();
+        listaPresencas = new ArrayList<>();
+        listaResultados = new ArrayList<>();
 
-        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
-            oout.writeObject(consulta);
-            oout.flush();
+        LocalDate data = LocalDate.now();
 
-            EliminaPresencas_InserePresencas lista = (EliminaPresencas_InserePresencas) oin.readObject();
-
-            if (lista.getTipo() == Message_types.ERRO) {
-                MainCliente.menuSBP.set("ERRO");
-                socket.close();
-            }
-            return lista.getLista();
-        }catch (IOException | ClassNotFoundException ignored) {
-            return new String[]{"Erro"};
-        }
-    }
-
-*/
+        //teste
+        Evento e = new Evento("eu", "ola", "aqui", data, 18, 19);
+        listaEventos.add(e);
+        listaPresencas.add(new Presenca(e, new Utilizador("isa", "isa@isec.pt", "11111")));
+        listaResultados.add(e.toString());*/

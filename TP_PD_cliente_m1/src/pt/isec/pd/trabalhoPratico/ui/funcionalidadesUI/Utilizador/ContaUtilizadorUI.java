@@ -73,14 +73,14 @@ public class ContaUtilizadorUI extends BorderPane {
         logout.setOnAction(e -> {
             progClienteManager.logout();
             MainCliente.menuSBP.set("MENU");
-            MainCliente.clienteSBP.set("INDEFINIDO");
         });
-        MainCliente.clienteSBP.addListener(observable -> update1());
         opcaoUti.addListener(observable -> update2());
+        progClienteManager.addLogadoListener(observable -> update1());
     }
 
+    //-----------------------------------------------------------------
     private void update1() {
-        this.setVisible(MainCliente.clienteSBP.get().equals("UTILIZADOR"));
+        this.setVisible(progClienteManager.getLogado().equals("UTILIZADOR"));
     }
     private void update2() {
         funcionalidades.setVisible(!opcaoUti.get().equals("NADA"));

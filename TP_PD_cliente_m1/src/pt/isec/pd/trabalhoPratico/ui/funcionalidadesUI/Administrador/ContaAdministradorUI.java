@@ -81,15 +81,14 @@ public class ContaAdministradorUI extends BorderPane {
         logout.setOnAction(e -> {
             progClienteManager.logout();
             MainCliente.menuSBP.set("MENU");
-            MainCliente.clienteSBP.set("INDEFINIDO");
         });
-        MainCliente.clienteSBP.addListener(observable -> update1());
         opcaoAdmin.addListener(observable -> update2());
+        progClienteManager.addLogadoListener(observable -> update1());
     }
 
     //-----------------------------------------------------------------
     private void update1() {
-        this.setVisible(MainCliente.clienteSBP.get().equals("ADMINISTRADOR"));
+        this.setVisible(progClienteManager.getLogado().equals("ADMINISTRADOR"));
     }
     private void update2() {
         funcionalidades.setVisible(!opcaoAdmin.get().equals("NADA"));

@@ -10,7 +10,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
-import pt.isec.pd.trabalhoPratico.model.programs.AtualizacaoAsync;
 
 import java.util.ArrayList;
 
@@ -59,7 +58,7 @@ public class ConsultaEventosUtiUI extends BorderPane {
             obterCSV.setDisable(true);
         });
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
-        AtualizacaoAsync.atualizacao.addListener(evt -> Platform.runLater(this::extrairListaEventos));
+        progClienteManager.addAtualizacaoListener(observable -> Platform.runLater(this::extrairListaEventos));
     }
 
     private void update() {

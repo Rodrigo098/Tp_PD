@@ -71,6 +71,7 @@ public class RegistoUtilizadorUI extends BorderPane {
             password.setText(null);
             confirmar_password.setText(null);
             numIdentificacao.setText(null);
+            MainCliente.menuSBP.set("MENU");
         });
         MainCliente.menuSBP.addListener(observable -> update());
     }

@@ -13,10 +13,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
-import pt.isec.pd.trabalhoPratico.model.programs.AtualizacaoAsync;
 
 public class EditorEventosUI extends BorderPane {
-    protected static SimpleStringProperty opcaoEdicao = new SimpleStringProperty("LISTA");
+    protected static SimpleStringProperty opcaoEdicao = new SimpleStringProperty("NADA");
     private int indice = 0;
     private final String[] opcoes = {"LISTA", "EDITAR", "ELI_PRESENCA", "INS_PRESENCA"};
     private Label mais;
@@ -31,7 +30,6 @@ public class EditorEventosUI extends BorderPane {
         this.progClienteManager = progClienteManager;
         createViews();
         registerHandlers();
-        extrairListaPresencas();
         update();
         update2();
     }
@@ -124,7 +122,7 @@ public class EditorEventosUI extends BorderPane {
 
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
         opcaoEdicao.addListener(observable -> update2());
-        AtualizacaoAsync.atualizacao.addListener(evt -> Platform.runLater(this::extrairListaPresencas));
+        progClienteManager.addAtualizacaoListener(observable -> Platform.runLater(this::extrairListaPresencas));
     }
 
     private void update() {

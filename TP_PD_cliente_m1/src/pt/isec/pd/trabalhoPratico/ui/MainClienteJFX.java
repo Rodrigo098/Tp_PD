@@ -6,6 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 import javax.swing.*;
@@ -18,7 +19,7 @@ public class MainClienteJFX extends Application {
     @Override
     public void init() throws Exception {
         super.init();
-        clienteManager = new ProgClienteManager();
+        clienteManager = MainCliente.progClienteManager;
     }
 
     @Override

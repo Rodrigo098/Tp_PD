@@ -8,7 +8,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
-import pt.isec.pd.trabalhoPratico.model.programs.AtualizacaoAsync;
 
 public class ListarEventosUI extends BorderPane {
     protected static String eventoSelecionado;
@@ -20,7 +19,6 @@ public class ListarEventosUI extends BorderPane {
         this.progClienteManager = progClienteManager;
         createViews();
         registerHandlers();
-        extrairListaEventos();
         update();
     }
 
@@ -48,12 +46,12 @@ public class ListarEventosUI extends BorderPane {
             extrairListaEventos();
         });
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
-        AtualizacaoAsync.atualizacao.addListener(evt -> Platform.runLater(this::extrairListaEventos));
+        progClienteManager.addAtualizacaoListener(observable -> Platform.runLater(this::extrairListaEventos));
     }
 
     private void update() {
         this.setVisible(ContaAdministradorUI.opcaoAdmin.get().equals("LISTAR_EVENTOS"));
-        extrairListaEventos();
+        if(this.isVisible()) extrairListaEventos();
     }
 
     private void extrairListaEventos() {

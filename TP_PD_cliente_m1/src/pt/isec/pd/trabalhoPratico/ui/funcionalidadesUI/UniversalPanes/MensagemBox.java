@@ -2,21 +2,20 @@ package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.UniversalPanes;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
-import pt.isec.pd.trabalhoPratico.MainCliente;
+import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
-public class MessageBox extends VBox {
+public class MensagemBox extends VBox {
+    private ProgClienteManager progClienteManager;
     private Button erro;
-    public MessageBox(){
-        createViews();
+    public MensagemBox(String mensagem){
+        createViews(mensagem);
         registerHandlers();
         update();
     }
 
-    private void createViews(){
-        Label label = new Label("Ocorreu um erro :(");
+    private void createViews(String mensagem){
+        Label label = new Label(mensagem);
         erro = new Button();
         erro.getStyleClass().add("erroButton");
         erro.setMinSize(90, 90);
@@ -27,10 +26,9 @@ public class MessageBox extends VBox {
     }
 
     private void registerHandlers() {
-        MainCliente.messageBox.addListener(e -> update());
-        erro.setOnAction(e -> MainCliente.messageBox.set(false));
+        erro.setOnAction(e -> update());
     }
-    private void update(){
-        this.setVisible(MainCliente.messageBox.get());
+    public void update(){
+        this.setVisible(!this.isVisible());
     }
 }

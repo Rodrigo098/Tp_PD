@@ -31,7 +31,6 @@ public class ListarPresencasUI extends BorderPane {
     private void createViews() {
         filtros = new FiltrosUI();
         lista = new ListView<>();
-        extrairListaEventos();
         gerarCSV = new Button("gerar CSV");
         resultadoCSV = new Text("");
         nomeFicheiro = new TextField();

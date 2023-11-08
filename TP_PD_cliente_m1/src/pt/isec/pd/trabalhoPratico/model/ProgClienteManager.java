@@ -1,12 +1,11 @@
 package pt.isec.pd.trabalhoPratico.model;
 
+import javafx.beans.InvalidationListener;
 import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
-import pt.isec.pd.trabalhoPratico.model.programs.ProgramaCliente;
+import pt.isec.pd.trabalhoPratico.model.classesPrograma.ProgramaCliente;
 
-import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ProgClienteManager {
@@ -16,12 +15,26 @@ public class ProgClienteManager {
         programaCliente = new ProgramaCliente();
     }
 
+    ////////////////////////////////////////////////////////////////////
+    public void addLogadoListener(InvalidationListener listener) {
+        programaCliente.addLogadoListener(listener);
+    }
+    public void addAtualizacaoListener(InvalidationListener listener) {
+        programaCliente.addAtualizacaoListener(listener);
+    }
+    public void addErroListener(InvalidationListener listener) {
+        programaCliente.addErroListener(listener);
+    }
+    public String getLogado(){
+        return programaCliente.getLogado();
+    }
+    ////////////////////////////////////////////////////////////////////
+
     //COMUM:
     public Pair<Boolean, String> criaSocket(List<String> list) {
         return programaCliente.criaSocket(list);
     }
-
-    public void login(String email, String password) throws IOException {
+    public void login(String email, String password) {
         programaCliente.login(email, password);
     }
     public void logout() {
