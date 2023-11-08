@@ -1,6 +1,5 @@
 import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
-import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
 import java.io.IOException;
