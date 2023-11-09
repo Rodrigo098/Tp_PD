@@ -1,10 +1,10 @@
 package pt.isec.pd.trabalhoPratico.model.classesComunication;
 
-public class EliminaPresencas_InserePresencas extends Geral{// podiamos usar esta classe tmb para inserir presenças
+public class Msg_EliminaInsere_Presencas extends Geral{// podiamos usar esta classe tmb para inserir presenças
     private String [] lista;
     private String nome_evento;
 
-    public EliminaPresencas_InserePresencas(Message_types tipo, String nome, String ... lista) {// assim podem escrever quantos emails quiserem
+    public Msg_EliminaInsere_Presencas(Message_types tipo, String nome, String ... lista) {// assim podem escrever quantos emails quiserem
        super(tipo);
        this.lista = lista;
        nome_evento = nome;

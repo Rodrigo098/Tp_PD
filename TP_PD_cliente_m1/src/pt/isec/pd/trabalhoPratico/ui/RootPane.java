@@ -34,7 +34,7 @@ public class RootPane extends BorderPane {
         username.setPromptText("Username");
         password.setPromptText("Password");
 
-        login = new Button("Login");
+        login = new Button("Msg_Login");
         registar = new Text("Registar");
         registar.getStyleClass().add("links");
 

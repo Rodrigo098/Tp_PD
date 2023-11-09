@@ -1,9 +1,9 @@
 package pt.isec.pd.trabalhoPratico.model.classesComunication;
 
-public class Login extends Geral{
+public class Msg_Login extends Geral{
     private String email, password;
 
-    public Login(String email, String password) {
+    public Msg_Login(String email, String password) {
         super(Message_types.LOGIN);
         this.email = email;
         this.password = password;

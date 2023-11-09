@@ -108,7 +108,7 @@ public class ProgramaCliente {
         if (password == null || password.isBlank() || verificaFormato(email))
             return;
 /*
-        Login dadosLogin = new Login(email, password);
+        Msg_Login dadosLogin = new Msg_Login(email, password);
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
         {
@@ -116,13 +116,13 @@ public class ProgramaCliente {
             oout.writeObject(dadosLogin);
             oout.flush();
 
-            Geral validacao = (Geral) oin.readObject();
+            Msg_String validacao = (Msg_String) oin.readObject();
 
                 switch (validacao.getTipo()){
                     case ADMINISTRADOR -> {
                         logado.set("ADMINISTRADOR");
-                        try (Socket socket = new Socket(this.socket.getInetAddress(), this.socket.getPort())) {
-                            new Thread(new AtualizacaoAsync(socket)).start();
+                        try (Socket socketThread = new Socket(Msg_String.getConteudo(), this.socket.getPort())) {
+                            new Thread(new AtualizacaoAsync(socketThread)).start();
                         } catch (Exception e) {
                             setErro();
                         }
@@ -142,6 +142,7 @@ public class ProgramaCliente {
 
 
     public void logout() {
+        //a ver segundo aquilo que tenho dúvidas
         /*Geral logout = new Geral(Message_types.LOGOUT);
         try (ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
 
@@ -157,14 +158,14 @@ public class ProgramaCliente {
     public String[] obterListaConsulta(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim) {
         return new String[]{"ola; aqui; 2021-05-05; 18; 19", "ola; aqui; 2021-05-05; 18; 19"};
         /*
-        ConsultaFiltros consultaPresencas = new ConsultaFiltros(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
+        Msg_ConsultaComFiltros consultaPresencas = new Msg_ConsultaComFiltros(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
             oout.writeObject(consultaPresencas);
             oout.flush();
 
-            EliminaPresencas_InserePresencas lista = (EliminaPresencas_InserePresencas) oin.readObject();
+            Msg_EliminaInsere_Presencas lista = (Msg_EliminaInsere_Presencas) oin.readObject();
             if(lista.getTipo() == Message_types.VALIDO)
                 return  lista.getLista().length == 0 ? new String[]{"Sem registos"} : lista.getLista();
         } catch (IOException | ClassNotFoundException e) {
@@ -185,7 +186,7 @@ public class ProgramaCliente {
         } catch (NumberFormatException e) {
             return;
         }
-        RegistoEdicao_Cliente dadosRegisto = new RegistoEdicao_Cliente(nome, email, password, numID, Message_types.REGISTO);
+        Mgs_RegistarEditar_Conta dadosRegisto = new Mgs_RegistarEditar_Conta(nome, email, password, numID, Message_types.REGISTO);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -205,7 +206,7 @@ public class ProgramaCliente {
         if (codigoEvento == null || codigoEvento.isBlank())
             return false;
 
-        Consulta_Elimina_GeraCod_SubmeteCod_Evento registoPresenca = new Consulta_Elimina_GeraCod_SubmeteCod_Evento(codigoEvento, Message_types.SUBMICAO_COD);
+        Msg_String registoPresenca = new Msg_String(codigoEvento, Message_types.SUBMICAO_COD);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -221,9 +222,22 @@ public class ProgramaCliente {
         return false;
     }
 
-    public boolean obterCSV_Presencas(String nome) {
+    public String obterCSV_Presencas(String nome) {
+/*        Geral Msg_String = new Msg_String(nomeFicheiro, Message_types.CSV_UTILIZADOR);
 
-        return true;
+        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+
+            oout.writeObject(csvPresencas);
+            oout.flush();
+
+            //... ficheiro = (...) oin.readObject();
+
+            //    return  "CSV gerado com sucesso guardado em: " + CAMINHO;
+        } catch (IOException | ClassNotFoundException e) {
+            setErro();
+        }*/
+        return "Erro ao gerar CSV";
     }
 
     public String editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
@@ -238,8 +252,8 @@ public class ProgramaCliente {
         } catch (NumberFormatException e) {
             return "O teu número deve ser inteiro!";
         }
-
-        RegistoEdicao_Cliente dadosRegisto = new RegistoEdicao_Cliente(nome, null, password, numID, Message_types.EDITAR_REGISTO);
+/*
+        Mgs_RegistarEditar_Conta dadosRegisto = new Mgs_RegistarEditar_Conta(nome, null, password, numID, Message_types.EDITAR_REGISTO);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -251,7 +265,7 @@ public class ProgramaCliente {
                 return "Registo editado com sucesso!";
         } catch (ClassNotFoundException | IOException ignored) {
             setErro();
-        }
+        }*/
         return "Erro";
     }
 
@@ -267,8 +281,8 @@ public class ProgramaCliente {
         if (data.isBefore(dataAtual) || horaInicio < horaAtual.getHour())
             return "A data não pode estar no passadooo!";
 
-        Cria_Evento evento =
-                new Cria_Evento(new Evento("eu",nome, local, data, horaInicio, horaFim));
+        Msg_Cria_Evento evento =
+                new Msg_Cria_Evento(new Evento("eu",nome, local, data, horaInicio, horaFim));
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -291,8 +305,8 @@ public class ProgramaCliente {
         if ((data != null && data.isBefore(dataAtual)) || (horaInicio < horaAtual.getHour() || horaInicio >= horaFim))
             return "Evento não editado!";
 
-        Edita_Evento evento =
-                new Edita_Evento(new Evento("eu", eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(),
+        Msg_Edita_Evento evento =
+                new Msg_Edita_Evento(new Evento("eu", eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(),
                                            local, data, horaInicio, horaFim), novoNome);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
@@ -310,8 +324,8 @@ public class ProgramaCliente {
     }
 
     public String eliminarEvento(String eventoInfo) {
-        Consulta_Elimina_GeraCod_SubmeteCod_Evento evento =
-                new Consulta_Elimina_GeraCod_SubmeteCod_Evento(eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), Message_types.ELIMINAR_EVENTO);
+        Msg_String evento =
+                new Msg_String(eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), Message_types.ELIMINAR_EVENTO);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -334,8 +348,8 @@ public class ProgramaCliente {
                 emails.add(email);
         }
 
-        EliminaPresencas_InserePresencas interacao =
-                new EliminaPresencas_InserePresencas(tipo, eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), emails.toArray(new String[0]));
+        Msg_EliminaInsere_Presencas interacao =
+                new Msg_EliminaInsere_Presencas(tipo, eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), emails.toArray(new String[0]));
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -353,18 +367,18 @@ public class ProgramaCliente {
     }
 
     public String gerarCodPresenca(String eventoInfo) {
-        Consulta_Elimina_GeraCod_SubmeteCod_Evento geraCod =
-                new Consulta_Elimina_GeraCod_SubmeteCod_Evento(eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), Message_types.GERAR_COD);
+        Msg_String geraCod =
+                new Msg_String(eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), Message_types.GERAR_COD);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
             oout.writeObject(geraCod);
             oout.flush();
 
-            Consulta_Elimina_GeraCod_SubmeteCod_Evento codigo = (Consulta_Elimina_GeraCod_SubmeteCod_Evento) oin.readObject();
+            Msg_String codigo = (Msg_String) oin.readObject();
 
             if (codigo.getTipo() == Message_types.VALIDO) {
-                return codigo.getNome();
+                return codigo.getConteudo();
             }
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
@@ -375,15 +389,15 @@ public class ProgramaCliente {
 
     public String[] consultaPresencasEvento(String eventoInfo) {
         if(eventoInfo != null) {
-            Consulta_Elimina_GeraCod_SubmeteCod_Evento consulta =
-                    new Consulta_Elimina_GeraCod_SubmeteCod_Evento(eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), Message_types.CONSULTA_PRES_EVENT);
+            Msg_String consulta =
+                    new Msg_String(eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), Message_types.CONSULTA_PRES_EVENT);
 
             try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
                  ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
                 oout.writeObject(consulta);
                 oout.flush();
 
-                EliminaPresencas_InserePresencas lista = (EliminaPresencas_InserePresencas) oin.readObject();
+                Msg_EliminaInsere_Presencas lista = (Msg_EliminaInsere_Presencas) oin.readObject();
 
                 if (lista.getTipo() == Message_types.VALIDO)
                     return lista.getLista().length == 0 ? new String[]{"Sem registos"} : lista.getLista();
@@ -397,15 +411,15 @@ public class ProgramaCliente {
 
     public String[] consultaEventosDeUmUtilizador(String utilizador) {
         if (!verificaFormato(utilizador)) {
-            Consulta_Elimina_GeraCod_SubmeteCod_Evento consulta =
-                    new Consulta_Elimina_GeraCod_SubmeteCod_Evento(utilizador, Message_types.CONSULTA_EVENTOS);
+            Msg_String consulta =
+                    new Msg_String(utilizador, Message_types.CONSULTA_EVENTOS);
 
             try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
                  ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
                 oout.writeObject(consulta);
                 oout.flush();
 
-                EliminaPresencas_InserePresencas lista = (EliminaPresencas_InserePresencas) oin.readObject();
+                Msg_EliminaInsere_Presencas lista = (Msg_EliminaInsere_Presencas) oin.readObject();
 
                 if (lista.getTipo() == Message_types.VALIDO)
                     return  lista.getLista().length == 0 ? new String[]{"Sem registos"} : lista.getLista();

@@ -29,13 +29,13 @@ class ThreadCliente implements Runnable {
             //Quando conecta a primeira vez vai guardar o email
             Geral o =(Geral) in.readObject();
             if(o.getTipo() == Message_types.LOGIN){// para descobrir qual a classe estava a pensar em algo para o processamento depois dos dados
-                Login aux = (Login) o;
+                Msg_Login aux = (Msg_Login) o;
                 String password=aux.getPassword();
                 email=aux.getEmail();
                 // aqui verifico se é o admin e ponho o boolean a true ou false
             } else if (o.getTipo() == Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
 
-                RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente) o;
+                Mgs_RegistarEditar_Conta aux=(Mgs_RegistarEditar_Conta) o;
                 email= aux.getEmail();
                 // A implementar
             }else{
@@ -48,7 +48,7 @@ class ThreadCliente implements Runnable {
                     switch (message.getTipo()) {
                         case EDITAR_REGISTO ->{
                             out.writeObject("Altera dados na database");
-                            RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente) message;
+                            Mgs_RegistarEditar_Conta aux=(Mgs_RegistarEditar_Conta) message;
                         }
                         case SUBMICAO_COD -> out.writeObject("Insere dados na database");
                         case CSV_UTILIZADOR -> {}

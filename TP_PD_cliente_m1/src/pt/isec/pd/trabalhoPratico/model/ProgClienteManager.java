@@ -52,7 +52,7 @@ public class ProgClienteManager {
     public boolean registarPresenca(String codigo){
         return programaCliente.registarPresenca(codigo);
     }
-    public boolean obterCSV_Presencas(String nome) {
+    public String obterCSV_Presencas(String nome) {
         return programaCliente.obterCSV_Presencas(nome);
     }
 
