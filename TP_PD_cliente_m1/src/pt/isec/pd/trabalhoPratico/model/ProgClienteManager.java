@@ -56,12 +56,12 @@ public class ProgClienteManager {
         return programaCliente.obterCSV_Presencas(nome);
     }
 
-    public boolean editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
+    public String editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
         return programaCliente.editarRegisto(nome, numIdentificacao, password, confPass);
     }
 
     //ADMINISTRADOR:
-    public boolean criar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim){
+    public String criar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim){
         return programaCliente.criar_Evento(nome, local, data, horaInicio, horaFim);
     }
     public String editar_Evento(String evento, String novoNome, String local, LocalDate data, int horaInicio, int horaFim){

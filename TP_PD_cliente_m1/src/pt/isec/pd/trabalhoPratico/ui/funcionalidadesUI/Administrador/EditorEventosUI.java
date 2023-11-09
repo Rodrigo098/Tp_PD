@@ -18,7 +18,8 @@ public class EditorEventosUI extends BorderPane {
     private int indice = 0;
     private final String[] opcoes = {"LISTA", "EDITAR", "ELI_PRESENCA", "INS_PRESENCA"};
     private Label mais;
-    private TextField emailsTextField, nomeFicheiro, resultado;
+    private TextField emailsTextField, nomeFicheiro;
+    private Text resultado;
     private Button editarEvento, eliminarEvento, gerarCodigoPresencas, obterPresencasCSV, eliminarPresencas, inserirPresencas;
     private ListView<String> listaPresencas;
     private EventoUI eventoUI;
@@ -66,7 +67,7 @@ public class EditorEventosUI extends BorderPane {
 
         listaPresencas = new ListView<>();
 
-        resultado = new TextField();
+        resultado = new Text("");
 
         eventoUI = new EventoUI();
 
@@ -94,7 +95,7 @@ public class EditorEventosUI extends BorderPane {
             opcaoEdicao.set(opcoes[indice++ % opcoes.length]);
         });
         gerarCodigoPresencas.setOnAction(e -> {
-            resultado.setText(progClienteManager.gerarCodPresenca(listaPresencas.getSelectionModel().getSelectedItem()));
+            resultado.setText("Novo código: " + progClienteManager.gerarCodPresenca(listaPresencas.getSelectionModel().getSelectedItem()));
         });
         editarEvento.setOnAction(e -> {
             resultado.setText(progClienteManager.editar_Evento(ListarEventosUI.eventoSelecionado ,eventoUI.getNomeEvento(), eventoUI.getLocal(),
@@ -122,7 +123,10 @@ public class EditorEventosUI extends BorderPane {
 
     private void update() {
         this.setVisible(ContaAdministradorUI.opcaoAdmin.get().equals("EDITOR_EVENTOS"));
-        if(this.isVisible()) eventoUI.setInfoAntiga(ListarEventosUI.eventoSelecionado);
+        if(this.isVisible()) {
+            eventoUI.setInfoAntiga(ListarEventosUI.eventoSelecionado);
+            resultado.setText("");
+        }
 
     }
 

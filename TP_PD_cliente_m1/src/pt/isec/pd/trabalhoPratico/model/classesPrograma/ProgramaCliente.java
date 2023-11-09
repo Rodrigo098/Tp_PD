@@ -226,16 +226,17 @@ public class ProgramaCliente {
         return true;
     }
 
-    public boolean editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
-
+    public String editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
         if (nome == null || nome.isBlank() || password == null || password.isBlank() || !password.equals(confPass) || numIdentificacao == null || numIdentificacao.isBlank())
-            return false;
+            return "Dados de input inválidos :(";
 
         long numID;
         try {
             numID = Integer.parseInt(numIdentificacao);//?? como é que ponho para long?
+            if(numID < 0)
+                return "O teu número acho que não é negativo...";
         } catch (NumberFormatException e) {
-            return false;
+            return "O teu número deve ser inteiro!";
         }
 
         RegistoEdicao_Cliente dadosRegisto = new RegistoEdicao_Cliente(nome, null, password, numID, Message_types.EDITAR_REGISTO);
@@ -247,24 +248,24 @@ public class ProgramaCliente {
             Geral validacao = (Geral) oin.readObject();
 
             if (validacao.getTipo() == Message_types.VALIDO)
-                return true;
+                return "Registo editado com sucesso!";
         } catch (ClassNotFoundException | IOException ignored) {
             setErro();
         }
-        return false;
+        return "Erro";
     }
 
     /////////////////////////ADMINISTRADOR:
     //CRIAR OU EDITAR EVENTO, O ÚLTIMO PARÂMETRO É PARA SABER SE É PARA CRIAR OU EDITAR
-    public boolean criar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim) {
+    public String criar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim) {
         if (nome == null || nome.isBlank() || local == null || local.isBlank() || data == null || horaInicio >= horaFim)
-            return false;
+            return "Dados de input inválidos :(";
 
         LocalDate dataAtual = LocalDate.now();
         LocalTime horaAtual = LocalTime.now();
 
         if (data.isBefore(dataAtual) || horaInicio < horaAtual.getHour())
-            return false;
+            return "A data não pode estar no passadooo!";
 
         Cria_Evento evento =
                 new Cria_Evento(new Evento("eu",nome, local, data, horaInicio, horaFim));
@@ -276,11 +277,11 @@ public class ProgramaCliente {
             Geral validacao = (Geral) oin.readObject();
 
             if (validacao.getTipo() == Message_types.VALIDO)
-                return true;
+                return "Evento criado com sucesso!";
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
         }
-        return false;
+        return "Erro";
     }
     public String editar_Evento(String eventoInfo, String novoNome, String local, LocalDate data, int horaInicio, int horaFim) {
 
