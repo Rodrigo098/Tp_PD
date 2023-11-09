@@ -13,10 +13,10 @@ import java.util.List;
 public class MainServidor {
     public static void main(String[] args) throws ParseException {
         //Para termos dados para testar as horas e datas dos eventos
-        LocalTime horainicio = LocalTime.of(05, 00);
+        LocalTime horainicio = LocalTime.of(00, 00);
         LocalTime horafim = LocalTime.of(23, 55);
         SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
-        Date data = df.parse("08-11-2023");
+        Date data = df.parse("09-11-2023");
 
         //ProgServidor prog=new ProgServidor();
         //prog.servico();
@@ -27,10 +27,10 @@ public class MainServidor {
       //  System.out.println( DbManage.autentica_user(new Utilizador("Joao","eu@tu.isec","9876"),"12345"));
        // System.out.println( DbManage.autentica_user(new Utilizador("Joao","eu@tu.isec","9876"),"123"));
         //DbManage.Cria_evento("Testenovo2","Isec",data,horainicio,horafim);
-      DbManage.EliminaPresencas("Testenovo2",new String[]{"eu@tu.isec"} );
-        DbManage.Edita_evento(new Cria_evento("Testenovo2","Isec",data,horainicio,horafim),"Testenovo2");
-      int code=DbManage.GeraCodigoRegisto(new Cria_evento("Testenovo2","Isec",data,horainicio,horafim),50);
-      System.out.println(DbManage.submitcod(code,"Testenovo2","eu@tu.isec"));
+  // DbManage.EliminaPresencas("Testenovo2",new String[]{"eu@tu.isec"} );
+    //   DbManage.Edita_evento(new Cria_evento("Testenovo2","Isec",data,horainicio,horafim),"Testenovo2");
+    // int code=DbManage.GeraCodigoRegisto(new Cria_evento("Testenovo2","Isec",data,horainicio,horafim),0);
+      //System.out.println(DbManage.submitcod(795921,"Testenovo2","eu@tu.isec"));
       /*  List<String> teste=DbManage.Presencas_evento("Chelsea");
         for (String a:teste
              ) {

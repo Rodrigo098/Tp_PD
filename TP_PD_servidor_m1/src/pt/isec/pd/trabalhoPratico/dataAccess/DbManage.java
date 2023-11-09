@@ -131,13 +131,30 @@ public class DbManage {
             }
 
 
-            String GetQuery = "SELECT * FROM Codigo_Registo where nome_evento='" + nome_evento + "';";
-            ResultSet rs=statement.executeQuery(GetQuery);
+            String GetQuery = "SELECT * FROM Codigo_Registo where nome_evento=? AND validade>?";
+            PreparedStatement getquery=connection.prepareStatement(GetQuery);
+            getquery.setString(1,nome_evento);
+            getquery.setLong(2,0);
+            ResultSet rs=getquery.executeQuery();
+
 
 
             if(rs.isBeforeFirst())
             {   rs.next();
-                if(rs.getInt("n_codigo_registo")==codigo && rs.getTimestamp("validade").getTime()>0 ){
+                Date Data=new Date();
+                long datamili=Data.getTime();
+                System.out.println("o data atual e "+datamili);
+                System.out.println(rs.getTimestamp("validade").getTime());
+                if(rs.getTimestamp("validade").getTime()<datamili){
+                    System.out.println("Fora de validade");
+                    String EliminaCodigosAnterioresQuery = "UPDATE Codigo_Registo SET validade=0 WHERE nome_evento = ?";//
+                    PreparedStatement expiraStatement = connection.prepareStatement(EliminaCodigosAnterioresQuery);
+                    expiraStatement.setString(1, nome_evento); // Define o valor do nome_evento para o ? da query
+                    expiraStatement.executeUpdate();// se existirem codigos antigos são eliminados se nao existirem nao acontece nada
+                        return false;
+                }
+
+                if(rs.getInt("n_codigo_registo")==codigo  ){
                     String createEntryQuery = "INSERT INTO Assiste (nome_evento,email) VALUES ('"
                             + nome_evento+"','" +emailuser+"')";// qual o valor que é suposto colocar no idassiste??
 
@@ -156,7 +173,9 @@ public class DbManage {
                 }
             }
             else{
-                System.out.println("Nao ha nenhum evento com esse nome");
+
+                System.out.println("Nenhum item corresponde a pesquisa");
+
                 return false;
             }
         } catch (SQLException e) {
@@ -537,10 +556,10 @@ public class DbManage {
 
 
                     // Eu alterei para passar a eliminar os codigos antigos e substituir pelos novos, nao me parece muito logico guarda-los, dps diz me o que achas
-                    String EliminaCodigosAnterioresQuery = "Delete From Codigo_Registo WHERE nome_evento = ?";
+                  String EliminaCodigosAnterioresQuery = "DELETE  FROM Codigo_Registo  WHERE nome_evento = ?";//
                     PreparedStatement expiraStatement = connection.prepareStatement(EliminaCodigosAnterioresQuery);
                     expiraStatement.setString(1, evento.getNome()); // Define o valor do nome_evento para o ? da query
-                    expiraStatement.executeUpdate();
+                    expiraStatement.executeUpdate();// se existirem codigos antigos são eliminados se nao existirem nao acontece nada
 
                     // Depois de expirar os codigos anteriores, ele vai gerar um novo código
                     int codigo = geraCodigoAleatorio();

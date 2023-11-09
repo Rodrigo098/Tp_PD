@@ -247,7 +247,7 @@ public class ProgServidor {
             try(ServerSocket socket=new ServerSocket(6001)) {
                 while (true){
                     Socket cli=socket.accept();// aceita clientes
-                    //cli.setSoTimeout(10000);
+                    cli.setSoTimeout(10000);
                     clients.add(cli);// adiciona cliente conectado a lista de clientes
                     ThreadCliente th=new ThreadCliente(cli);
                     th.run();
