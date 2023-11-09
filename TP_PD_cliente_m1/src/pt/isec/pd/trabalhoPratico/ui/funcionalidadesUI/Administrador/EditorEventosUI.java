@@ -98,8 +98,8 @@ public class EditorEventosUI extends BorderPane {
             resultado.setText(progClienteManager.gerarCodPresenca(listaPresencas.getSelectionModel().getSelectedItem()));
         });
         editarEvento.setOnAction(e -> {
-            resultado.setText(progClienteManager.criarEditar_Evento(eventoUI.getNomeEvento(), eventoUI.getLocal(),
-                              eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim(), Message_types.EDIT_EVENTO) ?
+            resultado.setText(progClienteManager.editar_Evento(ListarEventosUI.eventoSelecionado ,eventoUI.getNomeEvento(), eventoUI.getLocal(),
+                              eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim()) ?
                               "Evento editado com sucesso!" : "Evento não editado!");
         });
         eliminarEvento.setOnAction(e -> {
@@ -127,6 +127,8 @@ public class EditorEventosUI extends BorderPane {
 
     private void update() {
         this.setVisible(ContaAdministradorUI.opcaoAdmin.get().equals("EDITOR_EVENTOS"));
+        if(this.isVisible()) eventoUI.setInfoAntiga(ListarEventosUI.eventoSelecionado);
+
     }
 
     private void update2() {

@@ -19,32 +19,34 @@ import java.util.List;
 ///////////////////////////////////// ATUALIZACAO ASSINCRONA ///////////////////////
 class AtualizacaoAsync implements Runnable {
     private final Socket socket;
+
     public AtualizacaoAsync(Socket socket) {
         this.socket = socket;
     }
+
     @Override
     public void run() {
 
-        do{
-            try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream()))
-            {
+        do {
+            try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream())) {
                 Object novaAtualizacao = oin.readObject();
-                if(novaAtualizacao instanceof Geral g)
-                    if(g.getTipo() == Message_types.ATUALIZACAO)
+                if (novaAtualizacao instanceof Geral g)
+                    if (g.getTipo() == Message_types.ATUALIZACAO)
                         ProgramaCliente.atualizacao.setValue(ProgramaCliente.atualizacao.getValue() + 1);
             } catch (IOException | ClassNotFoundException ignored) {
-                synchronized(ProgramaCliente.erro) {
+                synchronized (ProgramaCliente.erro) {
                     ProgramaCliente.setErro();
                 }
             }
-        }while(Thread.currentThread().isAlive());
+        } while (Thread.currentThread().isAlive());
     }
 }
+
 ///////////////////////////////////// PROGRAMA CLIENTE ///////////////////////
 public class ProgramaCliente {
     protected static SimpleIntegerProperty atualizacao = new SimpleIntegerProperty(0);
     private final SimpleStringProperty logado = new SimpleStringProperty("ENTRADA");
-    protected static SimpleIntegerProperty erro = new SimpleIntegerProperty(0);
+    protected static final SimpleIntegerProperty erro = new SimpleIntegerProperty(0);
     private Socket socket;
 
     public ProgramaCliente() {
@@ -108,7 +110,8 @@ public class ProgramaCliente {
 /*
         Login dadosLogin = new Login(email, password);
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-            ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())){
+            ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
+        {
 
             oout.writeObject(dadosLogin);
             oout.flush();
@@ -117,26 +120,26 @@ public class ProgramaCliente {
 
                 switch (validacao.getTipo()){
                     case ADMINISTRADOR -> {
-                        tipo = "ADMINISTRADOR";
+                        logado.set("ADMINISTRADOR");
                         try (Socket socket = new Socket(this.socket.getInetAddress(), this.socket.getPort())) {
                             new Thread(new AtualizacaoAsync(socket)).start();
                         } catch (Exception e) {
-                            MainCliente.menuSBP.set("ERRO");
+                            setErro();
                         }
                     }
                     case UTILIZADOR ->
-                        tipo = "UTILIZADOR";
+                        logado.set("UTILIZADOR");
                     case INVALIDO, ERRO -> {
                         setErro();
-                        return;
+                        //sairApp();
                     }
                 }
-            }
-        }catch (IOException | ClassNotFoundException ignored) {
-            erro.set(true);
+            } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }*/
         logado.set("ADMINISTRADOR");
     }
+
 
     public void logout() {
         /*Geral logout = new Geral(Message_types.LOGOUT);
@@ -147,12 +150,6 @@ public class ProgramaCliente {
             logado = "ENTRADA";
         } catch (IOException e) {
             setErro();
-        } finally {
-            try {
-                socket.close();
-            } catch (IOException ignored) {
-                setErro();
-            }
         }*/
         logado.set("ENTRADA");
     }
@@ -258,7 +255,7 @@ public class ProgramaCliente {
 
     /////////////////////////ADMINISTRADOR:
     //CRIAR OU EDITAR EVENTO, O ÚLTIMO PARÂMETRO É PARA SABER SE É PARA CRIAR OU EDITAR
-    public boolean criarEditar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim, Message_types tipo) {
+    public boolean criar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim) {
         if (nome == null || nome.isBlank() || local == null || local.isBlank() || data == null || horaInicio >= horaFim)
             return false;
 
@@ -270,10 +267,35 @@ public class ProgramaCliente {
         if (horaInicio < horaAtual.getHour())
             return false;
 
-        CriaEdita_evento evento =
-                new CriaEdita_evento(new Evento("eu", tipo == Message_types.CRIA_EVENTO ?
-                                           nome : nome.substring(0, nome.indexOf(';')).trim(),
-                                           local, data, horaInicio, horaFim), tipo);
+        Cria_Evento evento =
+                new Cria_Evento(new Evento("eu",nome, local, data, horaInicio, horaFim));
+
+        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+            oout.writeObject(evento);
+            oout.flush();
+            Geral validacao = (Geral) oin.readObject();
+
+            if (validacao.getTipo() == Message_types.VALIDO)
+                return true;
+        } catch (IOException | ClassNotFoundException ignored) {
+            setErro();
+        }
+        return false;
+    }
+    public boolean editar_Evento(String eventoInfo, String novoNome, String local, LocalDate data, int horaInicio, int horaFim) {
+
+        LocalDate dataAtual = LocalDate.now();
+        if (data != null && data.isBefore(dataAtual))
+            return false;
+
+        LocalTime horaAtual = LocalTime.now();
+        if (horaInicio < horaAtual.getHour() || horaInicio >= horaFim)
+            return false;
+
+        Edita_Evento evento =
+                new Edita_Evento(new Evento("eu", eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(),
+                                           local, data, horaInicio, horaFim), novoNome);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {

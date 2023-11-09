@@ -2,11 +2,11 @@ package pt.isec.pd.trabalhoPratico.model.classesComunication;
 
 import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
 
-public class CriaEdita_evento extends Geral{
+public class Cria_Evento extends Geral{
     private Evento evento;
 
-    public CriaEdita_evento(Evento evento, Message_types tipo) {
-        super(tipo);
+    public Cria_Evento(Evento evento) {
+        super(Message_types.CRIA_EVENTO);
         this.evento = evento;
     }
 

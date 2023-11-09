@@ -56,4 +56,12 @@ public class EventoUI extends VBox {
     public int getHoraFim() {
         return horaFim.getValue();
     }
+    public void setInfoAntiga(String eventoSelecionado) {
+        String[] info = eventoSelecionado.split("; ");
+        nomeEvento.setText(info[0]);
+        local.setText(info[1]);
+        data.setValue(LocalDate.parse(info[2]));
+        horaInicio.getValueFactory().setValue(Integer.parseInt(info[3]));
+        horaFim.getValueFactory().setValue(Integer.parseInt(info[4]));
+    }
 }

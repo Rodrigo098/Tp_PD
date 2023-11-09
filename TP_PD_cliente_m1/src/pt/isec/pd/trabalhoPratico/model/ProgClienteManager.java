@@ -61,8 +61,11 @@ public class ProgClienteManager {
     }
 
     //ADMINISTRADOR:
-    public boolean criarEditar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim, Message_types tipo){
-        return programaCliente.criarEditar_Evento(nome, local, data, horaInicio, horaFim, tipo);
+    public boolean criar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim){
+        return programaCliente.criar_Evento(nome, local, data, horaInicio, horaFim);
+    }
+    public boolean editar_Evento(String evento, String novoNome, String local, LocalDate data, int horaInicio, int horaFim){
+        return programaCliente.editar_Evento(evento, novoNome,local, data, horaInicio, horaFim);
     }
 
     public boolean eliminarEvento(String nomeEvento) {
