@@ -155,7 +155,8 @@ public class ProgramaCliente {
     }
 
     public String[] obterListaConsulta(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim) {
-
+        return new String[]{"ola; aqui; 2021-05-05; 18; 19", "ola; aqui; 2021-05-05; 18; 19"};
+        /*
         ConsultaFiltros consultaPresencas = new ConsultaFiltros(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
@@ -165,12 +166,12 @@ public class ProgramaCliente {
 
             EliminaPresencas_InserePresencas lista = (EliminaPresencas_InserePresencas) oin.readObject();
             if(lista.getTipo() == Message_types.VALIDO)
-                return lista.getLista();
+                return  lista.getLista().length == 0 ? new String[]{"Sem registos"} : lista.getLista();
         } catch (IOException | ClassNotFoundException e) {
             setErro();
             return new String[]{"Erro na comunicação com o servidor"};
         }
-        return new String[]{"Erro"};
+        return new String[]{"Erro"};*/
     }
 
     /////////////////////////UTILIZADOR:
@@ -260,11 +261,9 @@ public class ProgramaCliente {
             return false;
 
         LocalDate dataAtual = LocalDate.now();
-        if (data.isBefore(dataAtual))
-            return false;
-
         LocalTime horaAtual = LocalTime.now();
-        if (horaInicio < horaAtual.getHour())
+
+        if (data.isBefore(dataAtual) || horaInicio < horaAtual.getHour())
             return false;
 
         Cria_Evento evento =
@@ -283,15 +282,13 @@ public class ProgramaCliente {
         }
         return false;
     }
-    public boolean editar_Evento(String eventoInfo, String novoNome, String local, LocalDate data, int horaInicio, int horaFim) {
+    public String editar_Evento(String eventoInfo, String novoNome, String local, LocalDate data, int horaInicio, int horaFim) {
 
         LocalDate dataAtual = LocalDate.now();
-        if (data != null && data.isBefore(dataAtual))
-            return false;
-
         LocalTime horaAtual = LocalTime.now();
-        if (horaInicio < horaAtual.getHour() || horaInicio >= horaFim)
-            return false;
+
+        if ((data != null && data.isBefore(dataAtual)) || (horaInicio < horaAtual.getHour() || horaInicio >= horaFim))
+            return "Evento não editado!";
 
         Edita_Evento evento =
                 new Edita_Evento(new Evento("eu", eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(),
@@ -304,14 +301,14 @@ public class ProgramaCliente {
             Geral validacao = (Geral) oin.readObject();
 
             if (validacao.getTipo() == Message_types.VALIDO)
-                return true;
+                return "Evento editado com sucesso!";
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
         }
-        return false;
+        return "Evento não editado!";
     }
 
-    public boolean eliminarEvento(String eventoInfo) {
+    public String eliminarEvento(String eventoInfo) {
         Consulta_Elimina_GeraCod_SubmeteCod_Evento evento =
                 new Consulta_Elimina_GeraCod_SubmeteCod_Evento(eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), Message_types.ELIMINAR_EVENTO);
 
@@ -322,14 +319,14 @@ public class ProgramaCliente {
             Geral validacao = (Geral) oin.readObject();
 
             if (validacao.getTipo() == Message_types.VALIDO)
-                return true;
+                return "Evento eliminado com sucesso!";
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
         }
-        return false;
+        return "Evento não eliminado!";
     }
 
-    public boolean eliminaInserePresencas_Eventos(Message_types tipo, String eventoInfo, String filtros) {
+    public String eliminaInserePresencas_Eventos(Message_types tipo, String eventoInfo, String filtros) {
         ArrayList<String> emails = new ArrayList<>();
         for (String email : filtros.trim().split(" ")) {
             if (!verificaFormato(email))
@@ -347,11 +344,11 @@ public class ProgramaCliente {
             Geral validacao = (Geral) oin.readObject();
 
             if (validacao.getTipo() == Message_types.VALIDO)
-                return true;
+                return tipo == Message_types.ELIMINA_PRES ? "Presenças eliminadas com sucesso!" : "Presenças inseridas com sucesso!";
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
         }
-        return false;
+        return "Presenças não inseridas!";
     }
 
     public String gerarCodPresenca(String eventoInfo) {
@@ -388,7 +385,7 @@ public class ProgramaCliente {
                 EliminaPresencas_InserePresencas lista = (EliminaPresencas_InserePresencas) oin.readObject();
 
                 if (lista.getTipo() == Message_types.VALIDO)
-                    return lista.getLista();
+                    return lista.getLista().length == 0 ? new String[]{"Sem registos"} : lista.getLista();
             } catch (IOException | ClassNotFoundException ignored) {
                 setErro();
                 return new String[]{"Erro na comunicação com o servidor"};
@@ -410,7 +407,7 @@ public class ProgramaCliente {
                 EliminaPresencas_InserePresencas lista = (EliminaPresencas_InserePresencas) oin.readObject();
 
                 if (lista.getTipo() == Message_types.VALIDO)
-                    return lista.getLista();
+                    return  lista.getLista().length == 0 ? new String[]{"Sem registos"} : lista.getLista();
             } catch (IOException | ClassNotFoundException e) {
                 setErro();
                 return new String[]{"Erro na comunicação com o servidor"};

@@ -1,6 +1,5 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
 
-import com.sun.scenario.effect.impl.prism.PrImage;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
@@ -99,25 +98,21 @@ public class EditorEventosUI extends BorderPane {
         });
         editarEvento.setOnAction(e -> {
             resultado.setText(progClienteManager.editar_Evento(ListarEventosUI.eventoSelecionado ,eventoUI.getNomeEvento(), eventoUI.getLocal(),
-                              eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim()) ?
-                              "Evento editado com sucesso!" : "Evento não editado!");
+                              eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim()));
         });
         eliminarEvento.setOnAction(e -> {
-            resultado.setText(progClienteManager.eliminarEvento(ListarEventosUI.eventoSelecionado) ?
-                              "Evento eliminado com sucesso!" : "Evento não eliminado!");
+            resultado.setText(progClienteManager.eliminarEvento(ListarEventosUI.eventoSelecionado));
         });
         obterPresencasCSV.setOnAction(e -> {
             progClienteManager.obterCSV_Admin(nomeFicheiro.getText());
         });
         eliminarPresencas.setOnAction(e -> {
             resultado.setText(progClienteManager.eliminaInsere_Eventos(Message_types.ELIMINA_PRES,
-                              ListarEventosUI.eventoSelecionado, emailsTextField.getText()) ?
-                              "Presenças eliminadas com sucesso!" : "Presenças não eliminadas!");
+                              ListarEventosUI.eventoSelecionado, emailsTextField.getText()));
         });
         inserirPresencas.setOnAction(e -> {
             resultado.setText(progClienteManager.eliminaInsere_Eventos(Message_types.INSERE_PRES,
-                              ListarEventosUI.eventoSelecionado, emailsTextField.getText()) ?
-                              "Presenças inseridas com sucesso!" : "Presenças não inseridas!");
+                              ListarEventosUI.eventoSelecionado, emailsTextField.getText()));
         });
 
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());

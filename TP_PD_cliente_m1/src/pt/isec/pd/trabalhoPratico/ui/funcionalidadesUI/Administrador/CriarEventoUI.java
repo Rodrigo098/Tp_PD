@@ -5,10 +5,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
-import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
-
-import java.sql.Time;
-
 
 public class CriarEventoUI extends BorderPane {
     private Button confirmar, cancelar;
@@ -41,7 +37,7 @@ public class CriarEventoUI extends BorderPane {
     }
     private void registerHandlers() {
         confirmar.setOnAction( e -> {
-            progClienteManager.criarEditar_Evento(eventoUI.getNomeEvento(), eventoUI.getLocal(), eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim(), Message_types.CRIA_EVENTO);
+            progClienteManager.criar_Evento(eventoUI.getNomeEvento(), eventoUI.getLocal(), eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim());
         });
         cancelar.setOnAction(e -> {
             ContaAdministradorUI.opcaoAdmin.set("NADA");
