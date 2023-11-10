@@ -64,9 +64,9 @@ public class RootPane extends BorderPane {
             username.setText(null);
             password.setText(null);
         });
-        registar.setOnMouseClicked( e -> {
-            MainCliente.menuSBP.set("REGISTO");
-        });
+
+        registar.setOnMouseClicked( e -> MainCliente.menuSBP.set("REGISTO"));
+
         progClienteManager.addErroListener(observable -> Platform.runLater(msgBox::update));
     }
 

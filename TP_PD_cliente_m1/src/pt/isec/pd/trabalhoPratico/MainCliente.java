@@ -1,6 +1,5 @@
 package pt.isec.pd.trabalhoPratico;
 import javafx.application.Application;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.ui.MainClienteJFX;

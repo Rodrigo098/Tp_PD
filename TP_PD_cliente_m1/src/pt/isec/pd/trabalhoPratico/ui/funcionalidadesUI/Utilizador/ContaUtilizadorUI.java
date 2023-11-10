@@ -15,7 +15,7 @@ public class ContaUtilizadorUI extends BorderPane {
     static protected SimpleStringProperty opcaoUti = new SimpleStringProperty("NADA");
     private Button listaPresencas, marcarPresenca, editarRegisto, logout, voltar;
     private HBox funcionalidades;
-    private ProgClienteManager progClienteManager;
+    private final ProgClienteManager progClienteManager;
     public ContaUtilizadorUI(ProgClienteManager progClienteManager)  {
         this.progClienteManager = progClienteManager;
         createViews();
@@ -58,22 +58,19 @@ public class ContaUtilizadorUI extends BorderPane {
     }
 
     private void registerHandlers() {
-        voltar.setOnAction(e -> {
-            opcaoUti.set("NADA");
-        });
-        listaPresencas.setOnAction(e -> {
-            opcaoUti.set("LISTAR_PRESENCAS");
-        });
-        marcarPresenca.setOnAction(e -> {
-            opcaoUti.set("MARCAR_PRES");
-        });
-        editarRegisto.setOnAction(e -> {
-            opcaoUti.set("EDITAR_REGISTO");
-        });
+        voltar.setOnAction(e -> opcaoUti.set("NADA"));
+
+        listaPresencas.setOnAction(e -> opcaoUti.set("LISTAR_PRESENCAS"));
+
+        marcarPresenca.setOnAction(e -> opcaoUti.set("MARCAR_PRES"));
+
+        editarRegisto.setOnAction(e -> opcaoUti.set("EDITAR_REGISTO"));
+
         logout.setOnAction(e -> {
             progClienteManager.logout();
             MainCliente.menuSBP.set("MENU");
         });
+
         opcaoUti.addListener(observable -> update2());
         progClienteManager.addLogadoListener(observable -> update1());
     }

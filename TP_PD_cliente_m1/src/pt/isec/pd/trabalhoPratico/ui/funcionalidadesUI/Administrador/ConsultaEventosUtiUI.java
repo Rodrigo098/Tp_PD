@@ -9,6 +9,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
@@ -16,8 +17,8 @@ import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
 public class ConsultaEventosUtiUI extends BorderPane {
     private TextField utilizador;
     private Button obterCSV, listar;
-    private ListView<InfoEventoNode> listaEventos;
-    private ProgClienteManager progClienteManager;
+    private ListView<Evento> listaEventos;
+    private final ProgClienteManager progClienteManager;
 
     public ConsultaEventosUtiUI(ProgClienteManager progClienteManager)  {
         this.progClienteManager = progClienteManager;
@@ -33,6 +34,7 @@ public class ConsultaEventosUtiUI extends BorderPane {
         obterCSV.setDisable(true);
         listar = new Button("listar");
         listaEventos = new ListView<>();
+        listaEventos.setPlaceholder(new Text("Este utilizador ainda não presenciou nenhum evento"));
 
         Label label = new Label("Lista de eventos presenciados por:");
         label.getStyleClass().add("titulo");
@@ -70,7 +72,7 @@ public class ConsultaEventosUtiUI extends BorderPane {
             return false;
         listaEventos.getItems().clear();
         for (Evento evento : progClienteManager.consultaEventosUtilizador(utilizador.getText())) {
-            listaEventos.getItems().add(new InfoEventoNode(evento));
+            listaEventos.getItems().add(evento);
         }
         return true;
     }

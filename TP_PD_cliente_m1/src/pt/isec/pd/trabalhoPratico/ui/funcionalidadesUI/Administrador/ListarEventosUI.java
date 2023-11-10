@@ -6,6 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
@@ -26,6 +27,7 @@ public class ListarEventosUI extends BorderPane {
     private void createViews() {
         filtros = new FiltrosUI();
         listaEventos = new ListView<>();
+        listaEventos.setPlaceholder(new Text("Não há eventos registados"));
 
         Label label = new Label("Lista de Eventos");
         label.getStyleClass().add("titulo");
@@ -43,9 +45,7 @@ public class ListarEventosUI extends BorderPane {
                 ContaAdministradorUI.opcaoAdmin.set("EDITOR_EVENTOS");
             }
         });
-        filtros.procurar.setOnAction( e -> {
-            extrairListaEventos();
-        });
+        filtros.procurar.setOnAction( e -> extrairListaEventos());
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
         progClienteManager.addAtualizacaoListener(observable -> Platform.runLater(this::extrairListaEventos));
     }

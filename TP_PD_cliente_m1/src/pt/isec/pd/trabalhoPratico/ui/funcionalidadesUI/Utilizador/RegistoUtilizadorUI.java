@@ -14,7 +14,7 @@ import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 public class RegistoUtilizadorUI extends BorderPane {
     private Button registar, voltar;
     private TextField nomeUtilizador, email, password, confirmar_password, numIdentificacao;
-    private ProgClienteManager progClienteManager;
+    private final ProgClienteManager progClienteManager;
     public RegistoUtilizadorUI(ProgClienteManager progClienteManager)  {
         this.progClienteManager = progClienteManager;
         createViews();
@@ -63,20 +63,27 @@ public class RegistoUtilizadorUI extends BorderPane {
     private void registerHandlers() {
         voltar.setOnAction(e -> {
             MainCliente.menuSBP.set("MENU");
+            limparCampos();
         });
+
         registar.setOnAction(e -> {
             progClienteManager.registar(nomeUtilizador.getText(), email.getText(), numIdentificacao.getText(), password.getText(), confirmar_password.getText());
-            nomeUtilizador.setText(null);
-            email.setText(null);
-            password.setText(null);
-            confirmar_password.setText(null);
-            numIdentificacao.setText(null);
+            limparCampos();
             MainCliente.menuSBP.set("MENU");
         });
+
         MainCliente.menuSBP.addListener(observable -> update());
     }
 
     private void update() {
         this.setVisible(MainCliente.menuSBP.get().equals("REGISTO"));
+    }
+
+    private void limparCampos() {
+        nomeUtilizador.setText(null);
+        email.setText(null);
+        password.setText(null);
+        confirmar_password.setText(null);
+        numIdentificacao.setText(null);
     }
 }

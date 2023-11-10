@@ -32,6 +32,7 @@ public class ListarPresencasUI extends BorderPane {
     private void createViews() {
         filtros = new FiltrosUI();
         lista = new ListView<>();
+        lista.setPlaceholder(new Text("Não há presenças em eventos registadas"));
         gerarCSV = new Button("gerar CSV");
         resultadoCSV = new Text("");
         nomeFicheiro = new TextField();
@@ -48,12 +49,10 @@ public class ListarPresencasUI extends BorderPane {
     }
 
     private void registerHandlers() {
-        filtros.procurar.setOnAction( e -> {
-            extrairListaEventos();
-        });
-        gerarCSV.setOnAction( e -> {
-            resultadoCSV.setText(progClienteManager.obterCSV_ListaEventos(nomeFicheiro.getText(), Message_types.CSV_UTILIZADOR));
-        });
+        filtros.procurar.setOnAction( e -> extrairListaEventos());
+
+        gerarCSV.setOnAction( e -> resultadoCSV.setText(progClienteManager.obterCSV_ListaEventos(nomeFicheiro.getText(), Message_types.CSV_UTILIZADOR)));
+
         ContaUtilizadorUI.opcaoUti.addListener(observable -> update());
     }
 

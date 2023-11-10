@@ -66,23 +66,21 @@ public class ContaAdministradorUI extends BorderPane {
 
     //-----------------------------------------------------------------
     private void registerHandlers() {
-        voltar.setOnAction(e -> {
-            opcaoAdmin.set("NADA");
-        });
-        criarEvento.setOnAction(e -> {
-            opcaoAdmin.set("CRIAR_EVENTO");
-        });
-        listarEventos.setOnAction(e -> {
-            opcaoAdmin.set("LISTAR_EVENTOS");
-        });
-        eventosUti.setOnAction(e -> {
-            opcaoAdmin.set("EVENTOS_PRESENCA_UTI");
-        });
+        voltar.setOnAction(e -> opcaoAdmin.set("NADA"));
+
+        criarEvento.setOnAction(e -> opcaoAdmin.set("CRIAR_EVENTO"));
+
+        listarEventos.setOnAction(e -> opcaoAdmin.set("LISTAR_EVENTOS"));
+
+        eventosUti.setOnAction(e -> opcaoAdmin.set("EVENTOS_PRESENCA_UTI"));
+
         logout.setOnAction(e -> {
             progClienteManager.logout();
             MainCliente.menuSBP.set("MENU");
         });
+
         opcaoAdmin.addListener(observable -> update2());
+
         progClienteManager.addLogadoListener(observable -> update1());
     }
 

@@ -55,15 +55,23 @@ public class EditarRegistoUI extends BorderPane {
     private void registerHandlers() {
         confirmar.setOnAction( e -> {
             resultado.setText(progClienteManager.editarRegisto(nome.getText(), numID.getText(), password.getText(), confPassword.getText()));
+            limparCampos();
         });
+
         cancelar.setOnAction(e -> {
             ContaUtilizadorUI.opcaoUti.set("NADA");
+            nome.setText(null);numID.setText(null);password.setText(null);confPassword.setText(null);
         });
+
         ContaUtilizadorUI.opcaoUti.addListener(observable -> update());
     }
 
     private void update() {
         this.setVisible(ContaUtilizadorUI.opcaoUti.get().equals("EDITAR_REGISTO"));
+    }
+
+    private void limparCampos() {
+        nome.setText(null);numID.setText(null);password.setText(null);confPassword.setText(null);
     }
 
 }

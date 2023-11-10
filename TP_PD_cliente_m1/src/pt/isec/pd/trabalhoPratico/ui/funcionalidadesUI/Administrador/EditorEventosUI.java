@@ -12,7 +12,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
-import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
 public class EditorEventosUI extends BorderPane {
@@ -23,7 +22,7 @@ public class EditorEventosUI extends BorderPane {
     private TextField emailsTextField, nomeFicheiro;
     private Text resultado;
     private Button editarEvento, eliminarEvento, gerarCodigoPresencas, obterPresencasCSV, eliminarPresencas, inserirPresencas;
-    private ListView<String> listaPresencas;
+    private ListView<Utilizador> listaPresencas;
     private EventoUI eventoUI;
     private VBox eliminarInserirPresencas;
     private final ProgClienteManager progClienteManager;
@@ -104,27 +103,15 @@ public class EditorEventosUI extends BorderPane {
             resultado.setText("");
             opcaoEdicao.set(opcoes[indice++ % opcoes.length]);
         });
-        gerarCodigoPresencas.setOnAction(e -> {
-            resultado.setText("Novo código: " + progClienteManager.gerarCodPresenca(listaPresencas.getSelectionModel().getSelectedItem()));
-        });
-        editarEvento.setOnAction(e -> {
-            resultado.setText(progClienteManager.editar_Evento(ListarEventosUI.eventoSelecionado.nomeEvento() ,eventoUI.getNomeEvento(), eventoUI.getLocal(),
-                              eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim()));
-        });
-        eliminarEvento.setOnAction(e -> {
-            resultado.setText(progClienteManager.eliminarEvento(ListarEventosUI.eventoSelecionado.nomeEvento()));
-        });
-        obterPresencasCSV.setOnAction(e -> {
-            progClienteManager.obterCSV_ListaEventos(nomeFicheiro.getText(), Message_types.CSV_EVENTOS_ADMIN);
-        });
-        eliminarPresencas.setOnAction(e -> {
-            resultado.setText(progClienteManager.eliminaInsere_Eventos(Message_types.ELIMINA_PRES,
-                              ListarEventosUI.eventoSelecionado.nomeEvento(), emailsTextField.getText()));
-        });
-        inserirPresencas.setOnAction(e -> {
-            resultado.setText(progClienteManager.eliminaInsere_Eventos(Message_types.INSERE_PRES,
-                              ListarEventosUI.eventoSelecionado.nomeEvento(), emailsTextField.getText()));
-        });
+        gerarCodigoPresencas.setOnAction(e -> resultado.setText("Novo código: " + progClienteManager.gerarCodPresenca(ListarEventosUI.eventoSelecionado.nomeEvento())));
+        editarEvento.setOnAction(e -> resultado.setText(progClienteManager.editar_Evento(ListarEventosUI.eventoSelecionado.nomeEvento() ,eventoUI.getNomeEvento(), eventoUI.getLocal(),
+                          eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim())));
+        eliminarEvento.setOnAction(e -> resultado.setText(progClienteManager.eliminarEvento(ListarEventosUI.eventoSelecionado.nomeEvento())));
+        obterPresencasCSV.setOnAction(e -> progClienteManager.obterCSV_ListaEventos(nomeFicheiro.getText(), Message_types.CSV_EVENTOS_ADMIN));
+        eliminarPresencas.setOnAction(e -> resultado.setText(progClienteManager.eliminaInsere_Eventos(Message_types.ELIMINA_PRES,
+                          ListarEventosUI.eventoSelecionado.nomeEvento(), emailsTextField.getText())));
+        inserirPresencas.setOnAction(e -> resultado.setText(progClienteManager.eliminaInsere_Eventos(Message_types.INSERE_PRES,
+                          ListarEventosUI.eventoSelecionado.nomeEvento(), emailsTextField.getText())));
 
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
         opcaoEdicao.addListener(observable -> update2());
@@ -160,7 +147,7 @@ public class EditorEventosUI extends BorderPane {
         listaPresencas.getItems().clear();
 
         for (Utilizador utilizador : progClienteManager.consultaPresencasEvento(ListarEventosUI.eventoSelecionado.nomeEvento())) {
-            listaPresencas.getItems().add(utilizador.toString());
+            listaPresencas.getItems().add(utilizador);
         }
     }
 }

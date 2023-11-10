@@ -40,12 +40,10 @@ public class CriarEventoUI extends BorderPane {
         this.setBottom(new HBox(confirmar, cancelar));
     }
     private void registerHandlers() {
-        confirmar.setOnAction( e -> {
-            resultado.setText(progClienteManager.criar_Evento(eventoUI.getNomeEvento(), eventoUI.getLocal(), eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim()));
-        });
-        cancelar.setOnAction(e -> {
-            ContaAdministradorUI.opcaoAdmin.set("NADA");
-        });
+        confirmar.setOnAction( e -> resultado.setText(progClienteManager.criar_Evento(eventoUI.getNomeEvento(), eventoUI.getLocal(), eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim())));
+
+        cancelar.setOnAction(e -> ContaAdministradorUI.opcaoAdmin.set("NADA"));
+
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
     }
 

@@ -43,10 +43,14 @@ public class MarcarPresencaUI extends BorderPane {
     private void registerHandlers() {
         submeter.setOnAction( e -> {
             progClienteManager.registarPresenca(codigo.getText());
+            codigo.setText(null);
         });
+
         cancelar.setOnAction(e -> {
             ContaUtilizadorUI.opcaoUti.set("NADA");
+            codigo.setText(null);
         });
+
         ContaUtilizadorUI.opcaoUti.addListener(observable -> update());
     }
 

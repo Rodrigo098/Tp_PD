@@ -6,7 +6,6 @@ import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class MensagemBox extends VBox {
-    private ProgClienteManager progClienteManager;
     private Button erro;
     public MensagemBox(String mensagem){
         createViews(mensagem);

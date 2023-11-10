@@ -9,7 +9,6 @@ import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
-import javax.swing.*;
 import java.util.List;
 
 public class MainClienteJFX extends Application {
@@ -52,13 +51,3 @@ public class MainClienteJFX extends Application {
         }*/
     }
 }
-/*
-        Stage stage2 = new Stage();
-        ListarEventosUI listPane = new ListarEventosUI(clienteManager);
-        Scene scene2 = new Scene(listPane, 300, 400);
-        stage2.setScene(scene2);
-        stage2.setTitle("Lista Eventos");
-        stage2.setX(stage.getX() + stage.getWidth());
-        stage2.setY(stage.getY());
-        stage2.show();
- */
