@@ -8,10 +8,13 @@ import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -136,7 +139,7 @@ public class ProgramaCliente {
             } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }*/
-        logado.set("ADMINISTRADOR");
+        logado.set("UTILIZADOR");
     }
 
     public void logout() {
@@ -173,20 +176,51 @@ public class ProgramaCliente {
         return new Evento[]{};*/
     }
 
-    public String obterCSV(String nome, Message_types tipoCSV) {
-    /*
+    public String obterCSV(String caminhoCSV, String nomeFicheiro, Message_types tipoCSV) {
+        if(caminhoCSV == null || caminhoCSV.isBlank() || nomeFicheiro == null || nomeFicheiro.isBlank())
+            return "É necessário inserir um caminho para guardar o ficheiro!";
+
+        String localCSVCaminho;
+        File destinoCSV = new File(caminhoCSV);
+        byte []fileChunk = new byte[4000];
+        int nbytes;
+        int nCiclos = 0, totalBytes=0;
+
+        if(!destinoCSV.exists()){
+            System.out.println();
+            return "A directoria inserida [" + caminhoCSV + "] não existe!";
+        }
+
+        if(!destinoCSV.isDirectory()){
+            return "O caminho [" + caminhoCSV + "] não é uma diretoria!";
+        }
+
+        if(!destinoCSV.canWrite()){
+            return "Não pode guardar o .csv em: " + destinoCSV;
+        }
+
+        try{
+            localCSVCaminho = destinoCSV.getCanonicalPath()+File.separator + nomeFicheiro + ".csv";
+        }catch(IOException e){
+            return "Ocorreu um erro ao gerar o csv!";
+        }
+/*
         Msg_String csv = new Msg_String(nomeFicheiro, tipoCSV);
 
-        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+        try (FileOutputStream localFileOutputStream = new FileOutputStream(localCSVCaminho);
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
 
             oout.writeObject(csv);
             oout.flush();
 
-            //... ficheiro = (...) oin.readObject();
+            InputStream inStream = socket.getInputStream();
 
-            //    return  "CSV gerado com sucesso guardado em: " + CAMINHO;
-        } catch (IOException | ClassNotFoundException e) {
+            while((nbytes = inStream.read(fileChunk)) > 0){
+                totalBytes += nbytes;
+                localFileOutputStream.write(fileChunk, 0, nbytes);
+            }
+            return "CSV gerado com sucesso guardado em: " + localCSVCaminho;
+        }catch (IOException e){
             setErro();
         }*/
         return "Erro ao gerar CSV";
@@ -207,6 +241,7 @@ public class ProgramaCliente {
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+
             oout.writeObject(dadosRegisto);
             oout.flush();
             Geral validacao = (Geral) oin.readObject();

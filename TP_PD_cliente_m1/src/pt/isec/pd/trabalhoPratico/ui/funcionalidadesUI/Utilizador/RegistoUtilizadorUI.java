@@ -80,10 +80,10 @@ public class RegistoUtilizadorUI extends BorderPane {
     }
 
     private void limparCampos() {
-        nomeUtilizador.setText(null);
-        email.setText(null);
-        password.setText(null);
-        confirmar_password.setText(null);
-        numIdentificacao.setText(null);
+        nomeUtilizador.clear();
+        email.clear();
+        password.clear();
+        confirmar_password.clear();
+        numIdentificacao.clear();
     }
 }

@@ -48,8 +48,8 @@ public class ProgClienteManager {
     public Evento[] obterListaConsulta(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim){
         return programaCliente.obterListaConsultaEventos(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
     }
-    public String obterCSV_ListaEventos(String nome, Message_types tipoCSV) {
-        return programaCliente.obterCSV(nome, tipoCSV);
+    public String obterCSV_ListaEventos(String caminhoCSV,String nomeFicheiro, Message_types tipoCSV) {
+        return programaCliente.obterCSV(caminhoCSV, nomeFicheiro, tipoCSV);
     }
 
     //UTILIZADOR:

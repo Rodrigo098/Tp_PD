@@ -17,7 +17,7 @@ import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador.FiltrosUI;
 public class ListarPresencasUI extends BorderPane {
     private FiltrosUI filtros;
     private Text resultadoCSV;
-    private TextField nomeFicheiro;
+    private TextField nomeFicheiro, caminhoCSV;
     private Button gerarCSV;
     private final ProgClienteManager progClienteManager;
     private ListView<Evento> lista;
@@ -35,6 +35,8 @@ public class ListarPresencasUI extends BorderPane {
         lista.setPlaceholder(new Text("Não há presenças em eventos registadas"));
         gerarCSV = new Button("gerar CSV");
         resultadoCSV = new Text("");
+        caminhoCSV = new TextField();
+        caminhoCSV.setPromptText("Caminho ficheiro csv");
         nomeFicheiro = new TextField();
         nomeFicheiro.setPromptText("Nome do ficheiro");
 
@@ -44,14 +46,17 @@ public class ListarPresencasUI extends BorderPane {
         setMargin(lista, new Insets(20, 0, 10, 0));
         setAlignment(label, javafx.geometry.Pos.CENTER);
         this.setTop(label);
-        this.setCenter(new VBox(filtros, lista));
-        this.setBottom(new HBox(new VBox(nomeFicheiro, resultadoCSV), gerarCSV));
+        this.setCenter(new VBox(filtros, lista, resultadoCSV));
+        this.setBottom(new HBox(new VBox(caminhoCSV, nomeFicheiro), gerarCSV));
     }
 
     private void registerHandlers() {
         filtros.procurar.setOnAction( e -> extrairListaEventos());
 
-        gerarCSV.setOnAction( e -> resultadoCSV.setText(progClienteManager.obterCSV_ListaEventos(nomeFicheiro.getText(), Message_types.CSV_UTILIZADOR)));
+        gerarCSV.setOnAction( e -> {
+            resultadoCSV.setText(progClienteManager.obterCSV_ListaEventos(caminhoCSV.getText(), nomeFicheiro.getText(), Message_types.CSV_UTILIZADOR));
+            nomeFicheiro.clear();
+        });
 
         ContaUtilizadorUI.opcaoUti.addListener(observable -> update());
     }
@@ -63,7 +68,9 @@ public class ListarPresencasUI extends BorderPane {
 
     private void extrairListaEventos() {
         lista.getItems().clear();
-        for (Evento evento : progClienteManager.obterListaConsulta(Message_types.CONSULTA_PRES_UTILIZADOR, filtros.getNomeEvento(), filtros.getLocal(), filtros.getLimData1(), filtros.getLimData2(), filtros.getHoraInicio(), filtros.getHoraFim())) {
+        for (Evento evento : progClienteManager.obterListaConsulta(Message_types.CONSULTA_PRES_UTILIZADOR,
+                filtros.getNomeEvento(), filtros.getLocal(), filtros.getLimData1(), filtros.getLimData2(),
+                filtros.getHoraInicio(), filtros.getHoraFim())) {
             lista.getItems().add(evento);
         }
     }

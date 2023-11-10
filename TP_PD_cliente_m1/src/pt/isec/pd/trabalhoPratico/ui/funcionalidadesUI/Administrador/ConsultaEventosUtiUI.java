@@ -15,7 +15,7 @@ import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
 
 public class ConsultaEventosUtiUI extends BorderPane {
-    private TextField utilizador;
+    private TextField utilizador, caminhoCSV;
     private Button obterCSV, listar;
     private ListView<Evento> listaEventos;
     private final ProgClienteManager progClienteManager;
@@ -30,6 +30,8 @@ public class ConsultaEventosUtiUI extends BorderPane {
     private void createViews() {
         utilizador = new TextField();
         utilizador.setPromptText("Email do utilizador");
+        caminhoCSV = new TextField();
+        caminhoCSV.setPromptText("Caminho para o ficheiro CSV");
         obterCSV = new Button("Obter CSV");
         obterCSV.setDisable(true);
         listar = new Button("listar");
@@ -46,7 +48,7 @@ public class ConsultaEventosUtiUI extends BorderPane {
         setAlignment(label, javafx.geometry.Pos.CENTER);
         this.setTop(label);
         this.setCenter(vBox);
-        this.setBottom(obterCSV);
+        this.setBottom(new HBox(caminhoCSV, obterCSV));
     }
 
     private void registerHandlers() {
@@ -55,8 +57,9 @@ public class ConsultaEventosUtiUI extends BorderPane {
             obterCSV.setDisable(!listaEventos.isVisible());
         });
         obterCSV.setOnAction(e -> {
-            progClienteManager.obterCSV_ListaEventos("evenosPresenciadosPor_" + utilizador.getText(), Message_types.CSV_EVENTOS_ADMIN);
+            progClienteManager.obterCSV_ListaEventos(caminhoCSV.getText(),"evenosPresenciadosPor_" + utilizador.getText(), Message_types.CSV_EVENTOS_ADMIN);
             obterCSV.setDisable(true);
+            caminhoCSV.setText(null);
         });
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
         progClienteManager.addAtualizacaoListener(observable -> Platform.runLater(this::extrairListaEventos));

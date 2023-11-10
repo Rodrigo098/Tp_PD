@@ -60,7 +60,7 @@ public class EditarRegistoUI extends BorderPane {
 
         cancelar.setOnAction(e -> {
             ContaUtilizadorUI.opcaoUti.set("NADA");
-            nome.setText(null);numID.setText(null);password.setText(null);confPassword.setText(null);
+            nome.clear();numID.clear();password.clear();confPassword.clear();
         });
 
         ContaUtilizadorUI.opcaoUti.addListener(observable -> update());
