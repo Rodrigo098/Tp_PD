@@ -5,10 +5,10 @@ import java.io.Serializable;
 public record Presenca(Evento evento, Utilizador utilizador) implements Serializable {
 
     public String getEvento() {
-        return evento.getNomeEvento();
+        return evento.nomeEvento();
     }
     public String getUtilizador() {
-        return utilizador.getEmail();
+        return utilizador.email();
     }
     @Override
     public String toString() {

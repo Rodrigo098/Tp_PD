@@ -10,7 +10,7 @@ import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador.ContaAdministradorUI;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.UniversalPanes.MensagemBox;
+import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.InfoNodes.MensagemBox;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.ContaUtilizadorUI;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.RegistoUtilizadorUI;
 
@@ -34,7 +34,7 @@ public class RootPane extends BorderPane {
         username.setPromptText("Username");
         password.setPromptText("Password");
 
-        login = new Button("Msg_Login");
+        login = new Button("Login");
         registar = new Text("Registar");
         registar.getStyleClass().add("links");
 

@@ -10,13 +10,13 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
-
-import java.util.ArrayList;
+import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
 
 public class ConsultaEventosUtiUI extends BorderPane {
     private TextField utilizador;
     private Button obterCSV, listar;
-    private ListView<String> listaEventos;
+    private ListView<InfoEventoNode> listaEventos;
     private ProgClienteManager progClienteManager;
 
     public ConsultaEventosUtiUI(ProgClienteManager progClienteManager)  {
@@ -33,7 +33,6 @@ public class ConsultaEventosUtiUI extends BorderPane {
         obterCSV.setDisable(true);
         listar = new Button("listar");
         listaEventos = new ListView<>();
-        extrairListaEventos();
 
         Label label = new Label("Lista de eventos presenciados por:");
         label.getStyleClass().add("titulo");
@@ -54,7 +53,7 @@ public class ConsultaEventosUtiUI extends BorderPane {
             obterCSV.setDisable(!listaEventos.isVisible());
         });
         obterCSV.setOnAction(e -> {
-            progClienteManager.obterCSV_Admin("presencasRegistadas_" + utilizador.getText());
+            progClienteManager.obterCSV_ListaEventos("evenosPresenciadosPor_" + utilizador.getText(), Message_types.CSV_EVENTOS_ADMIN);
             obterCSV.setDisable(true);
         });
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
@@ -70,8 +69,8 @@ public class ConsultaEventosUtiUI extends BorderPane {
         if(utilizador.getText() == null || utilizador.getText().isBlank())
             return false;
         listaEventos.getItems().clear();
-        for (String evento : progClienteManager.consultaEventosUtilizador(utilizador.getText())) {
-            listaEventos.getItems().add(evento);
+        for (Evento evento : progClienteManager.consultaEventosUtilizador(utilizador.getText())) {
+            listaEventos.getItems().add(new InfoEventoNode(evento));
         }
         return true;
     }

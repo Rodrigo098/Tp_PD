@@ -12,12 +12,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
 public class EditorEventosUI extends BorderPane {
-    protected static SimpleStringProperty opcaoEdicao = new SimpleStringProperty("NADA");
+    protected static SimpleStringProperty opcaoEdicao = new SimpleStringProperty("Lista Presenças");
     private int indice = 0;
-    private final String[] opcoes = {"LISTA", "EDITAR", "ELI_PRESENCA", "INS_PRESENCA"};
-    private Label mais;
+    private final String[] opcoes = {"Lista Presenças", "Editar evento", "Eliminar presenças", "Inserir Presenças"};
+    private Label mais, labelPane;
     private TextField emailsTextField, nomeFicheiro;
     private Text resultado;
     private Button editarEvento, eliminarEvento, gerarCodigoPresencas, obterPresencasCSV, eliminarPresencas, inserirPresencas;
@@ -66,6 +68,7 @@ public class EditorEventosUI extends BorderPane {
         mais.getStyleClass().add("eventoButton");
 
         listaPresencas = new ListView<>();
+        listaPresencas.setPlaceholder(new Text("Sem presenças registadas"));
 
         resultado = new Text("");
 
@@ -75,16 +78,23 @@ public class EditorEventosUI extends BorderPane {
         emailsTextField.setPromptText("Isepare os emails por \" \"");
         eliminarInserirPresencas = new VBox(new Text("Insira os emails pretendidos:"), emailsTextField);
         eliminarInserirPresencas.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
+        
+        HBox centralNode = new HBox(new VBox(
+                                              new StackPane(
+                                                     listaPresencas,
+                                                      eventoUI,
+                                                     eliminarInserirPresencas),
+                                              resultado),
+                                    mais);
 
-        HBox centralNode = new HBox(new VBox(new StackPane(listaPresencas, eventoUI, eliminarInserirPresencas), resultado), mais);
         centralNode.setSpacing(0);
 
-        Label label = new Label("Editar Eventos");
-        label.getStyleClass().add("titulo");
+        labelPane = new Label();
+        labelPane.getStyleClass().add("titulo");
 
-        setAlignment(label, javafx.geometry.Pos.CENTER);
+        setAlignment(labelPane, javafx.geometry.Pos.CENTER);
         setMargin(centralNode, new javafx.geometry.Insets(20, 0, 5, 0));
-        this.setTop(label);
+        this.setTop(labelPane);
         this.setCenter(centralNode);
         this.setBottom(flowPane);
     }
@@ -98,22 +108,22 @@ public class EditorEventosUI extends BorderPane {
             resultado.setText("Novo código: " + progClienteManager.gerarCodPresenca(listaPresencas.getSelectionModel().getSelectedItem()));
         });
         editarEvento.setOnAction(e -> {
-            resultado.setText(progClienteManager.editar_Evento(ListarEventosUI.eventoSelecionado ,eventoUI.getNomeEvento(), eventoUI.getLocal(),
+            resultado.setText(progClienteManager.editar_Evento(ListarEventosUI.eventoSelecionado.nomeEvento() ,eventoUI.getNomeEvento(), eventoUI.getLocal(),
                               eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim()));
         });
         eliminarEvento.setOnAction(e -> {
-            resultado.setText(progClienteManager.eliminarEvento(ListarEventosUI.eventoSelecionado));
+            resultado.setText(progClienteManager.eliminarEvento(ListarEventosUI.eventoSelecionado.nomeEvento()));
         });
         obterPresencasCSV.setOnAction(e -> {
             progClienteManager.obterCSV_ListaEventos(nomeFicheiro.getText(), Message_types.CSV_EVENTOS_ADMIN);
         });
         eliminarPresencas.setOnAction(e -> {
             resultado.setText(progClienteManager.eliminaInsere_Eventos(Message_types.ELIMINA_PRES,
-                              ListarEventosUI.eventoSelecionado, emailsTextField.getText()));
+                              ListarEventosUI.eventoSelecionado.nomeEvento(), emailsTextField.getText()));
         });
         inserirPresencas.setOnAction(e -> {
             resultado.setText(progClienteManager.eliminaInsere_Eventos(Message_types.INSERE_PRES,
-                              ListarEventosUI.eventoSelecionado, emailsTextField.getText()));
+                              ListarEventosUI.eventoSelecionado.nomeEvento(), emailsTextField.getText()));
         });
 
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
@@ -124,30 +134,33 @@ public class EditorEventosUI extends BorderPane {
     private void update() {
         this.setVisible(ContaAdministradorUI.opcaoAdmin.get().equals("EDITOR_EVENTOS"));
         if(this.isVisible()) {
+            extrairListaPresencas();
             eventoUI.setInfoAntiga(ListarEventosUI.eventoSelecionado);
             resultado.setText("");
         }
-
     }
 
     private void update2() {
-        eliminarEvento.setDisable(!opcaoEdicao.get().equals("LISTA"));
-        gerarCodigoPresencas.setDisable(!opcaoEdicao.get().equals("LISTA"));
-        nomeFicheiro.setDisable(!opcaoEdicao.get().equals("LISTA"));
-        obterPresencasCSV.setDisable(!opcaoEdicao.get().equals("LISTA"));
+        labelPane.setText(opcaoEdicao.get());
 
-        editarEvento.setDisable(!opcaoEdicao.get().equals("EDITAR"));
-        eventoUI.setVisible(opcaoEdicao.get().equals("EDITAR"));
+        eliminarEvento.setDisable(!opcaoEdicao.get().equals("Lista Presenças"));
+        gerarCodigoPresencas.setDisable(!opcaoEdicao.get().equals("Lista Presenças"));
+        nomeFicheiro.setDisable(!opcaoEdicao.get().equals("Lista Presenças"));
+        obterPresencasCSV.setDisable(!opcaoEdicao.get().equals("Lista Presenças"));
 
-        eliminarPresencas.setDisable(!opcaoEdicao.get().equals("ELI_PRESENCA"));
-        inserirPresencas.setDisable(!opcaoEdicao.get().equals("INS_PRESENCA"));
-        eliminarInserirPresencas.setVisible(opcaoEdicao.get().equals("ELI_PRESENCA") || opcaoEdicao.get().equals("INS_PRESENCA"));
+        editarEvento.setDisable(!opcaoEdicao.get().equals("Editar evento"));
+        eventoUI.setVisible(opcaoEdicao.get().equals("Editar evento"));
+
+        eliminarPresencas.setDisable(!opcaoEdicao.get().equals("Eliminar presenças"));
+        inserirPresencas.setDisable(!opcaoEdicao.get().equals("Inserir Presenças"));
+        eliminarInserirPresencas.setVisible(opcaoEdicao.get().equals("Eliminar presenças") || opcaoEdicao.get().equals("Inserir Presenças"));
     }
 
     private void extrairListaPresencas() {
         listaPresencas.getItems().clear();
-        for (String evento : progClienteManager.consultaPresencasEvento(ListarEventosUI.eventoSelecionado)) {
-            listaPresencas.getItems().add(evento);
+
+        for (Utilizador utilizador : progClienteManager.consultaPresencasEvento(ListarEventosUI.eventoSelecionado.nomeEvento())) {
+            listaPresencas.getItems().add(utilizador.toString());
         }
     }
 }

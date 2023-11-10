@@ -73,7 +73,7 @@ public class ProgramaCliente {
             return true;
         if (email.indexOf('@') <= 0 || !(email.indexOf('@') <= email.indexOf('.') - 2))
             return true;
-        return email.split("@|\\.").length != 3;
+        return email.split("[@.]").length != 3;
     }
 
     ///////////////////////////////////////FUNCIONALIDADES:
@@ -170,7 +170,7 @@ public class ProgramaCliente {
         } catch (IOException | ClassNotFoundException e) {
             setErro();
         }
-        return new Evento[]{new Evento("-", "-", "-", null, 0, 0)};*/
+        return new Evento[]{};*/
     }
 
     public String obterCSV(String nome, Message_types tipoCSV) {
@@ -298,7 +298,7 @@ public class ProgramaCliente {
         return "Erro";
     }
 
-    public String editar_Evento(String eventoInfo, String novoNome, String local, LocalDate data, int horaInicio, int horaFim) {
+    public String editar_Evento(String eventoNomeAntigo, String novoNome, String local, LocalDate data, int horaInicio, int horaFim) {
 
         LocalDate dataAtual = LocalDate.now();
         LocalTime horaAtual = LocalTime.now();
@@ -307,7 +307,7 @@ public class ProgramaCliente {
             return "Dados inválidos para criação de evento!";
         /*
         Msg_Edita_Evento evento =
-                new Msg_Edita_Evento(new Evento("eu", eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(),
+                new Msg_Edita_Evento(new Evento("eu", eventoNomeAntigo,
                                            local, data, horaInicio, horaFim), novoNome);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
@@ -324,10 +324,10 @@ public class ProgramaCliente {
         return "Evento não editado!";
     }
 
-    public String eliminarEvento(String eventoInfo) {
+    public String eliminarEvento(String evento) {
         /*
         Msg_String evento =
-                new Msg_String(eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), Message_types.ELIMINAR_EVENTO);
+                new Msg_String(evento, Message_types.ELIMINAR_EVENTO);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -343,15 +343,16 @@ public class ProgramaCliente {
         return "Evento não eliminado!";
     }
 
-    public String eliminaInserePresencas_Eventos(Message_types tipo, String eventoInfo, String filtros) {
+    public String eliminaInserePresencas_Eventos(Message_types tipo, String evento, String emailsP) {
+        /*
         ArrayList<String> emails = new ArrayList<>();
-        for (String email : filtros.trim().split(" ")) {
+        for (String email : emailsP.trim().split(" ")) {
             if (!verificaFormato(email))
                 emails.add(email);
         }
-        /*
+
         Msg_EliminaInsere_Presencas interacao =
-                new Msg_EliminaInsere_Presencas(tipo, eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), emails.toArray(new String[0]));
+                new Msg_EliminaInsere_Presencas(tipo, evento, emails.toArray(new String[0]));
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -368,10 +369,10 @@ public class ProgramaCliente {
         return "Presenças não inseridas!";
     }
 
-    public String gerarCodPresenca(String eventoInfo) {
+    public String gerarCodPresenca(String evento) {
         /*
         Msg_String geraCod =
-                new Msg_String(eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), Message_types.GERAR_COD);
+                new Msg_String(evento, Message_types.GERAR_COD);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -389,11 +390,11 @@ public class ProgramaCliente {
         return "Erro";
     }
 
-    public Utilizador[] consultaPresencasEvento(String eventoInfo) {
-        if(eventoInfo != null) {
+    public Utilizador[] consultaPresencasEvento(String evento) {
+        if(evento != null) {
             /*
             Msg_String consulta =
-                    new Msg_String(eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), Message_types.CONSULTA_PRES_EVENT);
+                    new Msg_String(evento, Message_types.CONSULTA_PRES_EVENT);
 
             try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
                  ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -408,7 +409,7 @@ public class ProgramaCliente {
                 setErro();
             }*/
         }
-        return new Utilizador[]{new Utilizador("-", "-", "-")};
+        return new Utilizador[]{};
     }
 
     public Evento[] consultaEventosDeUmUtilizador(String utilizador) {
@@ -430,7 +431,7 @@ public class ProgramaCliente {
                 setErro();
             }*/
         }
-        return new Evento[]{new Evento("-", "-", "-", null, 0, 0)};
+        return new Evento[]{};
     }
 
     public String obterCSV_PresencasEvento(String nomeFicheiro, String evento) {

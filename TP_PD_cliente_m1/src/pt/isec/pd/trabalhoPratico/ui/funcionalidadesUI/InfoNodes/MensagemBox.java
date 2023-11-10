@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.UniversalPanes;
+package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.InfoNodes;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;

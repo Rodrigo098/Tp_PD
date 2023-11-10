@@ -8,11 +8,12 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
 
 public class ListarEventosUI extends BorderPane {
-    protected static String eventoSelecionado;
+    protected static Evento eventoSelecionado;
     private FiltrosUI filtros;
-    private ListView<String> listaEventos;
+    private ListView<Evento> listaEventos;
     private final ProgClienteManager progClienteManager;
 
     public ListarEventosUI(ProgClienteManager progClienteManager)  {
@@ -56,7 +57,7 @@ public class ListarEventosUI extends BorderPane {
 
     private void extrairListaEventos() {
         listaEventos.getItems().clear();
-        for (String evento : progClienteManager.obterListaConsulta(Message_types.CONSULTA_EVENTOS, filtros.getNomeEvento(), filtros.getLocal(), filtros.getLimData1(), filtros.getLimData2(), filtros.getHoraInicio(), filtros.getHoraFim())) {
+        for (Evento evento : progClienteManager.obterListaConsulta(Message_types.CONSULTA_EVENTOS, filtros.getNomeEvento(), filtros.getLocal(), filtros.getLimData1(), filtros.getLimData2(), filtros.getHoraInicio(), filtros.getHoraFim())) {
             listaEventos.getItems().add(evento);
         }
     }

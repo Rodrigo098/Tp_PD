@@ -7,6 +7,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
 
 import java.time.LocalDate;
 
@@ -56,12 +57,11 @@ public class EventoUI extends VBox {
     public int getHoraFim() {
         return horaFim.getValue();
     }
-    public void setInfoAntiga(String eventoSelecionado) {
-        String[] info = eventoSelecionado.split("; ");
-        nomeEvento.setText(info[0]);
-        local.setText(info[1]);
-        data.setValue(LocalDate.parse(info[2]));
-        horaInicio.getValueFactory().setValue(Integer.parseInt(info[3]));
-        horaFim.getValueFactory().setValue(Integer.parseInt(info[4]));
+    public void setInfoAntiga(Evento eventoSelecionado) {
+        nomeEvento.setText(eventoSelecionado.nomeEvento());
+        local.setText(eventoSelecionado.local());
+        data.setValue(eventoSelecionado.data());
+        horaInicio.getValueFactory().setValue(eventoSelecionado.horaInicio());
+        horaFim.getValueFactory().setValue(eventoSelecionado.horaFim());
     }
 }
