@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -33,10 +34,9 @@ class AtualizacaoAsync implements Runnable {
                 if (novaAtualizacao instanceof Geral g)
                     if (g.getTipo() == Message_types.ATUALIZACAO)
                         ProgramaCliente.atualizacao.setValue(ProgramaCliente.atualizacao.getValue() + 1);
+
             } catch (IOException | ClassNotFoundException ignored) {
-                synchronized (ProgramaCliente.erro) {
-                    ProgramaCliente.setErro();
-                }
+                ProgramaCliente.setErro();
             }
         } while (Thread.currentThread().isAlive());
     }
@@ -68,7 +68,6 @@ public class ProgramaCliente {
     public String getLogado() {
         return logado.getValue();
     }
-    //ver se é email:
     public boolean verificaFormato(String email) {
         if (email == null || email.isBlank())
             return true;
@@ -140,7 +139,6 @@ public class ProgramaCliente {
         logado.set("ADMINISTRADOR");
     }
 
-
     public void logout() {
         //a ver segundo aquilo que tenho dúvidas
         /*Geral logout = new Geral(Message_types.LOGOUT);
@@ -155,28 +153,47 @@ public class ProgramaCliente {
         logado.set("ENTRADA");
     }
 
-    public String[] obterListaConsulta(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim) {
-        return new String[]{"ola; aqui; 2021-05-05; 18; 19", "ola; aqui; 2021-05-05; 18; 19"};
+    public Evento[] obterListaConsultaEventos(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim) {
+        return new Evento[]{new Evento("ola", "HelloMate", "ISEC", LocalDate.now(), 11,12)};
+
         /*
-        Msg_ConsultaComFiltros consultaPresencas = new Msg_ConsultaComFiltros(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
+        Msg_ConsultaComFiltros consultaEventos = new Msg_ConsultaComFiltros(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
-            oout.writeObject(consultaPresencas);
+            oout.writeObject(consultaEventos);
             oout.flush();
 
             Msg_EliminaInsere_Presencas lista = (Msg_EliminaInsere_Presencas) oin.readObject();
             if(lista.getTipo() == Message_types.VALIDO)
-                return  lista.getLista().length == 0 ? new String[]{"Sem registos"} : lista.getLista();
+                return  lista.getLista();
         } catch (IOException | ClassNotFoundException e) {
             setErro();
-            return new String[]{"Erro na comunicação com o servidor"};
         }
-        return new String[]{"Erro"};*/
+        return new Evento[]{new Evento("-", "-", "-", null, 0, 0)};*/
+    }
+
+    public String obterCSV(String nome, Message_types tipoCSV) {
+    /*
+        Msg_String csv = new Msg_String(nomeFicheiro, tipoCSV);
+
+        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+
+            oout.writeObject(csv);
+            oout.flush();
+
+            //... ficheiro = (...) oin.readObject();
+
+            //    return  "CSV gerado com sucesso guardado em: " + CAMINHO;
+        } catch (IOException | ClassNotFoundException e) {
+            setErro();
+        }*/
+        return "Erro ao gerar CSV";
     }
 
     /////////////////////////UTILIZADOR:
-    public void registar(String nome, String email, String numIdentificacao, String password, String confPass) {
+    public void registarConta(String nome, String email, String numIdentificacao, String password, String confPass) {
 
         if (nome == null || password == null || !password.equals(confPass) || verificaFormato(email) || numIdentificacao == null)
             return;
@@ -222,24 +239,6 @@ public class ProgramaCliente {
         return false;
     }
 
-    public String obterCSV_Presencas(String nome) {
-/*        Geral Msg_String = new Msg_String(nomeFicheiro, Message_types.CSV_UTILIZADOR);
-
-        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
-
-            oout.writeObject(csvPresencas);
-            oout.flush();
-
-            //... ficheiro = (...) oin.readObject();
-
-            //    return  "CSV gerado com sucesso guardado em: " + CAMINHO;
-        } catch (IOException | ClassNotFoundException e) {
-            setErro();
-        }*/
-        return "Erro ao gerar CSV";
-    }
-
     public String editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
         if (nome == null || nome.isBlank() || password == null || password.isBlank() || !password.equals(confPass) || numIdentificacao == null || numIdentificacao.isBlank())
             return "Dados de input inválidos :(";
@@ -281,6 +280,7 @@ public class ProgramaCliente {
         if (data.isBefore(dataAtual) || horaInicio < horaAtual.getHour())
             return "A data não pode estar no passadooo!";
 
+        /*
         Msg_Cria_Evento evento =
                 new Msg_Cria_Evento(new Evento("eu",nome, local, data, horaInicio, horaFim));
 
@@ -294,17 +294,18 @@ public class ProgramaCliente {
                 return "Evento criado com sucesso!";
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
-        }
+        }*/
         return "Erro";
     }
+
     public String editar_Evento(String eventoInfo, String novoNome, String local, LocalDate data, int horaInicio, int horaFim) {
 
         LocalDate dataAtual = LocalDate.now();
         LocalTime horaAtual = LocalTime.now();
 
         if ((data != null && data.isBefore(dataAtual)) || (horaInicio < horaAtual.getHour() || horaInicio >= horaFim))
-            return "Evento não editado!";
-
+            return "Dados inválidos para criação de evento!";
+        /*
         Msg_Edita_Evento evento =
                 new Msg_Edita_Evento(new Evento("eu", eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(),
                                            local, data, horaInicio, horaFim), novoNome);
@@ -319,11 +320,12 @@ public class ProgramaCliente {
                 return "Evento editado com sucesso!";
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
-        }
+        }*/
         return "Evento não editado!";
     }
 
     public String eliminarEvento(String eventoInfo) {
+        /*
         Msg_String evento =
                 new Msg_String(eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), Message_types.ELIMINAR_EVENTO);
 
@@ -337,7 +339,7 @@ public class ProgramaCliente {
                 return "Evento eliminado com sucesso!";
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
-        }
+        }*/
         return "Evento não eliminado!";
     }
 
@@ -347,7 +349,7 @@ public class ProgramaCliente {
             if (!verificaFormato(email))
                 emails.add(email);
         }
-
+        /*
         Msg_EliminaInsere_Presencas interacao =
                 new Msg_EliminaInsere_Presencas(tipo, eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), emails.toArray(new String[0]));
 
@@ -362,11 +364,12 @@ public class ProgramaCliente {
                 return tipo == Message_types.ELIMINA_PRES ? "Presenças eliminadas com sucesso!" : "Presenças inseridas com sucesso!";
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
-        }
+        }*/
         return "Presenças não inseridas!";
     }
 
     public String gerarCodPresenca(String eventoInfo) {
+        /*
         Msg_String geraCod =
                 new Msg_String(eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), Message_types.GERAR_COD);
 
@@ -382,13 +385,13 @@ public class ProgramaCliente {
             }
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
-            return "Erro de comunicação com o servidor";
-        }
+        }*/
         return "Erro";
     }
 
-    public String[] consultaPresencasEvento(String eventoInfo) {
+    public Utilizador[] consultaPresencasEvento(String eventoInfo) {
         if(eventoInfo != null) {
+            /*
             Msg_String consulta =
                     new Msg_String(eventoInfo.substring(0, eventoInfo.indexOf(';')).trim(), Message_types.CONSULTA_PRES_EVENT);
 
@@ -397,20 +400,20 @@ public class ProgramaCliente {
                 oout.writeObject(consulta);
                 oout.flush();
 
-                Msg_EliminaInsere_Presencas lista = (Msg_EliminaInsere_Presencas) oin.readObject();
+                Msg_ListaRegistos lista = (Msg_ListaRegistos) oin.readObject();
 
                 if (lista.getTipo() == Message_types.VALIDO)
-                    return lista.getLista().length == 0 ? new String[]{"Sem registos"} : lista.getLista();
+                    return lista.getLista();
             } catch (IOException | ClassNotFoundException ignored) {
                 setErro();
-                return new String[]{"Erro na comunicação com o servidor"};
-            }
+            }*/
         }
-        return new String[]{"Erro"};
+        return new Utilizador[]{new Utilizador("-", "-", "-")};
     }
 
-    public String[] consultaEventosDeUmUtilizador(String utilizador) {
+    public Evento[] consultaEventosDeUmUtilizador(String utilizador) {
         if (!verificaFormato(utilizador)) {
+            /*
             Msg_String consulta =
                     new Msg_String(utilizador, Message_types.CONSULTA_EVENTOS);
 
@@ -419,20 +422,34 @@ public class ProgramaCliente {
                 oout.writeObject(consulta);
                 oout.flush();
 
-                Msg_EliminaInsere_Presencas lista = (Msg_EliminaInsere_Presencas) oin.readObject();
+                Msg_ListaEventos lista = (Msg_ListaEventos) oin.readObject();
 
                 if (lista.getTipo() == Message_types.VALIDO)
-                    return  lista.getLista().length == 0 ? new String[]{"Sem registos"} : lista.getLista();
+                    return lista.getLista();
             } catch (IOException | ClassNotFoundException e) {
                 setErro();
-                return new String[]{"Erro na comunicação com o servidor"};
-            }
+            }*/
         }
-        return new String[]{"Erro"};
+        return new Evento[]{new Evento("-", "-", "-", null, 0, 0)};
     }
 
-    public boolean obterCSV_Admin(String nome) {
-        return false;
+    public String obterCSV_PresencasEvento(String nomeFicheiro, String evento) {
+        /*
+        Msg_Login csv = new Msg_Login(nomeFicheiro, evento);
+
+        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+
+            oout.writeObject(csv);
+            oout.flush();
+
+            //... ficheiro = (...) oin.readObject();
+
+            //    return  "CSV gerado com sucesso guardado em: " + CAMINHO;
+        } catch (IOException | ClassNotFoundException e) {
+            setErro();
+        }*/
+        return "Erro ao gerar CSV";
     }
 }
 /*

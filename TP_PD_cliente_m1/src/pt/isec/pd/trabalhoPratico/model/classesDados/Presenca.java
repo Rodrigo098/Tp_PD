@@ -1,6 +1,8 @@
 package pt.isec.pd.trabalhoPratico.model.classesDados;
 
-public record Presenca(Evento evento, Utilizador utilizador) {
+import java.io.Serializable;
+
+public record Presenca(Evento evento, Utilizador utilizador) implements Serializable {
 
     public String getEvento() {
         return evento.getNomeEvento();

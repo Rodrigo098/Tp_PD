@@ -1,8 +1,9 @@
 package pt.isec.pd.trabalhoPratico.model.classesDados;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
-public record Evento(String criador, String nomeEvento, String local, LocalDate data, int horaInicio, int horaFim) {
+public record Evento(String criador, String nomeEvento, String local, LocalDate data, int horaInicio, int horaFim) implements Serializable {
     public String getNomeEvento() {
         return nomeEvento;
     }

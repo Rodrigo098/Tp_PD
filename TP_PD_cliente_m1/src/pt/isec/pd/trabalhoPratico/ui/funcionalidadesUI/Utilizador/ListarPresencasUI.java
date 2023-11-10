@@ -51,7 +51,7 @@ public class ListarPresencasUI extends BorderPane {
             extrairListaEventos();
         });
         gerarCSV.setOnAction( e -> {
-            resultadoCSV.setText(progClienteManager.obterCSV_Presencas(nomeFicheiro.getText()));
+            resultadoCSV.setText(progClienteManager.obterCSV_ListaEventos(nomeFicheiro.getText(), Message_types.CSV_UTILIZADOR));
         });
         ContaUtilizadorUI.opcaoUti.addListener(observable -> update());
     }

@@ -3,6 +3,8 @@ package pt.isec.pd.trabalhoPratico.model;
 import javafx.beans.InvalidationListener;
 import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
+import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 import pt.isec.pd.trabalhoPratico.model.classesPrograma.ProgramaCliente;
 
 import java.time.LocalDate;
@@ -34,28 +36,29 @@ public class ProgClienteManager {
     public Pair<Boolean, String> criaSocket(List<String> list) {
         return programaCliente.criaSocket(list);
     }
+
     public void login(String email, String password) {
         programaCliente.login(email, password);
     }
+
     public void logout() {
         programaCliente.logout();
     }
 
-    public String[] obterListaConsulta(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim){
-        return programaCliente.obterListaConsulta(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
+    public Evento[] obterListaConsulta(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim){
+        return programaCliente.obterListaConsultaEventos(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
+    }
+    public String obterCSV_ListaEventos(String nome, Message_types tipoCSV) {
+        return programaCliente.obterCSV(nome, tipoCSV);
     }
 
     //UTILIZADOR:
     public void registar(String nome, String email, String numIdentificacao, String password, String confPass) {
-        programaCliente.registar(nome, email, numIdentificacao, password, confPass);
+        programaCliente.registarConta(nome, email, numIdentificacao, password, confPass);
     }
     public boolean registarPresenca(String codigo){
         return programaCliente.registarPresenca(codigo);
     }
-    public String obterCSV_Presencas(String nome) {
-        return programaCliente.obterCSV_Presencas(nome);
-    }
-
     public String editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
         return programaCliente.editarRegisto(nome, numIdentificacao, password, confPass);
     }
@@ -67,7 +70,6 @@ public class ProgClienteManager {
     public String editar_Evento(String evento, String novoNome, String local, LocalDate data, int horaInicio, int horaFim){
         return programaCliente.editar_Evento(evento, novoNome,local, data, horaInicio, horaFim);
     }
-
     public String eliminarEvento(String nomeEvento) {
         return programaCliente.eliminarEvento(nomeEvento);
     }
@@ -75,18 +77,17 @@ public class ProgClienteManager {
     public String eliminaInsere_Eventos(Message_types tipo, String nomeEvento, String filtros) {
         return programaCliente.eliminaInserePresencas_Eventos(tipo, nomeEvento, filtros);
     }
-
     public String gerarCodPresenca(String nomeEvento) {
         return programaCliente.gerarCodPresenca(nomeEvento);
     }
 
-    public String[] consultaPresencasEvento(String nomeEvento){
+    public Utilizador[] consultaPresencasEvento(String nomeEvento){
         return programaCliente.consultaPresencasEvento(nomeEvento);
     }
-    public String[] consultaEventosUtilizador(String utilizador){
+    public Evento[] consultaEventosUtilizador(String utilizador){
         return programaCliente.consultaEventosDeUmUtilizador(utilizador);
     }
-    public void obterCSV_Admin(String nome) {
-        programaCliente.obterCSV_Admin(nome);
+    public String obterCSV_ListaPresencasEmEvento(String nome, String evento) {
+        return programaCliente.obterCSV_PresencasEvento(nome, evento);
     }
 }

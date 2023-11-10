@@ -1,6 +1,8 @@
 package pt.isec.pd.trabalhoPratico.model.classesDados;
 
-public record Utilizador(String nome, String email, String numIdentificacao) {
+import java.io.Serializable;
+
+public record Utilizador(String nome, String email, String numIdentificacao) implements Serializable {
     public String getNome() {
         return nome;
     }
