@@ -45,7 +45,7 @@ public class RootPane extends BorderPane {
         vBox.getStyleClass().add("sombreamentoBox");
         VBox.setMargin(label, new Insets(0, 10, 30, 10));
 
-        msgBox = new MensagemBox("Ocorreu um erro de comunicação :(");
+        msgBox = new MensagemBox("Erro da comunicação com o Servidor :(");
 
         StackPane stackPane = new StackPane(
                 new BorderPane(vBox),
