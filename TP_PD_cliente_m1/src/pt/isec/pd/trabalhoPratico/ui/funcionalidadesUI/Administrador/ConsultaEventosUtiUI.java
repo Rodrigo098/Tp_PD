@@ -57,7 +57,7 @@ public class ConsultaEventosUtiUI extends BorderPane {
             obterCSV.setDisable(!listaEventos.isVisible());
         });
         obterCSV.setOnAction(e -> {
-            progClienteManager.obterCSV_ListaEventos(caminhoCSV.getText(),"evenosPresenciadosPor_" + utilizador.getText(), Message_types.CSV_EVENTOS_ADMIN);
+            progClienteManager.obterCSV_ListaEventos(caminhoCSV.getText(),"evenosPresenciadosPor_" + utilizador.getText(), Message_types.CSV_PRESENCAS_UTI_NUM_EVENTO);
             obterCSV.setDisable(true);
             caminhoCSV.setText(null);
         });
