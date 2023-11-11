@@ -19,6 +19,7 @@ public class ProgramaCliente {
     // TEMPO
     private static final int TEMPO_MAXIMO = 10; // 10 segundos
     private final Timer temporizador = new Timer();
+    private int contagem = 1;
 
     // EVENTOS
     private static SimpleIntegerProperty atualizacao = new SimpleIntegerProperty(0);
@@ -57,7 +58,7 @@ public class ProgramaCliente {
     class VerificaLigacao extends TimerTask {
         @Override
         public void run() {
-            if (logado.getValue().equals("ENTRADA")) {
+            if (contagem == TEMPO_MAXIMO && logado.getValue().equals("ENTRADA")) {
                 setLogado("EXCEDEU_TEMPO");
                 this.cancel();
                 temporizador.cancel();
@@ -76,11 +77,13 @@ public class ProgramaCliente {
 
     private void verificacaoLigacao() {
         if(logado.getValue().equals("ENTRADA")) {
-            int i = 0;
-            do {
-                temporizador.schedule(new VerificaLigacao(), 1000L * i);
-                i++;
-            }while(i < TEMPO_MAXIMO);
+            while (contagem < TEMPO_MAXIMO) {
+                contagem++;
+                temporizador.schedule(new VerificaLigacao(), 10000L * contagem);
+            }
+        }
+        else {
+            temporizador.purge();
         }
     }
     ////////////////////////////////////////////////////////////////////
@@ -115,13 +118,12 @@ public class ProgramaCliente {
     /////////////////////////COMUNS:
     public Pair<Boolean, String> criaSocket(List<String> list) {
         Pair<Boolean, String> pontoSituacao = new Pair<>(false, "Erro");
-
+        socket = new Socket();
         if (list.size() == 2) {
         /*
             try (Socket socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)))) {
                 this.socket = socket;
                 pontoSituacao = new Pair<>(true, "Conexão bem sucedida");
-                comecaContarTempo();
             } catch (IllegalArgumentException e) {
                 pontoSituacao = new Pair<>(false, "Introduziu um porto inválido.");
             } catch (NullPointerException e) {
