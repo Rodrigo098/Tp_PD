@@ -53,8 +53,8 @@ public class ProgClienteManager {
     }
 
     //UTILIZADOR:
-    public void registar(String nome, String email, String numIdentificacao, String password, String confPass) {
-        programaCliente.registarConta(nome, email, numIdentificacao, password, confPass);
+    public Pair<String, Boolean> registar(String nome, String email, String numIdentificacao, String password, String confPass) {
+        return programaCliente.registarConta(nome, email, numIdentificacao, password, confPass);
     }
     public boolean registarPresenca(String codigo){
         return programaCliente.registarPresenca(codigo);
@@ -86,8 +86,5 @@ public class ProgClienteManager {
     }
     public Evento[] consultaEventosUtilizador(String utilizador){
         return programaCliente.consultaEventosDeUmUtilizador(utilizador);
-    }
-    public String obterCSV_ListaPresencasEmEvento(String nome, String evento) {
-        return programaCliente.obterCSV_PresencasEvento(nome, evento);
     }
 }

@@ -8,13 +8,16 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class RegistoUtilizadorUI extends BorderPane {
+    private Text resultado;
     private Button registar, voltar;
     private TextField nomeUtilizador, email, password, confirmar_password, numIdentificacao;
     private final ProgClienteManager progClienteManager;
+
     public RegistoUtilizadorUI(ProgClienteManager progClienteManager)  {
         this.progClienteManager = progClienteManager;
         createViews();
@@ -28,6 +31,7 @@ public class RegistoUtilizadorUI extends BorderPane {
         password = new TextField();
         confirmar_password = new TextField();
         numIdentificacao = new TextField();
+        resultado = new Text();
 
         nomeUtilizador.setPromptText("nomeUtilizador");
         email.setPromptText("Email");
@@ -43,7 +47,7 @@ public class RegistoUtilizadorUI extends BorderPane {
         Label label = new Label("Registar-se na aplicação");
         label.getStyleClass().add("titulo");
 
-        HBox hBox = new HBox(voltar, registar);
+        VBox hBox = new VBox(new HBox(voltar, registar), resultado);
         HBox hBox1 = new HBox(new Text("Nome:"), nomeUtilizador, new Text("Email:"), email);
         HBox hBox2 =  new HBox(new Text("Nº.Identificação"), numIdentificacao);
         HBox hBox3 = new HBox(new Text("Password:"), password, confirmar_password);
@@ -67,9 +71,14 @@ public class RegistoUtilizadorUI extends BorderPane {
         });
 
         registar.setOnAction(e -> {
-            progClienteManager.registar(nomeUtilizador.getText(), email.getText(), numIdentificacao.getText(), password.getText(), confirmar_password.getText());
-            limparCampos();
-            MainCliente.menuSBP.set("MENU");
+            Pair<String, Boolean> res = progClienteManager.registar(nomeUtilizador.getText(), email.getText(), numIdentificacao.getText(), password.getText(), confirmar_password.getText());
+            if(res.getValue()) {
+                limparCampos();
+                MainCliente.menuSBP.set("MENU");
+            }
+            else {
+                resultado.setText(res.getKey());
+            }
         });
 
         MainCliente.menuSBP.addListener(observable -> update());
@@ -85,5 +94,6 @@ public class RegistoUtilizadorUI extends BorderPane {
         password.clear();
         confirmar_password.clear();
         numIdentificacao.clear();
+        resultado.setText("");
     }
 }

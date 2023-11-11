@@ -121,7 +121,7 @@ public class EditorEventosUI extends BorderPane {
 
         eliminarEvento.setOnAction(e -> resultado.setText(progClienteManager.eliminarEvento(ListarEventosUI.eventoSelecionado.nomeEvento())));
 
-        obterPresencasCSV.setOnAction(e -> progClienteManager.obterCSV_ListaEventos(caminhoCSV.getText(), nomeFicheiro.getText(), Message_types.CSV_EVENTOS_ADMIN));
+        obterPresencasCSV.setOnAction(e -> progClienteManager.obterCSV_ListaEventos(caminhoCSV.getText(), nomeFicheiro.getText(), Message_types.CSV_PRESENCAS_DO_EVENTO));
 
         eliminarPresencas.setOnAction(e -> resultado.setText(progClienteManager.eliminaInsere_Eventos(Message_types.ELIMINA_PRES,
                           ListarEventosUI.eventoSelecionado.nomeEvento(), emailsTextField.getText())));

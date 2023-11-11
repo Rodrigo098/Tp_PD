@@ -9,10 +9,7 @@ import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
 import java.io.*;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -87,7 +84,7 @@ public class ProgramaCliente {
         if (list.size() == 2) {
             this.socket = new Socket();
             pontoSituacao = new Pair<>(true, "Ocorreu uma exceção I/O na criação do socket.");
-/*
+        /*
             try (Socket socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)))) {
                 this.socket = socket;
                 pontoSituacao = new Pair<>(true, "Conexão bem sucedida");
@@ -109,7 +106,7 @@ public class ProgramaCliente {
     public void login(String email, String password) {
         if (password == null || password.isBlank() || verificaFormato(email))
             return;
-/*
+        /*
         Msg_Login dadosLogin = new Msg_Login(email, password);
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
@@ -144,7 +141,8 @@ public class ProgramaCliente {
 
     public void logout() {
         //a ver segundo aquilo que tenho dúvidas
-        /*Geral logout = new Geral(Message_types.LOGOUT);
+        /*
+        Geral logout = new Geral(Message_types.LOGOUT);
         try (ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
 
             oout.writeObject(logout);
@@ -157,8 +155,9 @@ public class ProgramaCliente {
     }
 
     public Evento[] obterListaConsultaEventos(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim) {
-        return new Evento[]{new Evento("ola", "HelloMate", "ISEC", LocalDate.now(), 11,12)};
-
+        if(nome != null && !nome.isBlank() && local != null && !local.isBlank() && limData1 != null && limData2 != null && horaInicio >= horaFim)
+        {
+            return new Evento[]{new Evento("ola", "HelloMate", "ISEC", LocalDate.now(), 11,12)};
         /*
         Msg_ConsultaComFiltros consultaEventos = new Msg_ConsultaComFiltros(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
 
@@ -169,11 +168,11 @@ public class ProgramaCliente {
 
             Msg_EliminaInsere_Presencas lista = (Msg_EliminaInsere_Presencas) oin.readObject();
             if(lista.getTipo() == Message_types.VALIDO)
-                return  lista.getLista();
+                return lista.getLista();
         } catch (IOException | ClassNotFoundException e) {
             setErro();
-        }
-        return new Evento[]{};*/
+        */}
+        return new Evento[]{};
     }
 
     public String obterCSV(String caminhoCSV, String nomeFicheiro, Message_types tipoCSV) {
@@ -204,7 +203,7 @@ public class ProgramaCliente {
         }catch(IOException e){
             return "Ocorreu um erro ao gerar o csv!";
         }
-/*
+        /*
         Msg_String csv = new Msg_String(nomeFicheiro, tipoCSV);
 
         try (FileOutputStream localFileOutputStream = new FileOutputStream(localCSVCaminho);
@@ -227,16 +226,17 @@ public class ProgramaCliente {
     }
 
     /////////////////////////UTILIZADOR:
-    public void registarConta(String nome, String email, String numIdentificacao, String password, String confPass) {
+    public Pair<String, Boolean> registarConta(String nome, String email, String numIdentificacao, String password, String confPass) {
+        if (nome == null || nome.isBlank() || password == null || password.isBlank() || confPass == null || confPass.isBlank() || !password.equals(confPass) || verificaFormato(email) || numIdentificacao == null || numIdentificacao.isBlank())
+            return new Pair<>("Os dados inseriados são inválidos :(", false);
 
-        if (nome == null || password == null || !password.equals(confPass) || verificaFormato(email) || numIdentificacao == null)
-            return;
         long numID;
         try {
             numID = Integer.parseInt(numIdentificacao);//?? como é que ponho para long?
         } catch (NumberFormatException e) {
-            return;
+            return new Pair<>("Insira um número de identificação válido!", false);
         }
+        /*
         Mgs_RegistarEditar_Conta dadosRegisto = new Mgs_RegistarEditar_Conta(nome, email, password, numID, Message_types.REGISTO);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
@@ -248,16 +248,18 @@ public class ProgramaCliente {
 
             if (validacao.getTipo() == Message_types.VALIDO) {
                 logado.set("UTILIZADOR");
+                return new Pair<>("", true);
             }
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
-        }
+        }*/
+        return new Pair<>("Erro ao registar conta!", false);
     }
 
     public boolean registarPresenca(String codigoEvento) {
         if (codigoEvento == null || codigoEvento.isBlank())
             return false;
-
+        /*
         Msg_String registoPresenca = new Msg_String(codigoEvento, Message_types.SUBMICAO_COD);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
@@ -270,7 +272,7 @@ public class ProgramaCliente {
                 return true;
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
-        }
+        }*/
         return false;
     }
 
@@ -286,7 +288,7 @@ public class ProgramaCliente {
         } catch (NumberFormatException e) {
             return "O teu número deve ser inteiro!";
         }
-/*
+        /*
         Mgs_RegistarEditar_Conta dadosRegisto = new Mgs_RegistarEditar_Conta(nome, null, password, numID, Message_types.EDITAR_REGISTO);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
@@ -314,7 +316,6 @@ public class ProgramaCliente {
 
         if (data.isBefore(dataAtual) || horaInicio < horaAtual.getHour())
             return "A data não pode estar no passadooo!";
-
         /*
         Msg_Cria_Evento evento =
                 new Msg_Cria_Evento(new Evento("eu",nome, local, data, horaInicio, horaFim));
@@ -338,7 +339,9 @@ public class ProgramaCliente {
         LocalDate dataAtual = LocalDate.now();
         LocalTime horaAtual = LocalTime.now();
 
-        if ((data != null && data.isBefore(dataAtual)) || (horaInicio < horaAtual.getHour() || horaInicio >= horaFim))
+        if (eventoNomeAntigo == null || eventoNomeAntigo.isBlank() || novoNome == null || novoNome.isBlank() ||
+            local == null || local.isBlank() || data == null || data.isBefore(dataAtual) ||
+            horaInicio < horaAtual.getHour() || horaInicio >= horaFim)
             return "Dados inválidos para criação de evento!";
         /*
         Msg_Edita_Evento evento =
@@ -359,10 +362,12 @@ public class ProgramaCliente {
         return "Evento não editado!";
     }
 
-    public String eliminarEvento(String evento) {
+    public String eliminarEvento(String eventoNome) {
+        if(eventoNome == null || eventoNome.isBlank())
+            return "Evento inexistente...";
         /*
         Msg_String evento =
-                new Msg_String(evento, Message_types.ELIMINAR_EVENTO);
+                new Msg_String(eventoNome, Message_types.ELIMINAR_EVENTO);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
              ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
@@ -379,13 +384,15 @@ public class ProgramaCliente {
     }
 
     public String eliminaInserePresencas_Eventos(Message_types tipo, String evento, String emailsP) {
-        /*
+        if(evento == null || evento.isBlank() || emailsP == null || emailsP.length() == 0 || emailsP.isBlank())
+            return "Não foram inseridos emails!";
+
         ArrayList<String> emails = new ArrayList<>();
         for (String email : emailsP.trim().split(" ")) {
             if (!verificaFormato(email))
                 emails.add(email);
         }
-
+        /*
         Msg_EliminaInsere_Presencas interacao =
                 new Msg_EliminaInsere_Presencas(tipo, evento, emails.toArray(new String[0]));
 
@@ -405,6 +412,8 @@ public class ProgramaCliente {
     }
 
     public String gerarCodPresenca(String evento) {
+        if(evento == null || evento.isBlank())
+            return "Evento inexistente...";
         /*
         Msg_String geraCod =
                 new Msg_String(evento, Message_types.GERAR_COD);
@@ -426,8 +435,8 @@ public class ProgramaCliente {
     }
 
     public Utilizador[] consultaPresencasEvento(String evento) {
-        if(evento != null) {
-            /*
+        if(evento != null && !evento.isBlank()) {
+           /*
             Msg_String consulta =
                     new Msg_String(evento, Message_types.CONSULTA_PRES_EVENT);
 
@@ -468,35 +477,4 @@ public class ProgramaCliente {
         }
         return new Evento[]{};
     }
-
-    public String obterCSV_PresencasEvento(String nomeFicheiro, String evento) {
-        /*
-        Msg_Login csv = new Msg_Login(nomeFicheiro, evento);
-
-        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
-
-            oout.writeObject(csv);
-            oout.flush();
-
-            //... ficheiro = (...) oin.readObject();
-
-            //    return  "CSV gerado com sucesso guardado em: " + CAMINHO;
-        } catch (IOException | ClassNotFoundException e) {
-            setErro();
-        }*/
-        return "Erro ao gerar CSV";
-    }
 }
-/*
-        listaEventos = new ArrayList<>();
-        listaPresencas = new ArrayList<>();
-        listaResultados = new ArrayList<>();
-
-        LocalDate data = LocalDate.now();
-
-        //teste
-        Evento e = new Evento("eu", "ola", "aqui", data, 18, 19);
-        listaEventos.add(e);
-        listaPresencas.add(new Presenca(e, new Utilizador("isa", "isa@isec.pt", "11111")));
-        listaResultados.add(e.toString());*/
