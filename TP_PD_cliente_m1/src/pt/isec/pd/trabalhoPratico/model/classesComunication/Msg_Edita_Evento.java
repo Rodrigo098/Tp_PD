@@ -1,6 +1,6 @@
 package pt.isec.pd.trabalhoPratico.model.classesComunication;
 
-import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
+import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
 
 public class Msg_Edita_Evento extends Geral{
     private Evento evento;

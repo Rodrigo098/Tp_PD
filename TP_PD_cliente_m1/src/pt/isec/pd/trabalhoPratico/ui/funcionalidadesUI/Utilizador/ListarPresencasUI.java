@@ -11,7 +11,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
-import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
+import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.PersonalNodes.FiltrosUI;
 
 public class ListarPresencasUI extends BorderPane {

@@ -3,8 +3,8 @@ package pt.isec.pd.trabalhoPratico.model;
 import javafx.beans.InvalidationListener;
 import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
-import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
-import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
+import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
+import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 import pt.isec.pd.trabalhoPratico.model.classesPrograma.ProgramaCliente;
 
 import java.time.LocalDate;

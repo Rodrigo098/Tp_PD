@@ -5,8 +5,8 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
-import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
-import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
+import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
+import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 
 import java.io.*;
 import java.net.*;
@@ -17,14 +17,13 @@ import java.util.*;
 ///////////////////////////////////// PROGRAMA CLIENTE ///////////////////////
 public class ProgramaCliente {
     // TEMPO
-    private static long parouContagemTempo;
-    private static long comecouContagemTempo;
-    private static final long TEMPO_MAXIMO = 1000000000L * 10; // 10 segundos
+    private static final long TEMPO_MAXIMO = 10000; // 10 segundos
+    private Timer temporizador;
 
     // EVENTOS
     private static SimpleIntegerProperty atualizacao = new SimpleIntegerProperty(0);
     private static SimpleIntegerProperty erro = new SimpleIntegerProperty(0);
-    private static SimpleStringProperty logado = new SimpleStringProperty("ENTRADA");
+    private static SimpleStringProperty logado = new SimpleStringProperty("");
 
     // COMUNICAÇÃO
     private Socket socket;
@@ -56,41 +55,29 @@ public class ProgramaCliente {
 //-------------------------------------------------------------
 
 //-------------------- VERIFICA LIGACAO -----------------
-    class VerificaLigacaoServidor implements Runnable {
-        private String estadoAntigo;
-        private Timer temporizador;
-        private boolean sair = false;
-
-        public VerificaLigacaoServidor() {
-            temporizador = new Timer();
-            estadoAntigo = logado.getValue();
-            logado.addListener(observable -> sair());
-        }
-
-        private void sair() {
-            sair = logado.getValue().equals("EXCEDEU_TEMPO");
-        }
-        private TimerTask verificaLigacao() {
-            if(estadoAntigo.equals("EXCEDEU_TEMPO") && estadoAntigo.equals(logado.getValue())) {
-                sair = false;
-                setLogado("EXCEDEU_TEMPO");
-            }
-            return null;
-        }
+    class VerificaLigacao extends TimerTask {
         @Override
         public void run() {
-            do{
-                temporizador.schedule(verificaLigacao(), TEMPO_MAXIMO);
-            }while (!sair);
+            if(logado.getValue().equals("ENTRADA")) {
+                setLogado("EXCEDEU_TEMPO");
+            }
+            this.cancel();
         }
-
     }
-
 
 //-------------------------------------------------------------
 
     public ProgramaCliente() {
-        new Thread(new VerificaLigacaoServidor()).start();
+        temporizador = new Timer();
+        logado.addListener(observable -> {
+            if(logado.getValue().equals("ENTRADA")) {
+                temporizador.schedule(new VerificaLigacao(), TEMPO_MAXIMO);
+            } else {
+                temporizador.cancel();
+                temporizador = new Timer();
+            }
+        });
+        logado.set("ENTRADA");
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -121,7 +108,7 @@ public class ProgramaCliente {
         return email.split("[@.]").length != 3;
     }
 
-    private static void comecaContarTempo() {
+    /*private static void comecaContarTempo() {
         comecouContagemTempo = System.nanoTime();
     }
     private static void paraContarTempo() {
@@ -134,7 +121,7 @@ public class ProgramaCliente {
             return false;
         }
         return true;
-    }
+    }*/
 
     ///////////////////////////////////////FUNCIONALIDADES:
     /////////////////////////COMUNS:
@@ -162,8 +149,6 @@ public class ProgramaCliente {
     }
 
     public void login(String email, String password) {
-        if(!existeLigacao())
-            return;
 
         if (password == null || password.isBlank() || verificaFormato(email))
             return;
@@ -201,12 +186,9 @@ public class ProgramaCliente {
     }
 
     public void logout() {
-        comecaContarTempo();
-
         /*
         Geral logout = new Geral(Message_types.LOGOUT);
         try (ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
-
             oout.writeObject(logout);
             oout.flush();
             logado.set("ENTRADA");
@@ -289,9 +271,9 @@ public class ProgramaCliente {
 
     /////////////////////////UTILIZADOR:
     public Pair<String, Boolean> registarConta(String nome, String email, String numIdentificacao, String password, String confPass) {
-        if(!existeLigacao())
+  /*      if(!existeLigacao())
             return new Pair<>("Tempo excedido", false);
-
+*/
         if (nome == null || nome.isBlank() || password == null || password.isBlank() || confPass == null || confPass.isBlank() || !password.equals(confPass) || verificaFormato(email) || numIdentificacao == null || numIdentificacao.isBlank())
             return new Pair<>("Os dados inseriados são inválidos :(", false);
 

@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.model.classesDados;
+package pt.isec.pd.trabalhoPratico.model.recordDados;
 
 import java.io.Serializable;
 import java.time.LocalDate;

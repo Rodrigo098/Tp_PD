@@ -1,6 +1,6 @@
 package pt.isec.pd.trabalhoPratico.model.classesComunication;
 
-import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
+import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 
 public class Msg_ListaRegistos extends Geral{
     private final Utilizador[] lista;
