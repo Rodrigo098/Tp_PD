@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class ProgClienteManager {
-    private ProgramaCliente programaCliente;
+    private final ProgramaCliente programaCliente;
 
     public ProgClienteManager() {
         programaCliente = new ProgramaCliente();

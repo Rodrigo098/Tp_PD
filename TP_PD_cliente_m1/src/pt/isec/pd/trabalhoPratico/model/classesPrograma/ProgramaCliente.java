@@ -17,8 +17,8 @@ import java.util.*;
 ///////////////////////////////////// PROGRAMA CLIENTE ///////////////////////
 public class ProgramaCliente {
     // TEMPO
-    private static final long TEMPO_MAXIMO = 10000; // 10 segundos
-    private Timer temporizador;
+    private static final int TEMPO_MAXIMO = 10; // 10 segundos
+    private final Timer temporizador = new Timer();
 
     // EVENTOS
     private static SimpleIntegerProperty atualizacao = new SimpleIntegerProperty(0);
@@ -52,34 +52,37 @@ public class ProgramaCliente {
             } while (Thread.currentThread().isAlive());
         }
     }
-//-------------------------------------------------------------
 
 //-------------------- VERIFICA LIGACAO -----------------
     class VerificaLigacao extends TimerTask {
         @Override
         public void run() {
-            if(logado.getValue().equals("ENTRADA")) {
+            if (logado.getValue().equals("ENTRADA")) {
                 setLogado("EXCEDEU_TEMPO");
+                this.cancel();
+                temporizador.cancel();
+                temporizador.purge();
+                logado.removeListener(observable -> verificacaoLigacao());
             }
-            this.cancel();
         }
     }
 
 //-------------------------------------------------------------
 
     public ProgramaCliente() {
-        temporizador = new Timer();
-        logado.addListener(observable -> {
-            if(logado.getValue().equals("ENTRADA")) {
-                temporizador.schedule(new VerificaLigacao(), TEMPO_MAXIMO);
-            } else {
-                temporizador.cancel();
-                temporizador = new Timer();
-            }
-        });
+        logado.addListener(observable -> verificacaoLigacao());
         logado.set("ENTRADA");
     }
 
+    private void verificacaoLigacao() {
+        if(logado.getValue().equals("ENTRADA")) {
+            int i = 0;
+            do {
+                temporizador.schedule(new VerificaLigacao(), 1000L * i);
+                i++;
+            }while(i < TEMPO_MAXIMO);
+        }
+    }
     ////////////////////////////////////////////////////////////////////
     public void addLogadoListener(InvalidationListener listener) {
         logado.addListener(listener);
@@ -108,29 +111,12 @@ public class ProgramaCliente {
         return email.split("[@.]").length != 3;
     }
 
-    /*private static void comecaContarTempo() {
-        comecouContagemTempo = System.nanoTime();
-    }
-    private static void paraContarTempo() {
-        parouContagemTempo = System.nanoTime();
-    }
-    private boolean existeLigacao(){
-        paraContarTempo();
-        if(parouContagemTempo - comecouContagemTempo > TEMPO_MAXIMO) {
-            setLogado("EXCEDEU_TEMPO");
-            return false;
-        }
-        return true;
-    }*/
-
     ///////////////////////////////////////FUNCIONALIDADES:
     /////////////////////////COMUNS:
     public Pair<Boolean, String> criaSocket(List<String> list) {
-        Pair<Boolean, String> pontoSituacao;
+        Pair<Boolean, String> pontoSituacao = new Pair<>(false, "Erro");
 
         if (list.size() == 2) {
-            this.socket = new Socket();
-            pontoSituacao = new Pair<>(true, "Ocorreu uma exceção I/O na criação do socket.");
         /*
             try (Socket socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)))) {
                 this.socket = socket;
@@ -152,7 +138,7 @@ public class ProgramaCliente {
 
         if (password == null || password.isBlank() || verificaFormato(email))
             return;
-        /*
+/*
         Msg_Login dadosLogin = new Msg_Login(email, password);
         try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
@@ -166,7 +152,7 @@ public class ProgramaCliente {
                 switch (validacao.getTipo()){
                     case ADMINISTRADOR -> {
                         logado.set("ADMINISTRADOR");
-                        try (Socket socketThread = new Socket(Msg_String.getConteudo(), this.socket.getPort())) {
+                        try (Socket socketThread = new Socket(validacao.getConteudo(), this.socket.getPort())) {
                             new Thread(new AtualizacaoAsync(socketThread)).start();
                         } catch (Exception e) {
                             setErro();
@@ -176,12 +162,12 @@ public class ProgramaCliente {
                         logado.set("UTILIZADOR");
                     case INVALIDO, ERRO -> {
                         setErro();
-                        //sairApp();
                     }
                 }
             } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }*/
+
         logado.set("UTILIZADOR");
     }
 

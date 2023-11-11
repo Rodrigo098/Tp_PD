@@ -112,25 +112,30 @@ HBox {
 .movButton {
     -fx-padding: 5 10;
 }
+
+.imagens {
+  -fx-background-repeat: no-repeat;
+  -fx-background-position: center;
+}
+
 .procurar {
   -fx-background-image: url("magnifier.png");
   -fx-background-size: 30px 30px;
-  -fx-background-repeat: no-repeat;
-  -fx-background-position: center;
-  -fx-background-color: rgb(255,255,255);
+  -fx-background-color: #CFD8DC;
   -fx-padding: 1;
 }
+
 .erroButton {
   -fx-background-image: url("warning.png");
   -fx-background-size: 80px 80px;
-  -fx-background-repeat: no-repeat;
-  -fx-background-position: center;
-  -fx-background-color: rgb(255,255,255);
+  -fx-background-color: white;
   -fx-padding: 3;
 }
+
 .erroButton:hover {
   -fx-background-color: rgb(255, 205, 210);
 }
+
 .erroBox {
     -fx-border-width: 3px;
     -fx-border-color: red;
@@ -138,4 +143,9 @@ HBox {
     -fx-background-color: white;
     -fx-background-radius: 10px;
     -fx-text-fill: red;
+}
+
+.ligacaoExpirou {
+  -fx-background-image: url("whistle.png");
+  -fx-background-size: 100px 100px;
 }

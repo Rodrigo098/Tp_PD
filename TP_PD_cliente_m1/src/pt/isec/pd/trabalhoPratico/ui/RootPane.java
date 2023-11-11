@@ -12,15 +12,13 @@ import javafx.util.Duration;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador.ContaAdministradorUI;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.PersonalNodes.MensagemBox;
+import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra.MensagemBox;
+import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra.SairApp;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.ContaUtilizadorUI;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.RegistoUtilizadorUI;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 public class RootPane extends BorderPane {
-    private Button login, sair;
+    private Button login;
     private Text registar;
     private TextField username, password;
     private MensagemBox msgBox;
@@ -52,13 +50,9 @@ public class RootPane extends BorderPane {
         vBox.getStyleClass().add("sombreamentoBox");
         VBox.setMargin(label, new Insets(0, 10, 30, 10));
 
-        msgBox = new MensagemBox("Erro da comunicação com o Servidor :(");
+        msgBox = new MensagemBox("Erro de comunicação com o Servidor :(");
 
-        sair = new Button("SAIR");
-        tempoExcedidoNode = new VBox(new Text("Tempo de sessão excedido!"), new Text("10 segundos para feche automático da app"), sair);
-        tempoExcedidoNode.setVisible(false);
-        tempoExcedidoNode.getStyleClass().add("erroBox");
-        tempoExcedidoNode.setPrefSize(100, 100);
+        tempoExcedidoNode = new SairApp();
 
         StackPane stackPane = new StackPane(
                 new BorderPane(vBox),
@@ -81,11 +75,6 @@ public class RootPane extends BorderPane {
 
         registar.setOnMouseClicked( e -> MainCliente.menuSBP.set("REGISTO"));
 
-        sair.setOnAction(e -> {
-            Platform.exit();
-            System.exit(0);
-        });
-
         progClienteManager.addErroListener(observable -> Platform.runLater(msgBox::update));
         progClienteManager.addLogadoListener(observable -> Platform.runLater(this::update));
     }
@@ -96,7 +85,6 @@ public class RootPane extends BorderPane {
             PauseTransition espera = new PauseTransition(Duration.seconds(10));
             espera.setOnFinished(e -> {
                 Platform.exit();
-                System.exit(0);
             });
             espera.play();
         }

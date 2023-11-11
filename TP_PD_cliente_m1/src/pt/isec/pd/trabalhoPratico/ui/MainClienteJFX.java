@@ -32,7 +32,7 @@ public class MainClienteJFX extends Application {
             System.out.println(each);
         }
         //-----------------------------------
-        Pair<Boolean, String> conexao = clienteManager.criaSocket(list);
+        //Pair<Boolean, String> conexao = clienteManager.criaSocket(list);
         //if(conexao.getKey()) {
             RootPane root = new RootPane(clienteManager);
             Scene scene = new Scene(root, 700, 500);

@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.PersonalNodes;
+package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -15,10 +15,10 @@ public class MensagemBox extends VBox {
     private void createViews(String mensagem){
         Label label = new Label(mensagem);
         erro = new Button();
-        erro.getStyleClass().add("erroButton");
+        erro.getStyleClass().addAll("imagens", "erroButton");
         erro.setMinSize(90, 90);
 
-        this.setMaxSize(300, 200);
+        this.setMaxSize(500, 200);
         this.getStyleClass().add("erroBox");
         this.getChildren().addAll(label, erro);
     }

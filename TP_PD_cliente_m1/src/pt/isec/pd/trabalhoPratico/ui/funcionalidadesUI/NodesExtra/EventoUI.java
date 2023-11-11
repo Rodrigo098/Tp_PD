@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.PersonalNodes;
+package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.DatePicker;

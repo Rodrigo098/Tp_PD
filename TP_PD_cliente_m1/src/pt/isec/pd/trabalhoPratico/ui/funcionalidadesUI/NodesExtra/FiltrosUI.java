@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.PersonalNodes;
+package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -24,7 +24,7 @@ public class FiltrosUI extends HBox {
         verFiltros = new Button("+");
         verFiltros.getStyleClass().addAll("movButton");
         procurar = new Button();
-        procurar.getStyleClass().addAll("procurar");
+        procurar.getStyleClass().addAll("imagens", "procurar");
         procurar.setMinSize(30, 30);
         nomeEvento = new TextField();
         nomeEvento.setPromptText("evento");
