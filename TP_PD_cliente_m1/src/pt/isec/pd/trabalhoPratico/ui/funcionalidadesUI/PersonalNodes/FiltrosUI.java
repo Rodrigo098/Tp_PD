@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
+package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.PersonalNodes;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -6,6 +6,7 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 public class FiltrosUI extends HBox {
     private HBox filtrosData;
@@ -39,8 +40,8 @@ public class FiltrosUI extends HBox {
         VBox vBox3 = new VBox(new Text("Horas:"), horaInicio, horaFim);
 
         filtrosData = new HBox(vBox1, vBox2, vBox3, procurar);
-        filtrosData.setPadding(new Insets(0, 0, 0, 15));
-        filtrosData.setMaxWidth(350);
+        filtrosData.setPadding(new Insets(0, 0, 0, 10));
+        filtrosData.setMaxWidth(370);
         filtrosData.setManaged(false);
         filtrosData.setVisible(false);
 
@@ -53,6 +54,7 @@ public class FiltrosUI extends HBox {
         verFiltros.setOnAction(e -> {
             filtrosData.setManaged(!filtrosData.isManaged());
             filtrosData.setVisible(!filtrosData.isVisible());
+            verFiltros.setText(Objects.equals(verFiltros.getText(), "-") ? "+" : "-");
         });
     }
 

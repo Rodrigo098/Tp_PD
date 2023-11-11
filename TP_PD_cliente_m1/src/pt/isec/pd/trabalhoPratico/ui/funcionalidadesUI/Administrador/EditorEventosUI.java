@@ -13,6 +13,7 @@ import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
+import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.PersonalNodes.EventoUI;
 
 public class EditorEventosUI extends BorderPane {
     protected static SimpleStringProperty opcaoEdicao = new SimpleStringProperty("Lista Presenças");

@@ -1,9 +1,8 @@
-package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.InfoNodes;
+package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.PersonalNodes;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
-import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class MensagemBox extends VBox {
     private Button erro;

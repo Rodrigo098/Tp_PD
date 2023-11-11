@@ -10,7 +10,7 @@ import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador.ContaAdministradorUI;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.InfoNodes.MensagemBox;
+import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.PersonalNodes.MensagemBox;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.ContaUtilizadorUI;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.RegistoUtilizadorUI;
 

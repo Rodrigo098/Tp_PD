@@ -10,6 +10,7 @@ import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
 import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
+import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.PersonalNodes.FiltrosUI;
 
 public class ListarEventosUI extends BorderPane {
     protected static Evento eventoSelecionado;
