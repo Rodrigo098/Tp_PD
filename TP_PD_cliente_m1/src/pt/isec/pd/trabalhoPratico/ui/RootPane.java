@@ -14,11 +14,16 @@ import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.PersonalNodes.MensagemBox
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.ContaUtilizadorUI;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.RegistoUtilizadorUI;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class RootPane extends BorderPane {
-    private Button login;
+    private Button login, sair;
     private Text registar;
     private TextField username, password;
     private MensagemBox msgBox;
+    private VBox tempoExcedidoNode;
+
     ProgClienteManager progClienteManager;
 
     public RootPane(ProgClienteManager progClienteManager) {
@@ -47,11 +52,15 @@ public class RootPane extends BorderPane {
 
         msgBox = new MensagemBox("Erro da comunicação com o Servidor :(");
 
+        sair = new Button("SAIR");
+        tempoExcedidoNode = new VBox(new Text("Tempo de sessão excedido!"), new Text("10 segundos para feche automático da app"), sair);
+
         StackPane stackPane = new StackPane(
                 new BorderPane(vBox),
                 new RegistoUtilizadorUI(progClienteManager),
                 new ContaUtilizadorUI(progClienteManager),
                 new ContaAdministradorUI(progClienteManager),
+                tempoExcedidoNode,
                 msgBox
         );
         this.getStyleClass().add("entradaPane");
@@ -67,9 +76,22 @@ public class RootPane extends BorderPane {
 
         registar.setOnMouseClicked( e -> MainCliente.menuSBP.set("REGISTO"));
 
+        sair.setOnAction(e -> Platform.exit());
+
         progClienteManager.addErroListener(observable -> Platform.runLater(msgBox::update));
+        progClienteManager.addLogadoListener(observable -> Platform.runLater(this::update));
     }
 
     private void update() {
+        if(progClienteManager.getLogado().equals("EXCEDEU_TEMPO")) {
+            tempoExcedidoNode.setVisible(true);
+            Timer temporizadorFecheAutomatico = new Timer();
+            temporizadorFecheAutomatico.schedule(exit(), 1000000000L * 10);
+        }
     }
+    private TimerTask exit() {
+        Platform.exit();
+        return null;
+    }
+
 }

@@ -10,47 +10,89 @@ import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
 
 import java.io.*;
 import java.net.*;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-
-///////////////////////////////////// ATUALIZACAO ASSINCRONA ///////////////////////
-class AtualizacaoAsync implements Runnable {
-    private final Socket socket;
-
-    public AtualizacaoAsync(Socket socket) {
-        this.socket = socket;
-    }
-
-    @Override
-    public void run() {
-
-        do {
-            try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream())) {
-                Object novaAtualizacao = oin.readObject();
-                if (novaAtualizacao instanceof Geral g)
-                    if (g.getTipo() == Message_types.ATUALIZACAO)
-                        ProgramaCliente.atualizacao.setValue(ProgramaCliente.atualizacao.getValue() + 1);
-
-            } catch (IOException | ClassNotFoundException ignored) {
-                ProgramaCliente.setErro();
-            }
-        } while (Thread.currentThread().isAlive());
-    }
-}
+import java.util.*;
 
 ///////////////////////////////////// PROGRAMA CLIENTE ///////////////////////
 public class ProgramaCliente {
-    protected static SimpleIntegerProperty atualizacao = new SimpleIntegerProperty(0);
-    private final SimpleStringProperty logado = new SimpleStringProperty("ENTRADA");
-    protected static final SimpleIntegerProperty erro = new SimpleIntegerProperty(0);
+    // TEMPO
+    private static long parouContagemTempo;
+    private static long comecouContagemTempo;
+    private static final long TEMPO_MAXIMO = 1000000000L * 10; // 10 segundos
+
+    // EVENTOS
+    private static SimpleIntegerProperty atualizacao = new SimpleIntegerProperty(0);
+    private static SimpleIntegerProperty erro = new SimpleIntegerProperty(0);
+    private static SimpleStringProperty logado = new SimpleStringProperty("ENTRADA");
+
+    // COMUNICAÇÃO
     private Socket socket;
 
-    public ProgramaCliente() {
+//-------------------- ATUALIZACAO ASSINCRONA -----------------
+    class AtualizacaoAsync implements Runnable {
+        private final Socket socket;
+
+        public AtualizacaoAsync(Socket socket) {
+            this.socket = socket;
+        }
+
+        @Override
+        public void run() {
+
+            do {
+                try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream())) {
+                    Object novaAtualizacao = oin.readObject();
+                    if (novaAtualizacao instanceof Geral g)
+                        if (g.getTipo() == Message_types.ATUALIZACAO)
+                            atualizacao.setValue(atualizacao.getValue() + 1);
+
+                } catch (IOException | ClassNotFoundException ignored) {
+                    ProgramaCliente.setErro();
+                }
+            } while (Thread.currentThread().isAlive());
+        }
     }
+//-------------------------------------------------------------
+
+//-------------------- VERIFICA LIGACAO -----------------
+    class VerificaLigacaoServidor implements Runnable {
+        private String estadoAntigo;
+        private Timer temporizador;
+        private boolean sair = false;
+
+        public VerificaLigacaoServidor() {
+            temporizador = new Timer();
+            estadoAntigo = logado.getValue();
+            logado.addListener(observable -> sair());
+        }
+
+        private void sair() {
+            sair = logado.getValue().equals("EXCEDEU_TEMPO");
+        }
+        private TimerTask verificaLigacao() {
+            if(estadoAntigo.equals("EXCEDEU_TEMPO") && estadoAntigo.equals(logado.getValue())) {
+                sair = false;
+                setLogado("EXCEDEU_TEMPO");
+            }
+            return null;
+        }
+        @Override
+        public void run() {
+            do{
+                temporizador.schedule(verificaLigacao(), TEMPO_MAXIMO);
+            }while (!sair);
+        }
+
+    }
+
+
+//-------------------------------------------------------------
+
+    public ProgramaCliente() {
+        new Thread(new VerificaLigacaoServidor()).start();
+    }
+
     ////////////////////////////////////////////////////////////////////
     public void addLogadoListener(InvalidationListener listener) {
         logado.addListener(listener);
@@ -65,6 +107,9 @@ public class ProgramaCliente {
         System.out.println("ERRO");
         erro.set(erro.getValue() + 1);
     }
+    protected static synchronized void setLogado(String estado) {
+        logado.set(estado);
+    }
     public String getLogado() {
         return logado.getValue();
     }
@@ -74,6 +119,21 @@ public class ProgramaCliente {
         if (email.indexOf('@') <= 0 || !(email.indexOf('@') <= email.indexOf('.') - 2))
             return true;
         return email.split("[@.]").length != 3;
+    }
+
+    private static void comecaContarTempo() {
+        comecouContagemTempo = System.nanoTime();
+    }
+    private static void paraContarTempo() {
+        parouContagemTempo = System.nanoTime();
+    }
+    private boolean existeLigacao(){
+        paraContarTempo();
+        if(parouContagemTempo - comecouContagemTempo > TEMPO_MAXIMO) {
+            setLogado("EXCEDEU_TEMPO");
+            return false;
+        }
+        return true;
     }
 
     ///////////////////////////////////////FUNCIONALIDADES:
@@ -88,14 +148,12 @@ public class ProgramaCliente {
             try (Socket socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)))) {
                 this.socket = socket;
                 pontoSituacao = new Pair<>(true, "Conexão bem sucedida");
-
+                comecaContarTempo();
             } catch (IllegalArgumentException e) {
                 pontoSituacao = new Pair<>(false, "Introduziu um porto inválido.");
             } catch (NullPointerException e) {
                 pontoSituacao = new Pair<>(false, "Introduziu um endereço inválido.");
             } catch (IOException e) {
-                this.socket = new Socket();
-                pontoSituacao = new Pair<>(true, "Ocorreu uma exceção I/O na criação do socket.");
                 pontoSituacao = new Pair<>(false, "Ocorreu uma exceção I/O na criação do socket.");
             }*/
         } else
@@ -104,6 +162,9 @@ public class ProgramaCliente {
     }
 
     public void login(String email, String password) {
+        if(!existeLigacao())
+            return;
+
         if (password == null || password.isBlank() || verificaFormato(email))
             return;
         /*
@@ -140,14 +201,15 @@ public class ProgramaCliente {
     }
 
     public void logout() {
-        //a ver segundo aquilo que tenho dúvidas
+        comecaContarTempo();
+
         /*
         Geral logout = new Geral(Message_types.LOGOUT);
         try (ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
 
             oout.writeObject(logout);
             oout.flush();
-            logado = "ENTRADA";
+            logado.set("ENTRADA");
         } catch (IOException e) {
             setErro();
         }*/
@@ -227,6 +289,9 @@ public class ProgramaCliente {
 
     /////////////////////////UTILIZADOR:
     public Pair<String, Boolean> registarConta(String nome, String email, String numIdentificacao, String password, String confPass) {
+        if(!existeLigacao())
+            return new Pair<>("Tempo excedido", false);
+
         if (nome == null || nome.isBlank() || password == null || password.isBlank() || confPass == null || confPass.isBlank() || !password.equals(confPass) || verificaFormato(email) || numIdentificacao == null || numIdentificacao.isBlank())
             return new Pair<>("Os dados inseriados são inválidos :(", false);
 

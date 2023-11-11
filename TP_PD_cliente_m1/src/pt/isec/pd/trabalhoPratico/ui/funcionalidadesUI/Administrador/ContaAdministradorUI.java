@@ -91,26 +91,4 @@ public class ContaAdministradorUI extends BorderPane {
     private void update2() {
         funcionalidades.setVisible(!opcaoAdmin.get().equals("NADA"));
     }
-//-----------------------------------------------------------------
-/*
-    private ScrollPane listaDeEventos(){
-        ScrollPane scrollPane = new ScrollPane();
-        VBox vBox = new VBox();
-        String [] listaEventos = progClienteManager.obterListaEventos();
-        for(String evento : listaEventos){
-            Button eliminar = new Button("Eliminar");
-            Button editar = new Button("Editar");
-            eliminar.setId(evento);
-            editar.setId(evento);
-            HBox infoEvento = new HBox(new Label(evento), editar, eliminar);
-            vBox.getChildren().add(infoEvento);
-        }
-        scrollPane.setContent(vBox);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setFitToHeight(true);
-        //scrollPane.setPrefSize(400, 100);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        return scrollPane;
-    }*/
 }
