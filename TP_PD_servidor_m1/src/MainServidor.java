@@ -18,8 +18,8 @@ public class MainServidor {
         SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
         Date data = df.parse("09-11-2023");
 
-        //ProgServidor prog=new ProgServidor();
-        //prog.servico();
+        ProgServidor prog=new ProgServidor();
+        prog.servico();
       // DbManage dbManage = new DbManage();
      //  DbManage.Registonovouser(new Utilizador("Joao","eu@tu.isec","9876"),"12345");
     //  DbManage.autentica_user("eu","12345");
