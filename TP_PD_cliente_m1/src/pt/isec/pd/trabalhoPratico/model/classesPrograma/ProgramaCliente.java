@@ -67,7 +67,8 @@ public class ProgramaCliente {
                 temporizador.purge();
                 logado.removeListener(observable -> verificacaoLigacao());
                 try {
-                    socket.close();
+                    if(socket != null)
+                        socket.close();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -124,14 +125,16 @@ public class ProgramaCliente {
     ///////////////////////////////////////FUNCIONALIDADES:
     /////////////////////////COMUNS:
     public Pair<Boolean, String> criaSocket(List<String> list) {
-        Pair<Boolean, String> pontoSituacao;
+        Pair<Boolean, String> pontoSituacao = new Pair<>(false, "Erro na criação do socket");
         if (list.size() == 2) {
             try
             {
                 socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)));
-                oin = new ObjectInputStream(socket.getInputStream());
-                oout = new ObjectOutputStream(socket.getOutputStream());
-                pontoSituacao = new Pair<>(true, "Conexão bem sucedida");
+                if(socket.isConnected()) {
+                    oin = new ObjectInputStream(socket.getInputStream());
+                    oout = new ObjectOutputStream(socket.getOutputStream());
+                    pontoSituacao = new Pair<>(true, "Conexão bem sucedida");
+                }
             } catch (IllegalArgumentException e) {
                 pontoSituacao = new Pair<>(false, "Introduziu um porto inválido.");
             } catch (NullPointerException e) {

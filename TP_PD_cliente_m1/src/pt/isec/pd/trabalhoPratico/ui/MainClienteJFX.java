@@ -33,7 +33,7 @@ public class MainClienteJFX extends Application {
         }
         //-----------------------------------
         Pair<Boolean, String> conexao = clienteManager.criaSocket(list);
-        //if(conexao.getKey()) {
+        if(conexao.getKey()) {
             RootPane root = new RootPane(clienteManager);
             Scene scene = new Scene(root, 700, 500);
             String css = this.getClass().getResource("css/estilos.css").toExternalForm();
@@ -42,12 +42,12 @@ public class MainClienteJFX extends Application {
             stage.setScene(scene);
             stage.setTitle(title);
             stage.show();
-        //}
-        /*else{
+        }
+        else{
             Scene scene = new Scene(new VBox(new Label(conexao.getValue()), new Label("(Vou pôr aqui um smily triste ou uma cruz fofinha)")), 300, 300);
             stage.setScene(scene);
             stage.setTitle(title);
             stage.show();
-        }*/
+        }
     }
 }
