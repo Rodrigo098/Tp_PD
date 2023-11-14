@@ -1,20 +1,14 @@
 import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
-import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
-import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
+import pt.isec.pd.trabalhoPratico.model.recordDados.*;
 
-import javax.management.RuntimeOperationsException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
-
-import static pt.isec.pd.trabalhoPratico.dataAccess.DbManage.PresencasCSV;
 
 
 public class ProgServidor {
@@ -60,7 +54,7 @@ public class ProgServidor {
 
                 //Comandos de Registo e Login
                 if(o.getTipo() == Message_types.LOGIN){// para descobrir qual a classe estava a pensar em algo para o processamento depois dos dados
-                    Login aux = (Login) o;
+                    Msg_Login aux = (Msg_Login) o;
                     String password=aux.getPassword();
                     email=aux.getEmail();
                     System.out.println(email);
@@ -73,7 +67,7 @@ public class ProgServidor {
                 }
                 else if (o.getTipo() == Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
 
-                    RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente)o;
+                    Mgs_RegistarEditar_Conta aux=(Mgs_RegistarEditar_Conta)o;
                     email= aux.getEmail();
                     Utilizador user=new Utilizador(aux.getNome(),aux.getEmail(),aux.getNum_estudante());
                     DbManage.Registonovouser(user,aux.getPassword());
@@ -88,7 +82,7 @@ public class ProgServidor {
                         Geral message = (Geral) in.readObject();
                         switch (message.getTipo()) {
                             case EDITAR_REGISTO ->{
-                                RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente)message;
+                                Mgs_RegistarEditar_Conta aux=(Mgs_RegistarEditar_Conta)message;
                                 Utilizador user=new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
                                 if(DbManage.edita_registo(user,aux.getPassword())){
                                     out.writeObject(new Geral(Message_types.VALIDO));
@@ -97,9 +91,10 @@ public class ProgServidor {
 
                             }
                             case REGISTO -> {
-                                RegistoEdicao_Cliente aux=(RegistoEdicao_Cliente) message;
-                                Utilizador user=new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
-                                if(DbManage.Registonovouser(user,aux.getPassword())){
+                                Mgs_RegistarEditar_Conta aux = (Mgs_RegistarEditar_Conta) message;
+                                Utilizador user = new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
+
+                                if(DbManage.Registonovouser(user, aux.getPassword())){
                                     out.writeObject(new Geral(Message_types.VALIDO));
                                 }else
                                     out.writeObject(new Geral(Message_types.ERRO));
@@ -108,11 +103,13 @@ public class ProgServidor {
                             case SUBMICAO_COD -> out.writeObject("Insere dados na database");
 
                             case CONSULTA_PRES_UTILIZADOR -> {
-                                Consulta_Elimina_GeraCod_SubmeteCod_Evento aux=(Consulta_Elimina_GeraCod_SubmeteCod_Evento)message;
+                                Msg_ListaEventos aux = (Msg_ListaEventos)message;
 
                                 //Depois temos que mandar aí a classe com os critérios/filtros e substituir esses parametros extras
-                                List<Evento> eventosAssistidos = DbManage.ConsultaPresencas_user(aux.getNome(), "Nome do evento","local",null,null,null);
-                                eventosPresencasUser.addAll(eventosAssistidos); //vou utilizar o eventos presenças user para fazer o ficheiro csv do utilizador
+
+                                //List<Evento> eventosAssistidos = DbManage.ConsultaPresencas_user(aux.getNome(), "Nome do evento","local",null,null,null);
+                                //eventosPresencasUser.addAll(eventosAssistidos); //vou utilizar o eventos presenças user para fazer o ficheiro csv do utilizador
+
                                 //Mandarmos isso pela classe que recebe a lista de eventos
                                 //out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,eventosAssistidos));
                             }
@@ -137,8 +134,8 @@ public class ProgServidor {
                         switch (message.getTipo()) {
                             case CRIA_EVENTO -> {
                                 //Falta a validacao do admin
-                                Cria_evento evento = (Cria_evento) message;
-                                if(DbManage.Cria_evento(evento.getNome(), evento.getLocal(), evento.getData(), evento.getHorainicio(), evento.getHorafim())){
+                                Msg_Cria_Evento evento = (Msg_Cria_Evento) message;
+                                if(DbManage.Cria_evento(evento)){//.getNome(), evento.getLocal(), evento.getData(), evento.getHoreInicio(), evento.getHoraFim())){
                                     out.writeObject(new Geral(Message_types.VALIDO));
                                 }
                                 else{
@@ -151,10 +148,9 @@ public class ProgServidor {
                                 //Vamos ter um problema aqui por causa do nome do evento. Se ele for alterável é necessário saber o nome atual do evento e o novo nome portanto precisa-se de mais um campo
                                 //Cria-se outra classe?
 
-                                String eventoId = "nome do evento";
-                                Cria_evento evento = (Cria_evento) message;
+                                Msg_Edita_Evento evento = (Msg_Edita_Evento) message;
 
-                                if(DbManage.Edita_evento(evento, eventoId)){
+                                if(DbManage.Edita_evento(evento)){
                                     out.writeObject(new Geral(Message_types.VALIDO));
                                     //ATT: ESTOU UM POUCO CONFUSA COM ESSAS CLASSES DE COMUNICAÇÃO E AS DE DADOS.
                                     //Aqui posso apenas dizer que a alteração foi valida ou mando mais alguma coisa?
@@ -164,8 +160,8 @@ public class ProgServidor {
                                 }
                             }
                             case ELIMINAR_EVENTO -> {
-                                Consulta_Elimina_GeraCod_SubmeteCod_Evento aux=(Consulta_Elimina_GeraCod_SubmeteCod_Evento)message;
-                                if(DbManage.Elimina_evento(aux.getNome())){
+                                Msg_String aux = (Msg_String)message;
+                                if(DbManage.Elimina_evento(aux.getConteudo())){
                                     out.writeObject(new Geral(Message_types.VALIDO));
                                 }
                                 else{
@@ -174,7 +170,7 @@ public class ProgServidor {
                             }
                             case CONSULTA_EVENTOS -> {
                                 //Vou usar o cria_evento só pq sim, mas cada campo preenchido vai funcionar como um filtro, logo a classe a utilizar pode vir vazia
-                                Cria_evento aux=(Cria_evento)message;
+                                Msg_ConsultaComFiltros aux = (Msg_ConsultaComFiltros)message;
                                 List <Evento> eventosConsultados = DbManage.Consulta_eventos(aux);
 
                                 //Falta mandar isso em condições como resposta para o cliente, pq aqui não faz sentido o nome do evento
@@ -184,58 +180,56 @@ public class ProgServidor {
                             }
                             case GERAR_COD ->{
                                 //Vai ser necessário outra classe também, acho eu. Vou fazer assim agr só para testar
-                                Cria_evento aux=(Cria_evento)message;
+                                Msg_String aux = (Msg_String)message;
                                 int validade = 30; //validade em minutos
-                                int code =DbManage.GeraCodigoRegisto(aux,validade);
-                                if (code != 0){
-                                    //Enviar o codigo gerado
-                                }
-                                else{
-                                    out.writeObject(new Geral(Message_types.ERRO));
-                                }
-                            }
-                            case UPDATE_INF -> {} //Esta é para o quê supostamente?
+                                String code = DbManage.GeraCodigoRegisto(aux.getConteudo() ,validade);
 
+                                out.writeObject(new Msg_String(code, Message_types.VALIDO));
+                            }
                             case INSERE_PRES ->  {
-                                ConsultaEventos_EliminaPresencas_InserePresencas aux=(ConsultaEventos_EliminaPresencas_InserePresencas)message;
-                                if(DbManage.InserePresencas(aux.getNome_evento(),aux.getEmails())){
-                                    out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome_evento(),Message_types.VALIDO));
+                                Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas)message;
+                                if(DbManage.InserePresencas(aux.getNome_evento(),aux.getLista())){
+                                    out.writeObject(new Geral(Message_types.VALIDO));
                                 }
                                 else{
                                     out.writeObject(new Geral(Message_types.ERRO));
                                 }
                             }
                             case ELIMINA_PRES -> {
-                                ConsultaEventos_EliminaPresencas_InserePresencas aux=(ConsultaEventos_EliminaPresencas_InserePresencas)message;
-                                if(DbManage.EliminaPresencas(aux.getNome_evento(),aux.getEmails())){
-                                    out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome_evento(),Message_types.VALIDO));
+                                Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas)message;
+                                if(DbManage.EliminaPresencas(aux.getNome_evento(),aux.getLista())){
+                                    out.writeObject(new Geral(Message_types.VALIDO));
                                 }
                                 else{
                                     out.writeObject(new Geral(Message_types.ERRO));
                                 }
                             }
                             case CONSULTA_PRES_EVENT -> {
-                                Consulta_Elimina_GeraCod_SubmeteCod_Evento aux=(Consulta_Elimina_GeraCod_SubmeteCod_Evento)message;
-                                List<String> cenas=DbManage.Presencas_evento(aux.getNome());
-                                String[]res=new String[cenas.size()];
+                                Msg_String aux = (Msg_String)message;
+                                List<Utilizador> cenas = DbManage.Presencas_evento(aux.getConteudo());
+                                Utilizador[] res = new Utilizador[cenas.size()];
                                 for (int i = 0; i <cenas.size() ; i++) {
                                     res[i]= cenas.get(i);
                                 }
-                                out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,res));
+                                out.writeObject(new Msg_ListaRegistos(Message_types.VALIDO, res));
                             }
-                            case CONSULT_EVENT_UTILIZADOR -> {
-                                Consulta_Elimina_GeraCod_SubmeteCod_Evento aux=(Consulta_Elimina_GeraCod_SubmeteCod_Evento)message;
-
+                            case CONSULTA_PRES_UTILIZADOR -> {
+                                Msg_ConsultaComFiltros aux = (Msg_ConsultaComFiltros)message;
                                 //Os outros argumentos são os filtros que podem ser utilizados
-                                List<Evento> eventosAssistidos = DbManage.ConsultaPresencas_user(aux.getNome(),"Nome do evento","local",null,null,null);
-
-                                eventosPresencasAdmin.addAll(eventosAssistidos);
+                                List<Evento> eventosAssistidos = DbManage.ConsultaPresencas_user(email, aux);
+                                Evento[] res = new Evento[eventosAssistidos.size()];
+                                for (int i = 0; i <eventosAssistidos.size() ; i++) {
+                                    res[i]= eventosAssistidos.get(i);
+                                }
                                 //Mandarmos isso pela classe que recebe a lista de eventos
-                                //out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,eventosAssistidos));
+                                out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));
                             }
-                            case CSV_ADMINISTRADOR -> {
-                                PresencasCSV(eventosPresencasAdmin,"presencasUtilizadores.csv");
-                                out.writeObject(new Geral(Message_types.VALIDO));
+                            case CSV_PRESENCAS_UTI_NUM_EVENTO -> {
+
+                            }
+                            case CSV_PRESENCAS_DO_EVENTO -> {
+                                //PresencasCSV(eventosPresencasAdmin,"presencasUtilizadores.csv");
+                                //out.writeObject(new Geral(Message_types.VALIDO));
                             } //Serão necessários 2 ficheiros csv
 
                             case LOGOUT ->{
@@ -250,8 +244,7 @@ public class ProgServidor {
             } finally {
                 try {
                     client.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                } catch (IOException ignored) {
                 }
                 clients.remove(client);
                 System.out.println("Cliente "+ email +"terminado");

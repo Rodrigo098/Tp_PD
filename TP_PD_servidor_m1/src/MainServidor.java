@@ -1,14 +1,7 @@
-import org.sqlite.core.DB;
-import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
-import pt.isec.pd.trabalhoPratico.model.classesComunication.Cria_evento;
-import pt.isec.pd.trabalhoPratico.model.classesDados.Evento;
-import pt.isec.pd.trabalhoPratico.model.classesDados.Utilizador;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
-import java.util.List;
 
 public class MainServidor {
     public static void main(String[] args) throws ParseException {
