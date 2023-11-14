@@ -6,11 +6,13 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class EditarRegistoUI extends BorderPane {
     private TextField nome, numID, password, confPassword;
     private Button confirmar, cancelar;
+    private Text resultado;
     private final ProgClienteManager progClienteManager;
 
     public EditarRegistoUI(ProgClienteManager progClienteManager) {
@@ -24,35 +26,52 @@ public class EditarRegistoUI extends BorderPane {
         nome = new TextField();
         nome.setPromptText("novo nome");
         numID = new TextField();
-        numID.setPromptText("novo número de identificação");
+        numID.setPromptText("novo número");
         password = new TextField();
-        password.setPromptText("nova palavra passe");
+        password.setPromptText("nova password");
         confPassword = new TextField();
-        confPassword.setPromptText("confirme a nova palavra passe");
+        confPassword.setPromptText("confirme a password");
+        resultado = new Text("");
 
         confirmar = new Button("Confirmar");
+        confirmar.getStyleClass().add("confirmar");
         cancelar = new Button("Cancelar");
+        cancelar.getStyleClass().add("cancelar");
 
-        VBox vBox = new VBox(new Label("Nome:"), nome,
-                             new Label("Número de Identificação:"), numID,
-                             new Label("Palavra passe:"), password, confPassword);
+        VBox vBox = new VBox(new Text("Nome:"), nome,
+                             new Text("Número de Identificação:"), numID,
+                             new VBox(new Text("Palavra passe:"), new HBox(password, confPassword)));
+        vBox.setSpacing(10);
+        Label label = new Label("Editar Registo");
+        label.getStyleClass().add("titulo");
 
-        this.setCenter(vBox);
+        setMargin(vBox, new javafx.geometry.Insets(10, 0, 0, 0));
+        setAlignment(label, javafx.geometry.Pos.CENTER);
+        this.setTop(label);
+        this.setCenter(new VBox(vBox, resultado));
         this.setBottom(new HBox(confirmar, cancelar));
     }
 
     private void registerHandlers() {
         confirmar.setOnAction( e -> {
-            progClienteManager.editarRegisto(nome.getText(), numID.getText(), password.getText(), confPassword.getText());
+            resultado.setText(progClienteManager.editarRegisto(nome.getText(), numID.getText(), password.getText(), confPassword.getText()));
+            limparCampos();
         });
+
         cancelar.setOnAction(e -> {
             ContaUtilizadorUI.opcaoUti.set("NADA");
+            nome.clear();numID.clear();password.clear();confPassword.clear();
         });
+
         ContaUtilizadorUI.opcaoUti.addListener(observable -> update());
     }
 
     private void update() {
         this.setVisible(ContaUtilizadorUI.opcaoUti.get().equals("EDITAR_REGISTO"));
+    }
+
+    private void limparCampos() {
+        nome.setText(null);numID.setText(null);password.setText(null);confPassword.setText(null);
     }
 
 }

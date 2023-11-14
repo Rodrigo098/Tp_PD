@@ -1,28 +1,35 @@
 package pt.isec.pd.trabalhoPratico.ui;
 
+import javafx.animation.PauseTransition;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador.ContaAdministradorUI;
+import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra.MensagemBox;
+import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra.SairApp;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.ContaUtilizadorUI;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.RegistoUtilizadorUI;
-
-import java.io.IOException;
 
 public class RootPane extends BorderPane {
     private Button login;
     private Text registar;
     private TextField username, password;
+    private MensagemBox msgBox;
+    private VBox tempoExcedidoNode;
+
     ProgClienteManager progClienteManager;
 
     public RootPane(ProgClienteManager progClienteManager) {
         this.progClienteManager = progClienteManager;
         createViews();
         registerHandlers();
-
         update();
     }
 
@@ -36,34 +43,50 @@ public class RootPane extends BorderPane {
         registar = new Text("Registar");
         registar.getStyleClass().add("links");
 
-        VBox vBox = new VBox(username, password, login, registar);
+        Label label = new Label("Entrar na aplicação");
+        label.getStyleClass().add("titulo");
+
+        VBox vBox = new VBox(label, new HBox(new Text("Nome de utilizador: "), username), new HBox(new Text("Password: "), password), login, registar);
+        vBox.getStyleClass().add("sombreamentoBox");
+        VBox.setMargin(label, new Insets(0, 10, 30, 10));
+
+        msgBox = new MensagemBox("Erro de comunicação com o Servidor :(");
+
+        tempoExcedidoNode = new SairApp();
 
         StackPane stackPane = new StackPane(
                 new BorderPane(vBox),
                 new RegistoUtilizadorUI(progClienteManager),
-                //new ContaUtilizadorUI(progClienteManager)
-               new ContaAdministradorUI(progClienteManager)
+                new ContaUtilizadorUI(progClienteManager),
+                new ContaAdministradorUI(progClienteManager),
+                tempoExcedidoNode,
+                msgBox
         );
-        stackPane.setMaxHeight(400);
+        this.getStyleClass().add("entradaPane");
         this.setCenter(stackPane);
     }
 
     private void registerHandlers() {
         login.setOnAction(e -> {
-            try {
-                progClienteManager.login(username.getText(), password.getText());
-            } catch (Exception ex) {
-                MainCliente.menuSBP.set("ERRO");
-            }
+            progClienteManager.login(username.getText(), password.getText());
             username.setText(null);
             password.setText(null);
         });
-        registar.setOnMouseClicked( e -> {
-            MainCliente.menuSBP.set("REGISTO");
-        });
-        MainCliente.menuSBP.addListener(observable -> update());
+
+        registar.setOnMouseClicked( e -> MainCliente.menuSBP.set("REGISTO"));
+
+        progClienteManager.addErroListener(observable -> Platform.runLater(msgBox::update));
+        progClienteManager.addLogadoListener(observable -> Platform.runLater(this::update));
     }
 
     private void update() {
+        if(progClienteManager.getLogado().equals("EXCEDEU_TEMPO")) {
+            tempoExcedidoNode.setVisible(true);
+            PauseTransition espera = new PauseTransition(Duration.seconds(10));
+            espera.setOnFinished(e -> {
+                Platform.exit();
+            });
+            espera.play();
+        }
     }
 }

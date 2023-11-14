@@ -1,84 +1,90 @@
 package pt.isec.pd.trabalhoPratico.model;
 
+import javafx.beans.InvalidationListener;
 import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
-import pt.isec.pd.trabalhoPratico.model.programs.ProgramaCliente;
+import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
+import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
+import pt.isec.pd.trabalhoPratico.model.classesPrograma.ProgramaCliente;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
 
 public class ProgClienteManager {
-    private ProgramaCliente programaCliente;
+    private final ProgramaCliente programaCliente;
 
     public ProgClienteManager() {
         programaCliente = new ProgramaCliente();
     }
 
-    //COMUM:
-    public void login(String email, String password) throws IOException {
-        programaCliente.login(email, password);
+    ////////////////////////////////////////////////////////////////////
+    public void addLogadoListener(InvalidationListener listener) {
+        programaCliente.addLogadoListener(listener);
     }
-    public void logout() {
-        programaCliente.logout();
+    public void addAtualizacaoListener(InvalidationListener listener) {
+        programaCliente.addAtualizacaoListener(listener);
     }
+    public void addErroListener(InvalidationListener listener) {
+        programaCliente.addErroListener(listener);
+    }
+    public String getLogado(){
+        return programaCliente.getLogado();
+    }
+    ////////////////////////////////////////////////////////////////////
 
+    //COMUM:
     public Pair<Boolean, String> criaSocket(List<String> list) {
         return programaCliente.criaSocket(list);
     }
 
-    //UTILIZADOR:
-    public void registar(String nome, String email, String numIdentificacao, String password, String confPass) {
-        programaCliente.registar(nome, email, numIdentificacao, password, confPass);
+    public void login(String email, String password) {
+        programaCliente.login(email, password);
     }
 
-    public boolean marcarPresenca(String codigo){
+    public void logout() {
+        programaCliente.logout();
+    }
+
+    public Evento[] obterListaConsulta(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim){
+        return programaCliente.obterListaConsultaEventos(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
+    }
+    public String obterCSV_ListaEventos(String caminhoCSV,String nomeFicheiro, Message_types tipoCSV) {
+        return programaCliente.obterCSV(caminhoCSV, nomeFicheiro, tipoCSV);
+    }
+
+    //UTILIZADOR:
+    public Pair<String, Boolean> registar(String nome, String email, String numIdentificacao, String password, String confPass) {
+        return programaCliente.registarConta(nome, email, numIdentificacao, password, confPass);
+    }
+    public boolean registarPresenca(String codigo){
         return programaCliente.registarPresenca(codigo);
     }
-
-    public String[] consultarPresencasUti(){
-        return programaCliente.consultarPresencasUti();
-    }
-    public boolean obterCSV_Uti(){
-        return programaCliente.obterCSV_Uti();
-    }
-
-    public boolean editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
+    public String editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
         return programaCliente.editarRegisto(nome, numIdentificacao, password, confPass);
     }
 
     //ADMINISTRADOR:
-    public boolean criarEditar_Evento(String nome, String local, String data, String horaInicio, String horaFim, Message_types tipo){
-        return programaCliente.criarEditar_Evento(nome, local, data, horaInicio, horaFim, tipo);
+    public String criar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim){
+        return programaCliente.criar_Evento(nome, local, data, horaInicio, horaFim);
+    }
+    public String editar_Evento(String evento, String novoNome, String local, LocalDate data, int horaInicio, int horaFim){
+        return programaCliente.editar_Evento(evento, novoNome,local, data, horaInicio, horaFim);
+    }
+    public String eliminarEvento(String nomeEvento) {
+        return programaCliente.eliminarEvento(nomeEvento);
     }
 
-    public boolean eliminarEvento(int indiceEvento) {
-        return programaCliente.eliminarEvento(indiceEvento);
+    public String eliminaInsere_Eventos(Message_types tipo, String nomeEvento, String filtros) {
+        return programaCliente.eliminaInserePresencas_Eventos(tipo, nomeEvento, filtros);
+    }
+    public String gerarCodPresenca(String nomeEvento) {
+        return programaCliente.gerarCodPresenca(nomeEvento);
     }
 
-    public boolean eliminaInsere_Eventos(Message_types tipo, int indiceEvento, String filtros) {
-        return programaCliente.eliminaInsere_Eventos(tipo, indiceEvento, filtros);
+    public Utilizador[] consultaPresencasEvento(String nomeEvento){
+        return programaCliente.consultaPresencasEvento(nomeEvento);
     }
-
-    public String gerarCodPresenca(int indiceEvento) {
-        return programaCliente.gerarCodPresenca(indiceEvento);
-    }
-
-    public ArrayList<String> getListaEventos() {
-        return programaCliente.getListaEventos();
-    }
-    public ArrayList<String> consultaEventosFiltros(String nome, String local, String data, String horaInicio, String horaFim){
-        return programaCliente.consultaEventosFiltros(nome, local, data, horaInicio, horaFim);
-    }
-
-    public ArrayList<String> consultaPresencasEvento(int indiceEvento){
-        return programaCliente.consultaPresencasEvento(indiceEvento);
-    }
-
-    public ArrayList<String> consultaEventosUtilizador(String utilizador){
-        return programaCliente.consultaEventosUtilizador(utilizador);
-    }
-    public void obterCSV_Admin() {
-        programaCliente.obterCSV_Admin();
+    public Evento[] consultaEventosUtilizador(String utilizador){
+        return programaCliente.consultaEventosDeUmUtilizador(utilizador);
     }
 }
