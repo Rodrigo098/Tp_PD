@@ -108,15 +108,15 @@ public class ProgServidor {
                             case SUBMICAO_COD -> out.writeObject("Insere dados na database");
 
                             case CONSULTA_PRES_UTILIZADOR -> {
-                                Msg_ListaEventos aux = (Msg_ListaEventos)message;
+                                Msg_ConsultaComFiltros aux = (Msg_ConsultaComFiltros) message;
 
                                 //Depois temos que mandar aí a classe com os critérios/filtros e substituir esses parametros extras
 
-                               // List<Evento> eventosAssistidos = DbManage.ConsultaPresencas_user(email, new Msg_ConsultaComFiltros());
-                                //eventosPresencasUser.addAll(eventosAssistidos); //vou utilizar o eventos presenças user para fazer o ficheiro csv do utilizador
-
+                                List<Evento> eventosAssistidos = DbManage.ConsultaPresencas_user(email, aux);
+                                eventosPresencasUser.addAll(eventosAssistidos); //vou utilizar o eventos presenças user para fazer o ficheiro csv do utilizador
+                                Evento []res=eventosAssistidos.toArray(new Evento[0]);
                                 //Mandarmos isso pela classe que recebe a lista de eventos
-                                //out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,eventosAssistidos));
+                                out.writeObject(new Msg_ListaEventos(Message_types.VALIDO,res));
                             }
 
                             case CSV_UTILIZADOR -> {
@@ -240,11 +240,29 @@ public class ProgServidor {
                                 out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));
                             }
                             case CSV_PRESENCAS_UTI_NUM_EVENTO -> {
+                                File file=new File("minhasPresencas.csv");// talvez o nome do ficheiro seja outro ,idk
+                                if(!file.exists()) {
+                                    if(!file.createNewFile())
+                                        out.writeObject(new Geral(Message_types.ERRO));
+                                }
 
+                                DbManage.PresencasCSV(eventosPresencasUser,file);// not sure se e esta a funcao
+                                // Aqui colocar a funcao que vamos chamar na db
+                                sendfile(out,file);
                             }
                             case CSV_PRESENCAS_DO_EVENTO -> {
+                                File file=new File("minhasPresencas.csv");// talvez o nome do ficheiro seja outro ,idk
+                                if(!file.exists()) {
+                                    if(!file.createNewFile())
+                                        out.writeObject(new Geral(Message_types.ERRO));
+                                }
+
+                              //  DbManage.PresencasCSV(eventosPresencasUser,file);
+                                // Aqui colocar a funcao que vamos chamar na db
+                                sendfile(out,file);
                                 //PresencasCSV(eventosPresencasAdmin,"presencasUtilizadores.csv");
                                 //out.writeObject(new Geral(Message_types.VALIDO));
+                                // Na toerio
                             } //Serão necessários 2 ficheiros csv
 
                             case LOGOUT ->{
