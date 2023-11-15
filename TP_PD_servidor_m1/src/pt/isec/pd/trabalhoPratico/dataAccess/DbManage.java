@@ -27,6 +27,8 @@ public class DbManage {
         String nome_evento = "Evento1";
         String email="email";
     }
+
+
     public static boolean Registonovouser(Utilizador user, String password){
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
@@ -50,6 +52,7 @@ public class DbManage {
 
     }
     public static boolean autentica_user(String user, String password){
+        // processar adnistrador
         try(Connection connection = DriverManager.getConnection(dbUrl);
             Statement statement = connection.createStatement())
         {
@@ -255,11 +258,12 @@ public class DbManage {
             while (rs.next()){
                 String nomeEvento = rs.getString("nome_evento");
                 String localEvento = rs.getString("local");
-                LocalDate dataRealizacao = rs.getLocalDate("data_realizacao");
+                String dataRealizacao = rs.getString("data_realizacao");
                 int horaInicioEvento = rs.getInt("hora_inicio");
                 int horaFimEvento = rs.getInt("hora_fim");
+                LocalDate date=LocalDate.parse(dataRealizacao);
 
-                Evento evento = new Evento("l", nomeEvento,localEvento, dataRealizacao, horaInicioEvento, horaFimEvento );
+                Evento evento = new Evento( nomeEvento,localEvento, date, horaInicioEvento, horaFimEvento );
                 eventosAssistidos.add(evento);
             }
         } catch (SQLException e) {
@@ -283,7 +287,8 @@ public class DbManage {
 
             }
             while (rs.next()){
-                res.add(rs.getString("email"));
+                Utilizador aux=new Utilizador(rs.getString("nome"),rs.getString("email"),rs.getInt("num_estudante"));
+                res.add(aux);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -428,11 +433,11 @@ public class DbManage {
                 //Para extrair a data e hora do sqlLite tem que ser com .getstring e também é o que temos na classe evento
                 String nome = resultSet.getString("nome_evento");
                 String local = resultSet.getString("local");
-                String data_realizacao = resultSet.getString("data_realizacao");
+                LocalDate data_realizacao = resultSet.getDate("data_realizacao").toLocalDate();
                 int horaInicio =  resultSet.getInt("hora_inicio");
                 int horaFim = resultSet.getInt("hora_fim");
 
-                Evento evento_result = new Evento("l", nome,local, data_realizacao, horaInicio, horaFim);
+                Evento evento_result = new Evento(nome,local, data_realizacao, horaInicio, horaFim);
                 eventos.add(evento_result);
             }
 
@@ -517,7 +522,7 @@ public class DbManage {
 
 //Gerar codigo (Este é complicadinho =D)
 
-    public static String GeraCodigoRegisto(String evento, int validadeMinutos) {
+    public static int GeraCodigoRegisto(String evento, int validadeMinutos) {
         //Estou a utilizar o PreparedStatement pq é necessário para passar valores dinâmicos por parametros (para consultas)
         String verificaEventoQuery = "SELECT data_realizacao, hora_inicio, hora_fim FROM Evento WHERE nome_evento = ?";
 
@@ -606,7 +611,7 @@ public class DbManage {
         int cod= rand.nextInt(maximo - minimo + 1) + minimo;
         return cod;
     }
-
+    //Fazer a outra funcção Csv
     //Ficheiro CSV
     public static void PresencasCSV(List<Evento> eventos,String csvFile ) {
         String csvSplit = ","; // Delimitador!!

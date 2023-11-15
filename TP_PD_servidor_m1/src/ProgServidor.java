@@ -182,9 +182,9 @@ public class ProgServidor {
                                 //Vai ser necessário outra classe também, acho eu. Vou fazer assim agr só para testar
                                 Msg_String aux = (Msg_String)message;
                                 int validade = 30; //validade em minutos
-                                String code = DbManage.GeraCodigoRegisto(aux.getConteudo() ,validade);
+                                int  code = DbManage.GeraCodigoRegisto(aux.getConteudo() ,validade);
 
-                                out.writeObject(new Msg_String(code, Message_types.VALIDO));
+                                out.writeObject(new Msg_String(Integer.toString(code), Message_types.VALIDO));
                             }
                             case INSERE_PRES ->  {
                                 Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas)message;
