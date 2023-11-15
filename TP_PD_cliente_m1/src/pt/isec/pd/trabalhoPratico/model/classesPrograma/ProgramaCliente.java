@@ -19,18 +19,22 @@ public class ProgramaCliente {
     // TEMPO
     private static final int TEMPO_MAXIMO = 10; // 10 segundos
     private final Timer temporizador = new Timer();
-    private int contagem = 1;
+    private int contagem = 0;
+    private TimerTask tarefa;
+    private boolean terminou = false;
 
     // EVENTOS
-    private static SimpleIntegerProperty atualizacao = new SimpleIntegerProperty(0);
-    private static SimpleIntegerProperty erro = new SimpleIntegerProperty(0);
-    private static SimpleStringProperty logado = new SimpleStringProperty("");
+    private static final SimpleIntegerProperty atualizacao = new SimpleIntegerProperty(0);
+    private static final SimpleIntegerProperty erro = new SimpleIntegerProperty(0);
+    private static final SimpleStringProperty logado = new SimpleStringProperty("");
 
     // COMUNICAÇÃO
     private Socket socket;
+    private ObjectOutputStream oout;
+    private ObjectInputStream oin;
 
 //-------------------- ATUALIZACAO ASSINCRONA -----------------
-    class AtualizacaoAsync implements Runnable {
+static class AtualizacaoAsync implements Runnable {
         private final Socket socket;
 
         public AtualizacaoAsync(Socket socket) {
@@ -39,7 +43,6 @@ public class ProgramaCliente {
 
         @Override
         public void run() {
-
             do {
                 try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream())) {
                     Object novaAtualizacao = oin.readObject();
@@ -56,14 +59,14 @@ public class ProgramaCliente {
 
 //-------------------- VERIFICA LIGACAO -----------------
     class VerificaLigacao extends TimerTask {
-        @Override
-        public void run() {
+    @Override
+    public void run() {
+            contagem++;
+        System.out.println(contagem);
             if (contagem == TEMPO_MAXIMO && logado.getValue().equals("ENTRADA")) {
                 setLogado("EXCEDEU_TEMPO");
-                this.cancel();
-                temporizador.cancel();
-                temporizador.purge();
-                logado.removeListener(observable -> verificacaoLigacao());
+                termina();
+                System.out.println("tempo excedido task");
             }
         }
     }
@@ -74,16 +77,34 @@ public class ProgramaCliente {
         logado.addListener(observable -> verificacaoLigacao());
         logado.set("ENTRADA");
     }
+    private void termina() {
+        terminou = true;
+        temporizador.cancel();
+        tarefa.cancel();
+        logado.removeListener(observable -> verificacaoLigacao());
+        try {
+            if(socket != null)
+                socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private void verificacaoLigacao() {
-        if(logado.getValue().equals("ENTRADA")) {
-            while (contagem < TEMPO_MAXIMO) {
-                contagem++;
-                temporizador.schedule(new VerificaLigacao(), 10000L * contagem);
+        switch (logado.getValue()) {
+            case "ENTRADA" -> {
+                tarefa = new VerificaLigacao();
+                temporizador.schedule(tarefa, 0, 1000);
             }
-        }
-        else {
-            temporizador.purge();
+            case "SAIR" -> {
+                if(!terminou)
+                    termina();
+                System.out.println("uiTermina");
+            }
+            case "ADMINISTRADOR", "UTILIZADOR" -> {
+                tarefa.cancel();
+                contagem = 0;
+            }
         }
     }
     ////////////////////////////////////////////////////////////////////
@@ -100,8 +121,8 @@ public class ProgramaCliente {
         System.out.println("ERRO");
         erro.set(erro.getValue() + 1);
     }
-    protected static synchronized void setLogado(String estado) {
-        logado.set(estado);
+    public synchronized void setLogado(String valor) {
+        logado.set(valor);
     }
     public String getLogado() {
         return logado.getValue();
@@ -117,20 +138,23 @@ public class ProgramaCliente {
     ///////////////////////////////////////FUNCIONALIDADES:
     /////////////////////////COMUNS:
     public Pair<Boolean, String> criaSocket(List<String> list) {
-        Pair<Boolean, String> pontoSituacao = new Pair<>(false, "Erro");
-        socket = new Socket();
+        Pair<Boolean, String> pontoSituacao = new Pair<>(false, "Erro na criação do socket");
         if (list.size() == 2) {
-        /*
-            try (Socket socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)))) {
-                this.socket = socket;
-                pontoSituacao = new Pair<>(true, "Conexão bem sucedida");
+            try
+            {
+                socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)));
+                if(socket.isConnected()) {
+                    oin = new ObjectInputStream(socket.getInputStream());
+                    oout = new ObjectOutputStream(socket.getOutputStream());
+                    pontoSituacao = new Pair<>(true, "Conexão bem sucedida");
+                }
             } catch (IllegalArgumentException e) {
                 pontoSituacao = new Pair<>(false, "Introduziu um porto inválido.");
             } catch (NullPointerException e) {
                 pontoSituacao = new Pair<>(false, "Introduziu um endereço inválido.");
             } catch (IOException e) {
                 pontoSituacao = new Pair<>(false, "Ocorreu uma exceção I/O na criação do socket.");
-            }*/
+            }
         } else
             pontoSituacao = new Pair<>(false, "Não foram introduzidos dados suficientes como argumento.");
         return pontoSituacao;
@@ -142,10 +166,8 @@ public class ProgramaCliente {
             return;
 /*
         Msg_Login dadosLogin = new Msg_Login(email, password);
-        try(ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-            ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream()))
+        try
         {
-
             oout.writeObject(dadosLogin);
             oout.flush();
 
@@ -162,49 +184,49 @@ public class ProgramaCliente {
                     }
                     case UTILIZADOR ->
                         logado.set("UTILIZADOR");
-                    case INVALIDO, ERRO -> {
-                        setErro();
-                    }
                 }
             } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }*/
-
-        logado.set("UTILIZADOR");
+                setErro();
+            }
+*/
+        logado.set("ADMINISTRADOR");
     }
 
     public void logout() {
-        /*
-        Geral logout = new Geral(Message_types.LOGOUT);
-        try (ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
-            oout.writeObject(logout);
-            oout.flush();
+        if(logado.getValue().equals("ADMINISTRADOR") || logado.getValue().equals("UTILIZADOR")) {
+            /*
+            Geral logout = new Geral(Message_types.LOGOUT);
+            try {
+                oout.writeObject(logout);
+                oout.flush();
+                logado.set("ENTRADA");
+            } catch (IOException e) {
+                setErro();
+            }*/
             logado.set("ENTRADA");
-        } catch (IOException e) {
-            setErro();
-        }*/
-        logado.set("ENTRADA");
+        }
     }
 
     public Evento[] obterListaConsultaEventos(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim) {
-        if(nome != null && !nome.isBlank() && local != null && !local.isBlank() && limData1 != null && limData2 != null && horaInicio >= horaFim)
-        {
-            return new Evento[]{new Evento("ola", "HelloMate", "ISEC", LocalDate.now(), 11,12)};
-        /*
-        Msg_ConsultaComFiltros consultaEventos = new Msg_ConsultaComFiltros(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
+        return new Evento[]{new Evento("ola", "HelloMate", LocalDate.now(), 11, 12)};
+/*
+        if(nome != null && !nome.isBlank() && local != null && !local.isBlank() && limData1 != null && limData2 != null && horaInicio >= horaFim) {
+            //return new Evento[]{new Evento("ola", "HelloMate", "ISEC", LocalDate.now(), 11, 12)};
 
-        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
-            oout.writeObject(consultaEventos);
-            oout.flush();
+            Msg_ConsultaComFiltros consultaEventos = new Msg_ConsultaComFiltros(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
 
-            Msg_EliminaInsere_Presencas lista = (Msg_EliminaInsere_Presencas) oin.readObject();
-            if(lista.getTipo() == Message_types.VALIDO)
-                return lista.getLista();
-        } catch (IOException | ClassNotFoundException e) {
-            setErro();
-        */}
-        return new Evento[]{};
+            try {
+                oout.writeObject(consultaEventos);
+                oout.flush();
+
+                Msg_ListaEventos lista = (Msg_ListaEventos) oin.readObject();
+                if (lista.getTipo() == Message_types.VALIDO)
+                    return lista.getLista();
+            } catch (IOException | ClassNotFoundException e) {
+                setErro();
+            }
+        }
+        return new Evento[]{};*/
     }
 
     public String obterCSV(String caminhoCSV, String nomeFicheiro, Message_types tipoCSV) {
@@ -215,7 +237,6 @@ public class ProgramaCliente {
         File destinoCSV = new File(caminhoCSV);
         byte []fileChunk = new byte[4000];
         int nbytes;
-        int nCiclos = 0, totalBytes=0;
 
         if(!destinoCSV.exists()){
             System.out.println();
@@ -235,11 +256,10 @@ public class ProgramaCliente {
         }catch(IOException e){
             return "Ocorreu um erro ao gerar o csv!";
         }
-        /*
+
         Msg_String csv = new Msg_String(nomeFicheiro, tipoCSV);
 
-        try (FileOutputStream localFileOutputStream = new FileOutputStream(localCSVCaminho);
-             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+        try (FileOutputStream localFileOutputStream = new FileOutputStream(localCSVCaminho)) {
 
             oout.writeObject(csv);
             oout.flush();
@@ -247,21 +267,18 @@ public class ProgramaCliente {
             InputStream inStream = socket.getInputStream();
 
             while((nbytes = inStream.read(fileChunk)) > 0){
-                totalBytes += nbytes;
                 localFileOutputStream.write(fileChunk, 0, nbytes);
             }
             return "CSV gerado com sucesso guardado em: " + localCSVCaminho;
         }catch (IOException e){
             setErro();
-        }*/
+        }
         return "Erro ao gerar CSV";
     }
 
     /////////////////////////UTILIZADOR:
     public Pair<String, Boolean> registarConta(String nome, String email, String numIdentificacao, String password, String confPass) {
-  /*      if(!existeLigacao())
-            return new Pair<>("Tempo excedido", false);
-*/
+
         if (nome == null || nome.isBlank() || password == null || password.isBlank() || confPass == null || confPass.isBlank() || !password.equals(confPass) || verificaFormato(email) || numIdentificacao == null || numIdentificacao.isBlank())
             return new Pair<>("Os dados inseriados são inválidos :(", false);
 
@@ -271,12 +288,10 @@ public class ProgramaCliente {
         } catch (NumberFormatException e) {
             return new Pair<>("Insira um número de identificação válido!", false);
         }
-        /*
+
         Mgs_RegistarEditar_Conta dadosRegisto = new Mgs_RegistarEditar_Conta(nome, email, password, numID, Message_types.REGISTO);
 
-        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
-
+        try {
             oout.writeObject(dadosRegisto);
             oout.flush();
             Geral validacao = (Geral) oin.readObject();
@@ -287,18 +302,17 @@ public class ProgramaCliente {
             }
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
-        }*/
+        }
         return new Pair<>("Erro ao registar conta!", false);
     }
 
     public boolean registarPresenca(String codigoEvento) {
         if (codigoEvento == null || codigoEvento.isBlank())
             return false;
-        /*
+
         Msg_String registoPresenca = new Msg_String(codigoEvento, Message_types.SUBMICAO_COD);
 
-        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+        try {
             oout.writeObject(registoPresenca);
             oout.flush();
             Geral validacao = (Geral) oin.readObject();
@@ -307,7 +321,7 @@ public class ProgramaCliente {
                 return true;
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
-        }*/
+        }
         return false;
     }
 
@@ -323,7 +337,7 @@ public class ProgramaCliente {
         } catch (NumberFormatException e) {
             return "O teu número deve ser inteiro!";
         }
-        /*
+
         Mgs_RegistarEditar_Conta dadosRegisto = new Mgs_RegistarEditar_Conta(nome, null, password, numID, Message_types.EDITAR_REGISTO);
 
         try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
@@ -336,7 +350,7 @@ public class ProgramaCliente {
                 return "Registo editado com sucesso!";
         } catch (ClassNotFoundException | IOException ignored) {
             setErro();
-        }*/
+        }
         return "Erro";
     }
 
@@ -351,12 +365,11 @@ public class ProgramaCliente {
 
         if (data.isBefore(dataAtual) || horaInicio < horaAtual.getHour())
             return "A data não pode estar no passadooo!";
-        /*
-        Msg_Cria_Evento evento =
-                new Msg_Cria_Evento(new Evento("eu",nome, local, data, horaInicio, horaFim));
 
-        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+        Msg_Cria_Evento evento =
+                new Msg_Cria_Evento(new Evento(nome, local, data, horaInicio, horaFim));
+
+        try {
             oout.writeObject(evento);
             oout.flush();
             Geral validacao = (Geral) oin.readObject();
@@ -365,7 +378,7 @@ public class ProgramaCliente {
                 return "Evento criado com sucesso!";
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
-        }*/
+        }
         return "Erro";
     }
 
@@ -378,13 +391,11 @@ public class ProgramaCliente {
             local == null || local.isBlank() || data == null || data.isBefore(dataAtual) ||
             horaInicio < horaAtual.getHour() || horaInicio >= horaFim)
             return "Dados inválidos para criação de evento!";
-        /*
-        Msg_Edita_Evento evento =
-                new Msg_Edita_Evento(new Evento("eu", eventoNomeAntigo,
-                                           local, data, horaInicio, horaFim), novoNome);
 
-        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+        Msg_Edita_Evento evento =
+                new Msg_Edita_Evento(new Evento( eventoNomeAntigo, local, data, horaInicio, horaFim), novoNome);
+
+        try {
             oout.writeObject(evento);
             oout.flush();
             Geral validacao = (Geral) oin.readObject();
@@ -393,19 +404,18 @@ public class ProgramaCliente {
                 return "Evento editado com sucesso!";
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
-        }*/
+        }
         return "Evento não editado!";
     }
 
     public String eliminarEvento(String eventoNome) {
         if(eventoNome == null || eventoNome.isBlank())
             return "Evento inexistente...";
-        /*
+
         Msg_String evento =
                 new Msg_String(eventoNome, Message_types.ELIMINAR_EVENTO);
 
-        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+        try {
             oout.writeObject(evento);
             oout.flush();
             Geral validacao = (Geral) oin.readObject();
@@ -414,7 +424,7 @@ public class ProgramaCliente {
                 return "Evento eliminado com sucesso!";
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
-        }*/
+        }
         return "Evento não eliminado!";
     }
 
@@ -427,12 +437,11 @@ public class ProgramaCliente {
             if (!verificaFormato(email))
                 emails.add(email);
         }
-        /*
+
         Msg_EliminaInsere_Presencas interacao =
                 new Msg_EliminaInsere_Presencas(tipo, evento, emails.toArray(new String[0]));
 
-        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+        try {
             oout.writeObject(interacao);
             oout.flush();
 
@@ -442,19 +451,29 @@ public class ProgramaCliente {
                 return tipo == Message_types.ELIMINA_PRES ? "Presenças eliminadas com sucesso!" : "Presenças inseridas com sucesso!";
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
-        }*/
+        }
         return "Presenças não inseridas!";
     }
 
-    public String gerarCodPresenca(String evento) {
+    public String gerarCodPresenca(String evento, String tempoValido) {
         if(evento == null || evento.isBlank())
             return "Evento inexistente...";
-        /*
-        Msg_String geraCod =
-                new Msg_String(evento, Message_types.GERAR_COD);
+        if(tempoValido == null || tempoValido.isBlank())
+            return "Tempo inválido!";
 
-        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+        int tempo;
+        try{
+            tempo = Integer.parseInt(tempoValido);
+            if(tempo < 0)
+                return "O tempo não pode ser negativo!";
+        } catch (NumberFormatException e) {
+            return "Tempo deve ser numérico!";
+        }
+
+        Msg_String_Int geraCod =
+                new Msg_String_Int(evento, tempo, Message_types.GERAR_COD);
+
+        try {
             oout.writeObject(geraCod);
             oout.flush();
 
@@ -465,18 +484,17 @@ public class ProgramaCliente {
             }
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
-        }*/
+        }
         return "Erro";
     }
 
     public Utilizador[] consultaPresencasEvento(String evento) {
         if(evento != null && !evento.isBlank()) {
-           /*
+
             Msg_String consulta =
                     new Msg_String(evento, Message_types.CONSULTA_PRES_EVENT);
 
-            try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-                 ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+            try {
                 oout.writeObject(consulta);
                 oout.flush();
 
@@ -486,19 +504,18 @@ public class ProgramaCliente {
                     return lista.getLista();
             } catch (IOException | ClassNotFoundException ignored) {
                 setErro();
-            }*/
+            }
         }
         return new Utilizador[]{};
     }
 
     public Evento[] consultaEventosDeUmUtilizador(String utilizador) {
         if (!verificaFormato(utilizador)) {
-            /*
+
             Msg_String consulta =
                     new Msg_String(utilizador, Message_types.CONSULTA_EVENTOS);
 
-            try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-                 ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
+            try {
                 oout.writeObject(consulta);
                 oout.flush();
 
@@ -508,7 +525,7 @@ public class ProgramaCliente {
                     return lista.getLista();
             } catch (IOException | ClassNotFoundException e) {
                 setErro();
-            }*/
+            }
         }
         return new Evento[]{};
     }

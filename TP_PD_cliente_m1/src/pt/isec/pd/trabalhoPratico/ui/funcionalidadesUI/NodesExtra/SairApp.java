@@ -6,31 +6,59 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
+import java.util.Timer;
+import java.util.TimerTask;
 public class SairApp extends VBox {
+    // TEMPO
+    private static final int TEMPO_MAXIMO = 10; // 10 segundos
+    private final Timer temporizador = new Timer();
+    private int contagem = 0;
     private Button sair;
-    public SairApp() {
-        createViews();
+
+
+    public SairApp(String msg, String classe) {
+        createViews(msg, classe);
         registerHandlers();
         update();
     }
 
-    private void createViews() {
+    private void createViews(String msg, String classe) {
         sair = new Button("SAIR");
-        VBox v = new VBox();
-        v.setMinSize(100, 100);
-        v.getStyleClass().addAll("imagens", "ligacaoExpirou");
+        VBox vBox = new VBox();
+        vBox.setMinSize(100, 100);
+        vBox.getStyleClass().addAll("imagens", classe);
+        Label label = new Label(msg);
 
-        setMargin(v, new javafx.geometry.Insets(20, 0, 20, 0));
-        setVisible(false);
+        setMargin(vBox, new javafx.geometry.Insets(20, 0, 20, 0));
         getStyleClass().add("erroBox");
-        getChildren().addAll(new Label("A sua ligação ao servidor expirou!"), new Text("(10 segundos para feche automático da app)"), v, sair);
+        getChildren().addAll(label, new Text("(10 segundos para feche automático da app)"), vBox, sair);
     }
 
     private void registerHandlers() {
         sair.setOnAction(e -> {
+            temporizador.cancel();
             Platform.exit();
         });
     }
 
-    private void update() {}
+    private void update() {
+        temporizador.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                contagem++;
+                if (contagem == TEMPO_MAXIMO) {
+                    temporizador.cancel();
+                    Platform.exit();
+                }
+            }
+        }, 0, 1000);
+    }
+    /*
+        espera = new PauseTransition(Duration.seconds(10));
+        espera.setOnFinished(e -> {
+            Platform.exit();
+
+        });
+        espera.play();*/
 }
+

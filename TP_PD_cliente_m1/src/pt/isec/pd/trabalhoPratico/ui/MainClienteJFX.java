@@ -2,12 +2,11 @@ package pt.isec.pd.trabalhoPratico.ui;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
+import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra.SairApp;
 
 import java.util.List;
 
@@ -32,22 +31,30 @@ public class MainClienteJFX extends Application {
             System.out.println(each);
         }
         //-----------------------------------
-        Pair<Boolean, String> conexao = clienteManager.criaSocket(list);
+
+        String css = this.getClass().getResource("css/estilos.css").toExternalForm();
+        Scene scene;
+
+        //-----------------------------------
+        //Pair<Boolean, String> conexao = clienteManager.criaSocket(list);
         //if(conexao.getKey()) {
             RootPane root = new RootPane(clienteManager);
-            Scene scene = new Scene(root, 700, 500);
-            String css = this.getClass().getResource("css/estilos.css").toExternalForm();
-            scene.getStylesheets().add(css);
+            scene = new Scene(root, 700, 500);
             stage.setMaxHeight(600);
-            stage.setScene(scene);
-            stage.setTitle(title);
-            stage.show();
+            stage.setOnCloseRequest(e -> {
+                clienteManager.setLogado("SAIR");
+                clienteManager.logout();
+            });
         //}
         /*else{
-            Scene scene = new Scene(new VBox(new Label(conexao.getValue()), new Label("(Vou pôr aqui um smily triste ou uma cruz fofinha)")), 300, 300);
-            stage.setScene(scene);
-            stage.setTitle(title);
-            stage.show();
+            SairApp root = new SairApp(conexao.getValue(), "conexao");
+            scene = new Scene( root,400, 400);
         }*/
+        //-----------------------------------
+
+        scene.getStylesheets().add(css);
+        stage.setScene(scene);
+        stage.setTitle(title);
+        stage.show();
     }
 }

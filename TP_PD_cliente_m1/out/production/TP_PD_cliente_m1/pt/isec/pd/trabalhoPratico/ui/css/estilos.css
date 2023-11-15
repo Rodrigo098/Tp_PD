@@ -14,6 +14,8 @@ Label {
     -fx-font: 20px "Arial Bold";
     -fx-background-color: rgba( 255, 255, 255, 0.8);
     -fx-background-radius: 25px;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
 }
 
 Button {
@@ -36,7 +38,7 @@ FlowPane {
 }
 HBox {
     -fx-alignment: center;
-    -fx-spacing: 20px;
+    -fx-spacing: 15px;
 }
 /* ===================== INICIO ===================== */
 
@@ -104,9 +106,9 @@ HBox {
 }
 
 .eventoButton {
-    -fx-font: 12px "Arial";
+    -fx-font: 11px "Arial";
     -fx-text-fill: black;
-    -fx-padding: 7 15;
+    -fx-padding: 7 10;
     -fx-background-color: #90A4AE;
 }
 .movButton {
@@ -136,6 +138,11 @@ HBox {
   -fx-background-color: rgb(255, 205, 210);
 }
 
+.conexao {
+  -fx-background-image: url("data-server.png");
+  -fx-background-size: 100px 100px;
+}
+
 .erroBox {
     -fx-border-width: 3px;
     -fx-border-color: red;
@@ -148,4 +155,12 @@ HBox {
 .ligacaoExpirou {
   -fx-background-image: url("whistle.png");
   -fx-background-size: 100px 100px;
+}
+
+.textfieldsEditorEvento {
+     -fx-border-color: #a8aacc;
+     -fx-border-width: 1px;
+     -fx-border-radius: 5px;
+     -fx-spacing: 1px;
+     -fx-padding: 5 1 5 1;
 }
