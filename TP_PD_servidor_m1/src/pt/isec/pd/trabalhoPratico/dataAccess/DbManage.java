@@ -6,6 +6,7 @@ import pt.isec.pd.trabalhoPratico.model.classesComunication.Msg_Edita_Evento;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.*;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+
 
 public class DbManage {
     private static final String dbAdress = "databasePD.db";
@@ -51,10 +53,14 @@ public class DbManage {
         }
 
     }
-    public static boolean autentica_user(String user, String password){
+    public static Boolean[] autentica_user(String user, String password){
+
         // processar adnistrador
+        Boolean[]res={false,false};//o primeiro é se a o user ta certo e a segunda é se é Admin ou não
         try(Connection connection = DriverManager.getConnection(dbUrl);
             Statement statement = connection.createStatement())
+
+
         {
             String verificaEstudanteQuery = "SELECT * FROM Utilizador WHERE email = ?";
             PreparedStatement alunoStatement = connection.prepareStatement(verificaEstudanteQuery);
@@ -65,16 +71,23 @@ public class DbManage {
             {   rs.next();
                 System.out.println(rs.getString("email"));
                 System.out.println(rs.getString("palavra_passe"));
-                return rs.getString("palavra_passe").equals(password);// devolve true se a password for a mesma
+
+                if( rs.getString("palavra_passe").equals(password))
+                    res[0]=true;
+                if(rs.getString("tipo_utilizador").equals("admin"))
+                    res[1]=true;
+
+
+                return res;// devolve true se a password for a mesma
             }
-            else{ System.out.println("Couldn't find any user");
-                return false;
+            else{ System.out.println("Não encontrou nenhum utilizador");
+                return res;
 
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        return false;
+        return res;
     }
     public static boolean edita_registo( Utilizador user, String pasword ){
         try(Connection connection = DriverManager.getConnection(dbUrl);
@@ -217,14 +230,14 @@ public class DbManage {
 
     //Alterei esta classe para retornar os eventos em que o utilizador tem presenças registadas
     //E para conter já os filtros
-    public static List <Evento> ConsultaPresencas_user(String nome_utilizador, Msg_ConsultaComFiltros filtros){
+    public static List <Evento> ConsultaPresencas_user(String email_utilizador, Msg_ConsultaComFiltros filtros){
         List<Evento> eventosAssistidos = new ArrayList<>();
 
         try(Connection connection = DriverManager.getConnection(dbUrl);
             Statement statement = connection.createStatement()) {
             String FiltroEventosUser = "SELECT * FROM Evento " +
                     "INNER JOIN Assiste ON Evento.nome_evento = Assiste.nome_evento " +
-                    "WHERE Assiste.email = '" + nome_utilizador + "' ";
+                    "WHERE Assiste.email = '" + email_utilizador + "' ";
 
             //ResultSet rs = statement.executeQuery(FiltroEventosUser);
 
@@ -613,7 +626,7 @@ public class DbManage {
     }
     //Fazer a outra funcção Csv
     //Ficheiro CSV
-    public static void PresencasCSV(List<Evento> eventos,String csvFile ) {
+    public static void PresencasCSV(List<Evento> eventos, File csvFile ) {
         String csvSplit = ","; // Delimitador!!
 
         try (FileWriter writer = new FileWriter(csvFile)) {
@@ -642,6 +655,7 @@ public class DbManage {
                 writer.append(evento.horaFim() + "");
                 writer.append("\n");
             }
+
 
             System.out.println("Ficheiro CSV criado com sucesso");
         } catch (IOException e) {

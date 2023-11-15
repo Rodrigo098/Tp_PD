@@ -2,9 +2,7 @@ import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 import pt.isec.pd.trabalhoPratico.model.recordDados.*;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -12,6 +10,7 @@ import java.util.List;
 
 
 public class ProgServidor {
+    public static final int MAX_SIZE = 4000;
     List<Socket> clients = new ArrayList<>();
     public void servico() {
 
@@ -21,6 +20,7 @@ public class ProgServidor {
                     cli.setSoTimeout(10000);
                     clients.add(cli);// adiciona cliente conectado a lista de clientes
                     new Thread(new ThreadCliente(cli)).start();
+
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -41,6 +41,7 @@ public class ProgServidor {
         public ThreadCliente(Socket cli) {
             client = cli;
             flagStop = false;
+            isadmin=false;
         }
 
         @Override
@@ -58,11 +59,15 @@ public class ProgServidor {
                     String password=aux.getPassword();
                     email=aux.getEmail();
                     System.out.println(email);
-
-                    if(DbManage.autentica_user(email,password))
-                        out.writeObject(new Geral(Message_types.ADMINISTRADOR));
-
-                    else out.writeObject(new Geral(Message_types.INVALIDO));
+                    Boolean []resposta=DbManage.autentica_user(email,password);
+                    if(!resposta[0])
+                        out.writeObject(new Geral(Message_types.INVALIDO));
+                    else {
+                        if(resposta[1]){
+                            isadmin=true;
+                            out.writeObject(new Geral(Message_types.ADMINISTRADOR));
+                        }else out.writeObject(new Geral(Message_types.UTILIZADOR));
+                    }
                     // aqui verifico se é o admin e ponho o boolean a true ou false
                 }
                 else if (o.getTipo() == Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
@@ -107,7 +112,7 @@ public class ProgServidor {
 
                                 //Depois temos que mandar aí a classe com os critérios/filtros e substituir esses parametros extras
 
-                                //List<Evento> eventosAssistidos = DbManage.ConsultaPresencas_user(aux.getNome(), "Nome do evento","local",null,null,null);
+                               // List<Evento> eventosAssistidos = DbManage.ConsultaPresencas_user(email, new Msg_ConsultaComFiltros());
                                 //eventosPresencasUser.addAll(eventosAssistidos); //vou utilizar o eventos presenças user para fazer o ficheiro csv do utilizador
 
                                 //Mandarmos isso pela classe que recebe a lista de eventos
@@ -115,8 +120,16 @@ public class ProgServidor {
                             }
 
                             case CSV_UTILIZADOR -> {
-                                DbManage.PresencasCSV(eventosPresencasUser,"minhasPresencas.csv");
-                                out.writeObject(new Geral(Message_types.VALIDO));
+                                File file=new File("minhasPresencas.csv");
+                                if(!file.exists()) {
+                                    if(!file.createNewFile())
+                                        out.writeObject(new Geral(Message_types.ERRO));
+                                }
+
+                                DbManage.PresencasCSV(eventosPresencasUser,file);
+                                sendfile(out,file);
+
+                                //out.writeObject(new Geral(Message_types.VALIDO));
                             }
 
                             case LOGOUT -> {
@@ -175,8 +188,9 @@ public class ProgServidor {
 
                                 //Falta mandar isso em condições como resposta para o cliente, pq aqui não faz sentido o nome do evento
                                 //Talvez seja necessário outra classe... Idk. Vou deixar assim por enquanto
-
-                                //out.writeObject(new ConsultaEventos_EliminaPresencas_InserePresencas(aux.getNome(),Message_types.VALIDO,eventosConsultados));
+                                Evento [] resp=eventosConsultados.toArray(new Evento[0]);
+                               // Nao tenho 100% certeza se é este o tipo de de dados a enviar
+                                out.writeObject(new Msg_ListaEventos(Message_types.VALIDO,resp));
                             }
                             case GERAR_COD ->{
                                 //Vai ser necessário outra classe também, acho eu. Vou fazer assim agr só para testar
@@ -207,11 +221,12 @@ public class ProgServidor {
                             case CONSULTA_PRES_EVENT -> {
                                 Msg_String aux = (Msg_String)message;
                                 List<Utilizador> cenas = DbManage.Presencas_evento(aux.getConteudo());
-                                Utilizador[] res = new Utilizador[cenas.size()];
+                                if(cenas!=null){
+                                    Utilizador[] res = new Utilizador[cenas.size()];
                                 for (int i = 0; i <cenas.size() ; i++) {
                                     res[i]= cenas.get(i);
                                 }
-                                out.writeObject(new Msg_ListaRegistos(Message_types.VALIDO, res));
+                                out.writeObject(new Msg_ListaRegistos(Message_types.VALIDO, res));}
                             }
                             case CONSULTA_PRES_UTILIZADOR -> {
                                 Msg_ConsultaComFiltros aux = (Msg_ConsultaComFiltros)message;
@@ -247,9 +262,28 @@ public class ProgServidor {
                 } catch (IOException ignored) {
                 }
                 clients.remove(client);
-                System.out.println("Cliente "+ email +"terminado");
+                System.out.println("Cliente: "+ email +"terminado");
             }
         }
+    }
+
+    private void sendfile(OutputStream out,File file){
+        byte []fileChunk = new byte[MAX_SIZE];
+        try (FileInputStream filereader=new FileInputStream(file)){
+        int nbytes;
+        do{
+            nbytes=filereader.read(fileChunk);
+            if(nbytes!=-1){
+                out.write(fileChunk,0,nbytes);
+                out.flush();
+            }
+        }while (nbytes>0);
+            System.out.println("File sended");
+
+        } catch (IOException e) {
+            System.out.println(""+e.getCause());
+        }
+
     }
 
 }
