@@ -1,5 +1,6 @@
 package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -59,6 +60,7 @@ public class ListarPresencasUI extends BorderPane {
         });
 
         ContaUtilizadorUI.opcaoUti.addListener(observable -> update());
+        progClienteManager.addAtualizacaoListener(observable -> Platform.runLater(this::extrairListaEventos));
     }
 
     private void update() {

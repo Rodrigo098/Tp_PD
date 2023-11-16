@@ -6,16 +6,16 @@ import javafx.scene.layout.VBox;
 
 public class MensagemBox extends VBox {
     private Button erro;
-    public MensagemBox(String mensagem){
-        createViews(mensagem);
+    public MensagemBox(String mensagem, String classe){
+        createViews(mensagem, classe);
         registerHandlers();
         update();
     }
 
-    private void createViews(String mensagem){
+    private void createViews(String mensagem, String classe){
         Label label = new Label(mensagem);
         erro = new Button();
-        erro.getStyleClass().addAll("imagens", "erroButton");
+        erro.getStyleClass().addAll("imagens", classe);
         erro.setMinSize(90, 90);
 
         this.setMaxSize(500, 200);

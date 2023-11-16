@@ -1,6 +1,5 @@
 package pt.isec.pd.trabalhoPratico.ui;
 
-import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -8,7 +7,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
-import javafx.util.Duration;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador.ContaAdministradorUI;
@@ -22,7 +20,6 @@ public class RootPane extends BorderPane {
     private Text registar;
     private TextField username, password;
     private MensagemBox msgBox;
-    private VBox tempoExcedidoNode;
 
     ProgClienteManager progClienteManager;
 
@@ -50,16 +47,13 @@ public class RootPane extends BorderPane {
         vBox.getStyleClass().add("sombreamentoBox");
         VBox.setMargin(label, new Insets(0, 10, 30, 10));
 
-        msgBox = new MensagemBox("Erro de comunicação com o Servidor :(");
-
-        tempoExcedidoNode = new SairApp();
+        msgBox = new MensagemBox("Erro de comunicação com o Servidor :(", "erroButton");
 
         StackPane stackPane = new StackPane(
                 new BorderPane(vBox),
                 new RegistoUtilizadorUI(progClienteManager),
                 new ContaUtilizadorUI(progClienteManager),
                 new ContaAdministradorUI(progClienteManager),
-                tempoExcedidoNode,
                 msgBox
         );
         this.getStyleClass().add("entradaPane");
@@ -81,12 +75,7 @@ public class RootPane extends BorderPane {
 
     private void update() {
         if(progClienteManager.getLogado().equals("EXCEDEU_TEMPO")) {
-            tempoExcedidoNode.setVisible(true);
-            PauseTransition espera = new PauseTransition(Duration.seconds(10));
-            espera.setOnFinished(e -> {
-                Platform.exit();
-            });
-            espera.play();
+            this.setCenter(new SairApp("A sua ligação ao servidor expirou!", "ligacaoExpirou"));
         }
     }
 }

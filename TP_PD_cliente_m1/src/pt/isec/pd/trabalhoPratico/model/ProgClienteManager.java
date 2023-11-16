@@ -30,6 +30,9 @@ public class ProgClienteManager {
     public String getLogado(){
         return programaCliente.getLogado();
     }
+    public void setLogado(String valor){
+        programaCliente.setLogado(valor);
+    }
     ////////////////////////////////////////////////////////////////////
 
     //COMUM:
@@ -56,8 +59,8 @@ public class ProgClienteManager {
     public Pair<String, Boolean> registar(String nome, String email, String numIdentificacao, String password, String confPass) {
         return programaCliente.registarConta(nome, email, numIdentificacao, password, confPass);
     }
-    public boolean registarPresenca(String codigo){
-        return programaCliente.registarPresenca(codigo);
+    public String registarPresenca(String evento, String codigo){
+        return programaCliente.registarPresenca(evento, codigo);
     }
     public String editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
         return programaCliente.editarRegisto(nome, numIdentificacao, password, confPass);
@@ -77,8 +80,8 @@ public class ProgClienteManager {
     public String eliminaInsere_Eventos(Message_types tipo, String nomeEvento, String filtros) {
         return programaCliente.eliminaInserePresencas_Eventos(tipo, nomeEvento, filtros);
     }
-    public String gerarCodPresenca(String nomeEvento) {
-        return programaCliente.gerarCodPresenca(nomeEvento);
+    public String gerarCodPresenca(String nomeEvento, String tempoValido) {
+        return programaCliente.gerarCodPresenca(nomeEvento, tempoValido);
     }
 
     public Utilizador[] consultaPresencasEvento(String nomeEvento){

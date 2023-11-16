@@ -20,30 +20,31 @@ public class ProgramaCliente {
     private static final int TEMPO_MAXIMO = 10; // 10 segundos
     private final Timer temporizador = new Timer();
     private int contagem = 0;
+    private TimerTask tarefa;
+    private boolean terminou = false;
 
     // EVENTOS
-    private static SimpleIntegerProperty atualizacao = new SimpleIntegerProperty(0);
-    private static SimpleIntegerProperty erro = new SimpleIntegerProperty(0);
-    private static SimpleStringProperty logado = new SimpleStringProperty("");
+    private static final SimpleIntegerProperty atualizacao = new SimpleIntegerProperty(0);
+    private static final SimpleIntegerProperty erro = new SimpleIntegerProperty(0);
+    private static final SimpleStringProperty logado = new SimpleStringProperty("");
 
     // COMUNICAÇÃO
     private Socket socket;
     private ObjectOutputStream oout;
     private ObjectInputStream oin;
 
-//-------------------- ATUALIZACAO ASSINCRONA -----------------
-    class AtualizacaoAsync implements Runnable {
-        private final Socket socket;
+    //-------------------- ATUALIZACAO ASSINCRONA -----------------
+    static class AtualizacaoAsync implements Runnable {
+        private final Socket socketAsync;
 
         public AtualizacaoAsync(Socket socket) {
-            this.socket = socket;
+            this.socketAsync = socket;
         }
 
         @Override
         public void run() {
-
             do {
-                try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream())) {
+                try (ObjectInputStream oin = new ObjectInputStream(socketAsync.getInputStream())) {
                     Object novaAtualizacao = oin.readObject();
                     if (novaAtualizacao instanceof Geral g)
                         if (g.getTipo() == Message_types.ATUALIZACAO)
@@ -56,22 +57,14 @@ public class ProgramaCliente {
         }
     }
 
-//-------------------- VERIFICA LIGACAO -----------------
+    //-------------------- VERIFICA LIGACAO -----------------
     class VerificaLigacao extends TimerTask {
         @Override
         public void run() {
+            contagem++;
             if (contagem == TEMPO_MAXIMO && logado.getValue().equals("ENTRADA")) {
-                setLogado();
-                this.cancel();
-                temporizador.cancel();
-                temporizador.purge();
-                logado.removeListener(observable -> verificacaoLigacao());
-                try {
-                    if(socket != null)
-                        socket.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                setLogado("EXCEDEU_TEMPO");
+                termina();
             }
         }
     }
@@ -83,37 +76,61 @@ public class ProgramaCliente {
         logado.set("ENTRADA");
     }
 
-    private void verificacaoLigacao() {
-        if(logado.getValue().equals("ENTRADA")) {
-            while (contagem < TEMPO_MAXIMO) {
-                contagem++;
-                temporizador.schedule(new VerificaLigacao(), 10000L * contagem);
-            }
-        }
-        else {
-            temporizador.purge();
+    private void termina() {
+        terminou = true;
+        temporizador.cancel();
+        tarefa.cancel();
+        logado.removeListener(observable -> verificacaoLigacao());
+        try {
+            if (socket != null)
+                socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
+
+    private void verificacaoLigacao() {
+        switch (logado.getValue()) {
+            case "ENTRADA" -> {
+                tarefa = new VerificaLigacao();
+                temporizador.schedule(tarefa, 0, 1000);
+            }
+            case "SAIR" -> {
+                if (!terminou)
+                    termina();
+            }
+            case "ADMINISTRADOR", "UTILIZADOR" -> {
+                tarefa.cancel();
+                contagem = 0;
+            }
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////
     public void addLogadoListener(InvalidationListener listener) {
         logado.addListener(listener);
     }
+
     public void addAtualizacaoListener(InvalidationListener listener) {
         atualizacao.addListener(listener);
     }
+
     public void addErroListener(InvalidationListener listener) {
         erro.addListener(listener);
     }
+
     protected static synchronized void setErro() {
-        System.out.println("ERRO");
         erro.set(erro.getValue() + 1);
     }
-    protected static synchronized void setLogado() {
-        logado.set("EXCEDEU_TEMPO");
+
+    public synchronized void setLogado(String valor) {
+        logado.set(valor);
     }
+
     public String getLogado() {
         return logado.getValue();
     }
+
     public boolean verificaFormato(String email) {
         if (email == null || email.isBlank())
             return true;
@@ -127,10 +144,9 @@ public class ProgramaCliente {
     public Pair<Boolean, String> criaSocket(List<String> list) {
         Pair<Boolean, String> pontoSituacao = new Pair<>(false, "Erro na criação do socket");
         if (list.size() == 2) {
-            try
-            {
+            try {
                 socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)));
-                if(socket.isConnected()) {
+                if (socket.isConnected()) {
                     oin = new ObjectInputStream(socket.getInputStream());
                     oout = new ObjectOutputStream(socket.getOutputStream());
                     pontoSituacao = new Pair<>(true, "Conexão bem sucedida");
@@ -151,7 +167,7 @@ public class ProgramaCliente {
 
         if (password == null || password.isBlank() || verificaFormato(email))
             return;
-
+/*
         Msg_Login dadosLogin = new Msg_Login(email, password);
         try
         {
@@ -160,42 +176,40 @@ public class ProgramaCliente {
 
             Msg_String validacao = (Msg_String) oin.readObject();
 
-                switch (validacao.getTipo()){
-                    case ADMINISTRADOR -> {
-                        logado.set("ADMINISTRADOR");
-                        try (Socket socketThread = new Socket(validacao.getConteudo(), this.socket.getPort())) {
-                            new Thread(new AtualizacaoAsync(socketThread)).start();
-                        } catch (Exception e) {
-                            setErro();
-                        }
+                if(validacao.getTipo() == Message_types.ADMINISTRADOR || validacao.getTipo() == Message_types.UTILIZADOR) {
+                    logado.set(validacao.getTipo() == Message_types.ADMINISTRADOR ? "ADMINISTRADOR" : "UTILIZADOR");
+                    try (Socket socketThread = new Socket(validacao.getConteudo(), this.socket.getPort())) {
+                        new Thread(new AtualizacaoAsync(socketThread)).start();
+                    } catch (Exception e) {
+                        setErro();
                     }
-                    case UTILIZADOR ->
-                        logado.set("UTILIZADOR");
                 }
             } catch (IOException | ClassNotFoundException e) {
                 setErro();
             }
-
+*/
         logado.set("UTILIZADOR");
     }
 
     public void logout() {
-
-        Geral logout = new Geral(Message_types.LOGOUT);
-        try {
-            oout.writeObject(logout);
-            oout.flush();
+        if (logado.getValue().equals("ADMINISTRADOR") || logado.getValue().equals("UTILIZADOR")) {
+            /*
+            Geral logout = new Geral(Message_types.LOGOUT);
+            try {
+                oout.writeObject(logout);
+                oout.flush();
+                logado.set("ENTRADA");
+            } catch (IOException e) {
+                setErro();
+            }*/
             logado.set("ENTRADA");
-        } catch (IOException e) {
-            setErro();
         }
-        logado.set("ENTRADA");
     }
 
     public Evento[] obterListaConsultaEventos(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim) {
-        if(nome != null && !nome.isBlank() && local != null && !local.isBlank() && limData1 != null && limData2 != null && horaInicio >= horaFim) {
-            //return new Evento[]{new Evento("ola", "HelloMate", "ISEC", LocalDate.now(), 11, 12)};
+        //return new Evento[]{new Evento("ola", "HelloMate", LocalDate.now(), 11, 12)};
 
+        if(nome != null && !nome.isBlank() && local != null && !local.isBlank() && limData1 != null && limData2 != null && horaInicio >= horaFim) {
             Msg_ConsultaComFiltros consultaEventos = new Msg_ConsultaComFiltros(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
 
             try {
@@ -213,30 +227,29 @@ public class ProgramaCliente {
     }
 
     public String obterCSV(String caminhoCSV, String nomeFicheiro, Message_types tipoCSV) {
-        if(caminhoCSV == null || caminhoCSV.isBlank() || nomeFicheiro == null || nomeFicheiro.isBlank())
+        if (caminhoCSV == null || caminhoCSV.isBlank() || nomeFicheiro == null || nomeFicheiro.isBlank())
             return "É necessário inserir um caminho para guardar o ficheiro!";
 
         String localCSVCaminho;
         File destinoCSV = new File(caminhoCSV);
-        byte []fileChunk = new byte[4000];
+        byte[] fileChunk = new byte[4000];
         int nbytes;
 
-        if(!destinoCSV.exists()){
-            System.out.println();
+        if (!destinoCSV.exists()) {
             return "A directoria inserida [" + caminhoCSV + "] não existe!";
         }
 
-        if(!destinoCSV.isDirectory()){
+        if (!destinoCSV.isDirectory()) {
             return "O caminho [" + caminhoCSV + "] não é uma diretoria!";
         }
 
-        if(!destinoCSV.canWrite()){
+        if (!destinoCSV.canWrite()) {
             return "Não pode guardar o .csv em: " + destinoCSV;
         }
 
-        try{
-            localCSVCaminho = destinoCSV.getCanonicalPath()+File.separator + nomeFicheiro + ".csv";
-        }catch(IOException e){
+        try {
+            localCSVCaminho = destinoCSV.getCanonicalPath() + File.separator + nomeFicheiro + ".csv";
+        } catch (IOException e) {
             return "Ocorreu um erro ao gerar o csv!";
         }
 
@@ -249,11 +262,11 @@ public class ProgramaCliente {
 
             InputStream inStream = socket.getInputStream();
 
-            while((nbytes = inStream.read(fileChunk)) > 0){
+            while ((nbytes = inStream.read(fileChunk)) > 0) {
                 localFileOutputStream.write(fileChunk, 0, nbytes);
             }
             return "CSV gerado com sucesso guardado em: " + localCSVCaminho;
-        }catch (IOException e){
+        } catch (IOException e) {
             setErro();
         }
         return "Erro ao gerar CSV";
@@ -289,23 +302,28 @@ public class ProgramaCliente {
         return new Pair<>("Erro ao registar conta!", false);
     }
 
-    public boolean registarPresenca(String codigoEvento) {
-        if (codigoEvento == null || codigoEvento.isBlank())
-            return false;
-
-        Msg_String registoPresenca = new Msg_String(codigoEvento, Message_types.SUBMICAO_COD);
+    public String registarPresenca(String evento, String codigoEvento) {
+        if (evento == null || evento.isBlank() || codigoEvento == null || codigoEvento.isBlank())
+            return "Tem de preencher os campos!!";
 
         try {
-            oout.writeObject(registoPresenca);
-            oout.flush();
-            Geral validacao = (Geral) oin.readObject();
+            int codigo = Integer.parseInt(codigoEvento);
+            Msg_String_Int registoPresenca = new Msg_String_Int(evento, codigo, Message_types.SUBMICAO_COD);
 
-            if (validacao.getTipo() == Message_types.VALIDO)
-                return true;
-        } catch (IOException | ClassNotFoundException ignored) {
-            setErro();
+            try {
+                oout.writeObject(registoPresenca);
+                oout.flush();
+                Geral validacao = (Geral) oin.readObject();
+
+                if (validacao.getTipo() == Message_types.VALIDO)
+                    return "Registou-se no evento com sucesso!";
+            } catch (IOException | ClassNotFoundException ignored) {
+                setErro();
+            }
+        } catch (NumberFormatException ignored) {
+            return "O código deve ser numérico!";
         }
-        return false;
+        return "Erro...";
     }
 
     public String editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
@@ -315,7 +333,7 @@ public class ProgramaCliente {
         long numID;
         try {
             numID = Integer.parseInt(numIdentificacao);//?? como é que ponho para long?
-            if(numID < 0)
+            if (numID < 0)
                 return "O teu número acho que não é negativo...";
         } catch (NumberFormatException e) {
             return "O teu número deve ser inteiro!";
@@ -350,7 +368,7 @@ public class ProgramaCliente {
             return "A data não pode estar no passadooo!";
 
         Msg_Cria_Evento evento =
-                new Msg_Cria_Evento(new Evento("eu",nome, local, data, horaInicio, horaFim));
+                new Msg_Cria_Evento(new Evento(nome, local, data, horaInicio, horaFim));
 
         try {
             oout.writeObject(evento);
@@ -371,13 +389,12 @@ public class ProgramaCliente {
         LocalTime horaAtual = LocalTime.now();
 
         if (eventoNomeAntigo == null || eventoNomeAntigo.isBlank() || novoNome == null || novoNome.isBlank() ||
-            local == null || local.isBlank() || data == null || data.isBefore(dataAtual) ||
-            horaInicio < horaAtual.getHour() || horaInicio >= horaFim)
+                local == null || local.isBlank() || data == null || data.isBefore(dataAtual) ||
+                horaInicio < horaAtual.getHour() || horaInicio >= horaFim)
             return "Dados inválidos para criação de evento!";
 
         Msg_Edita_Evento evento =
-                new Msg_Edita_Evento(new Evento("eu", eventoNomeAntigo,
-                                           local, data, horaInicio, horaFim), novoNome);
+                new Msg_Edita_Evento(new Evento(eventoNomeAntigo, local, data, horaInicio, horaFim), novoNome);
 
         try {
             oout.writeObject(evento);
@@ -393,7 +410,7 @@ public class ProgramaCliente {
     }
 
     public String eliminarEvento(String eventoNome) {
-        if(eventoNome == null || eventoNome.isBlank())
+        if (eventoNome == null || eventoNome.isBlank())
             return "Evento inexistente...";
 
         Msg_String evento =
@@ -413,7 +430,7 @@ public class ProgramaCliente {
     }
 
     public String eliminaInserePresencas_Eventos(Message_types tipo, String evento, String emailsP) {
-        if(evento == null || evento.isBlank() || emailsP == null || emailsP.length() == 0 || emailsP.isBlank())
+        if (evento == null || evento.isBlank() || emailsP == null || emailsP.length() == 0 || emailsP.isBlank())
             return "Não foram inseridos emails!";
 
         ArrayList<String> emails = new ArrayList<>();
@@ -439,12 +456,23 @@ public class ProgramaCliente {
         return "Presenças não inseridas!";
     }
 
-    public String gerarCodPresenca(String evento) {
-        if(evento == null || evento.isBlank())
+    public String gerarCodPresenca(String evento, String tempoValido) {
+        if (evento == null || evento.isBlank())
             return "Evento inexistente...";
+        if (tempoValido == null || tempoValido.isBlank())
+            return "Tempo inválido!";
 
-        Msg_String geraCod =
-                new Msg_String(evento, Message_types.GERAR_COD);
+        int tempo;
+        try {
+            tempo = Integer.parseInt(tempoValido);
+            if (tempo < 0)
+                return "O tempo não pode ser negativo!";
+        } catch (NumberFormatException e) {
+            return "Tempo deve ser numérico!";
+        }
+
+        Msg_String_Int geraCod =
+                new Msg_String_Int(evento, tempo, Message_types.GERAR_COD);
 
         try {
             oout.writeObject(geraCod);
@@ -462,7 +490,7 @@ public class ProgramaCliente {
     }
 
     public Utilizador[] consultaPresencasEvento(String evento) {
-        if(evento != null && !evento.isBlank()) {
+        if (evento != null && !evento.isBlank()) {
 
             Msg_String consulta =
                     new Msg_String(evento, Message_types.CONSULTA_PRES_EVENT);

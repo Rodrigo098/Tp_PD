@@ -20,7 +20,7 @@ public class EditorEventosUI extends BorderPane {
     private int indice = 0;
     private final String[] opcoes = {"Lista Presenças", "Editar evento", "Eliminar presenças", "Inserir Presenças"};
     private Label mais, labelPane;
-    private TextField emailsTextField, nomeFicheiro, caminhoCSV;
+    private TextField emailsTextField, nomeFicheiro, caminhoCSV, tempoValido;
     private Text resultado;
     private Button editarEvento, eliminarEvento, gerarCodigoPresencas, obterPresencasCSV, eliminarPresencas, inserirPresencas;
     private ListView<Utilizador> listaPresencas;
@@ -41,6 +41,10 @@ public class EditorEventosUI extends BorderPane {
         //CODIGO
         gerarCodigoPresencas = new Button("Gerar Código");
         gerarCodigoPresencas.getStyleClass().add("eventoButton");
+        tempoValido = new TextField();
+        tempoValido.setPromptText("Mins validade");
+        tempoValido.setMaxWidth(85);
+        tempoValido.setStyle("-fx-font-size: 12px;");
 
         //EDICAO
         editarEvento = new Button("Editar");
@@ -54,11 +58,11 @@ public class EditorEventosUI extends BorderPane {
         nomeFicheiro = new TextField();
         nomeFicheiro.setPromptText("Nome csv");
         nomeFicheiro.setStyle("-fx-font-size: 12px;");
-        nomeFicheiro.setMaxWidth(80);
+        nomeFicheiro.setMaxWidth(85);
         caminhoCSV = new TextField();
         caminhoCSV.setPromptText("Caminho csv");
         caminhoCSV.setStyle("-fx-font-size: 12px;");
-        caminhoCSV.setMaxWidth(80);
+        caminhoCSV.setMaxWidth(85);
         obterPresencasCSV = new Button("CSV");
         obterPresencasCSV.getStyleClass().add("eventoButton");
 
@@ -70,15 +74,16 @@ public class EditorEventosUI extends BorderPane {
 
         ////////////////////////////
         HBox hbox =  new HBox(caminhoCSV, nomeFicheiro, obterPresencasCSV);
-        hbox.setStyle("-fx-border-color: #a8aacc; -fx-border-width: 1px; -fx-border-radius: 5px; -fx-spacing: 2px; -fx-padding: 5 3 5 3;");
+        hbox.getStyleClass().add("textfieldsEditorEvento");
+        HBox hbox2 = new HBox(tempoValido, gerarCodigoPresencas);
+        hbox2.getStyleClass().add("textfieldsEditorEvento");
 
-        listaOpcoes = new HBox(eliminarEvento, gerarCodigoPresencas, hbox);
+        listaOpcoes = new HBox(eliminarEvento, hbox2, hbox);
 
         FlowPane flowPane = new FlowPane(editarEvento, eliminarPresencas, inserirPresencas, listaOpcoes);
 
         flowPane.setVgap(10);
-        flowPane.setHgap(30);
-        flowPane.setPadding(new Insets(20, 50, 0, 0));
+        flowPane.setHgap(20);
 
         mais = new Label("+");
         mais.getStyleClass().add("eventoButton");
@@ -94,7 +99,7 @@ public class EditorEventosUI extends BorderPane {
         emailsTextField.setPromptText("Isepare os emails por \" \"");
         eliminarInserirPresencas = new VBox(new Text("Insira os emails pretendidos:"), emailsTextField);
         eliminarInserirPresencas.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
-        
+
         HBox centralNode = new HBox(new VBox(new StackPane(listaPresencas, eventoUI, eliminarInserirPresencas), resultado), mais);
 
         centralNode.setSpacing(0);
@@ -114,20 +119,20 @@ public class EditorEventosUI extends BorderPane {
             resultado.setText("");
             opcaoEdicao.set(opcoes[indice++ % opcoes.length]);
         });
-        gerarCodigoPresencas.setOnAction(e -> resultado.setText("Novo código: " + progClienteManager.gerarCodPresenca(ListarEventosUI.eventoSelecionado.nomeEvento())));
+        gerarCodigoPresencas.setOnAction(e -> resultado.setText("Novo código: " + progClienteManager.gerarCodPresenca(ListarEventosUI.eventoSelecionado.nomeEvento(), tempoValido.getText())));
 
         editarEvento.setOnAction(e -> resultado.setText(progClienteManager.editar_Evento(ListarEventosUI.eventoSelecionado.nomeEvento() ,eventoUI.getNomeEvento(), eventoUI.getLocal(),
-                          eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim())));
+                eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim())));
 
         eliminarEvento.setOnAction(e -> resultado.setText(progClienteManager.eliminarEvento(ListarEventosUI.eventoSelecionado.nomeEvento())));
 
         obterPresencasCSV.setOnAction(e -> progClienteManager.obterCSV_ListaEventos(caminhoCSV.getText(), nomeFicheiro.getText(), Message_types.CSV_PRESENCAS_DO_EVENTO));
 
         eliminarPresencas.setOnAction(e -> resultado.setText(progClienteManager.eliminaInsere_Eventos(Message_types.ELIMINA_PRES,
-                          ListarEventosUI.eventoSelecionado.nomeEvento(), emailsTextField.getText())));
+                ListarEventosUI.eventoSelecionado.nomeEvento(), emailsTextField.getText())));
 
         inserirPresencas.setOnAction(e -> resultado.setText(progClienteManager.eliminaInsere_Eventos(Message_types.INSERE_PRES,
-                          ListarEventosUI.eventoSelecionado.nomeEvento(), emailsTextField.getText())));
+                ListarEventosUI.eventoSelecionado.nomeEvento(), emailsTextField.getText())));
 
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
 
