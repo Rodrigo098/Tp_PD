@@ -302,9 +302,9 @@ static class AtualizacaoAsync implements Runnable {
         return new Pair<>("Erro ao registar conta!", false);
     }
 
-    public boolean registarPresenca(String evento, String codigoEvento) {
+    public String registarPresenca(String evento, String codigoEvento) {
         if (evento == null || evento.isBlank() || codigoEvento == null || codigoEvento.isBlank())
-            return false;
+            return "Tem de preencher os campos!!";
 
         try{
             int codigo = Integer.parseInt(codigoEvento);
@@ -316,13 +316,14 @@ static class AtualizacaoAsync implements Runnable {
                 Geral validacao = (Geral) oin.readObject();
 
                 if (validacao.getTipo() == Message_types.VALIDO)
-                    return true;
+                    return "Registou-se no evento com sucesso!";
             } catch (IOException | ClassNotFoundException ignored) {
                 setErro();
             }
-        } catch (NumberFormatException ignored) {}
-
-        return false;
+        } catch (NumberFormatException ignored) {
+            return "O código deve ser numérico!";
+        }
+        return "Erro...";
     }
 
     public String editarRegisto(String nome, String numIdentificacao, String password, String confPass) {

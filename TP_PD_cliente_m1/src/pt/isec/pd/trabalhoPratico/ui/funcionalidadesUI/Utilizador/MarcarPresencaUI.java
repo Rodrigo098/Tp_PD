@@ -11,6 +11,7 @@ import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 public class MarcarPresencaUI extends BorderPane {
     private TextField codigo, evento;
     private Button submeter, cancelar;
+    private Label resultado;
     private final ProgClienteManager progClienteManager;
 
     public MarcarPresencaUI(ProgClienteManager progClienteManager) {
@@ -26,6 +27,8 @@ public class MarcarPresencaUI extends BorderPane {
         codigo = new TextField();
         codigo.setPromptText("codigo do evento");
 
+        resultado = new Label();
+
         submeter = new Button("Submeter");
         submeter.getStyleClass().add("confirmar");
         cancelar = new Button("Cancelar");
@@ -39,12 +42,12 @@ public class MarcarPresencaUI extends BorderPane {
         setAlignment(label, javafx.geometry.Pos.CENTER);
         this.setTop(label);
         this.setCenter(vBox);
-        this.setBottom(new HBox(submeter, cancelar));
+        this.setBottom(new VBox(new HBox(submeter, cancelar), resultado));
     }
 
     private void registerHandlers() {
         submeter.setOnAction( e -> {
-            progClienteManager.registarPresenca(evento.getText(), codigo.getText());
+            resultado.setText(progClienteManager.registarPresenca(evento.getText(), codigo.getText()));
             codigo.clear();
         });
 

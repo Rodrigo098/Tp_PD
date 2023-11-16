@@ -59,7 +59,7 @@ public class ProgClienteManager {
     public Pair<String, Boolean> registar(String nome, String email, String numIdentificacao, String password, String confPass) {
         return programaCliente.registarConta(nome, email, numIdentificacao, password, confPass);
     }
-    public boolean registarPresenca(String evento, String codigo){
+    public String registarPresenca(String evento, String codigo){
         return programaCliente.registarPresenca(evento, codigo);
     }
     public String editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
