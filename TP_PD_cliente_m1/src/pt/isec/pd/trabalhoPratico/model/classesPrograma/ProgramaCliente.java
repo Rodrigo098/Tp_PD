@@ -35,16 +35,16 @@ public class ProgramaCliente {
 
 //-------------------- ATUALIZACAO ASSINCRONA -----------------
 static class AtualizacaoAsync implements Runnable {
-        private final Socket socket;
+        private final Socket socketAsync;
 
         public AtualizacaoAsync(Socket socket) {
-            this.socket = socket;
+            this.socketAsync = socket;
         }
 
         @Override
         public void run() {
             do {
-                try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream())) {
+                try (ObjectInputStream oin = new ObjectInputStream(socketAsync.getInputStream())) {
                     Object novaAtualizacao = oin.readObject();
                     if (novaAtualizacao instanceof Geral g)
                         if (g.getTipo() == Message_types.ATUALIZACAO)
@@ -173,17 +173,13 @@ static class AtualizacaoAsync implements Runnable {
 
             Msg_String validacao = (Msg_String) oin.readObject();
 
-                switch (validacao.getTipo()){
-                    case ADMINISTRADOR -> {
-                        logado.set("ADMINISTRADOR");
-                        try (Socket socketThread = new Socket(validacao.getConteudo(), this.socket.getPort())) {
-                            new Thread(new AtualizacaoAsync(socketThread)).start();
-                        } catch (Exception e) {
-                            setErro();
-                        }
+                if(validacao.getTipo() == Message_types.ADMINISTRADOR || validacao.getTipo() == Message_types.UTILIZADOR) {
+                    logado.set(validacao.getTipo() == Message_types.ADMINISTRADOR ? "ADMINISTRADOR" : "UTILIZADOR");
+                    try (Socket socketThread = new Socket(validacao.getConteudo(), this.socket.getPort())) {
+                        new Thread(new AtualizacaoAsync(socketThread)).start();
+                    } catch (Exception e) {
+                        setErro();
                     }
-                    case UTILIZADOR ->
-                        logado.set("UTILIZADOR");
                 }
             } catch (IOException | ClassNotFoundException e) {
                 setErro();
@@ -306,22 +302,26 @@ static class AtualizacaoAsync implements Runnable {
         return new Pair<>("Erro ao registar conta!", false);
     }
 
-    public boolean registarPresenca(String codigoEvento) {
-        if (codigoEvento == null || codigoEvento.isBlank())
+    public boolean registarPresenca(String evento, String codigoEvento) {
+        if (evento == null || evento.isBlank() || codigoEvento == null || codigoEvento.isBlank())
             return false;
 
-        Msg_String registoPresenca = new Msg_String(codigoEvento, Message_types.SUBMICAO_COD);
+        try{
+            int codigo = Integer.parseInt(codigoEvento);
+            Msg_String_Int registoPresenca = new Msg_String_Int(evento, codigo, Message_types.SUBMICAO_COD);
 
-        try {
-            oout.writeObject(registoPresenca);
-            oout.flush();
-            Geral validacao = (Geral) oin.readObject();
+            try {
+                oout.writeObject(registoPresenca);
+                oout.flush();
+                Geral validacao = (Geral) oin.readObject();
 
-            if (validacao.getTipo() == Message_types.VALIDO)
-                return true;
-        } catch (IOException | ClassNotFoundException ignored) {
-            setErro();
-        }
+                if (validacao.getTipo() == Message_types.VALIDO)
+                    return true;
+            } catch (IOException | ClassNotFoundException ignored) {
+                setErro();
+            }
+        } catch (NumberFormatException ignored) {}
+
         return false;
     }
 

@@ -9,7 +9,7 @@ import javafx.scene.layout.VBox;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class MarcarPresencaUI extends BorderPane {
-    private TextField codigo;
+    private TextField codigo, evento;
     private Button submeter, cancelar;
     private final ProgClienteManager progClienteManager;
 
@@ -21,6 +21,8 @@ public class MarcarPresencaUI extends BorderPane {
     }
 
     private void createViews() {
+        evento = new TextField();
+        evento.setPromptText("nome do evento");
         codigo = new TextField();
         codigo.setPromptText("codigo do evento");
 
@@ -29,7 +31,7 @@ public class MarcarPresencaUI extends BorderPane {
         cancelar = new Button("Cancelar");
         cancelar.getStyleClass().add("cancelar");
 
-        VBox vBox = new VBox(new Label("Código do evento:"), codigo);
+        VBox vBox = new VBox(new Label("Evento a marcar presença:"), evento, new Label("Código do evento:"), codigo);
 
         Label label = new Label("Marcar Presença");
         label.getStyleClass().add("titulo");
@@ -42,7 +44,7 @@ public class MarcarPresencaUI extends BorderPane {
 
     private void registerHandlers() {
         submeter.setOnAction( e -> {
-            progClienteManager.registarPresenca(codigo.getText());
+            progClienteManager.registarPresenca(evento.getText(), codigo.getText());
             codigo.clear();
         });
 
