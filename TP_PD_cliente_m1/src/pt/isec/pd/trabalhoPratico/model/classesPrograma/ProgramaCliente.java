@@ -32,28 +32,48 @@ public class ProgramaCliente {
     private Socket socket;
     private ObjectOutputStream oout;
     private ObjectInputStream oin;
+    private boolean termina;
 
     //-------------------- ATUALIZACAO ASSINCRONA -----------------
     static class AtualizacaoAsync implements Runnable {
-        private final Socket socketAsync;
-
-        public AtualizacaoAsync(Socket socket) {
-            this.socketAsync = socket;
+        private MulticastSocket multicastSocket;
+        private InetAddress gClientes;
+        public AtualizacaoAsync(int porto, String multicastAddress) {
+            try {
+                this.multicastSocket = new MulticastSocket(porto);
+                gClientes = InetAddress.getByName(multicastAddress);
+                multicastSocket.joinGroup(gClientes);
+            } catch (IOException e) {
+                setErro();
+                setLogado("FIM");
+            }
         }
-
         @Override
         public void run() {
-            do {
-                try (ObjectInputStream oin = new ObjectInputStream(socketAsync.getInputStream())) {
-                    Object novaAtualizacao = oin.readObject();
-                    if (novaAtualizacao instanceof Geral g)
-                        if (g.getTipo() == Message_types.ATUALIZACAO)
-                            atualizacao.setValue(atualizacao.getValue() + 1);
-
-                } catch (IOException | ClassNotFoundException ignored) {
-                    ProgramaCliente.setErro();
+            String msgConteudo;
+            while (logado.getValue().equals("ADMINISTRADOR") || logado.getValue().equals("ADMINISTRADOR")) {
+                DatagramPacket packet = new DatagramPacket(new byte[20], 20);
+                try {
+                    multicastSocket.receive(packet);
+                } catch (IOException e) {
+                    setErro();
                 }
-            } while (Thread.currentThread().isAlive());
+                msgConteudo = new String(packet.getData(), 0, packet.getLength());
+                if (msgConteudo.equals("fimServidor")) {
+                    setLogado("FIM");
+                    break;
+                }
+                else {
+                    atualizacao.setValue(atualizacao.getValue() + 1);
+                    System.out.println("mais uma " + atualizacao.getValue());
+                }
+            }
+            try {
+                multicastSocket.leaveGroup(gClientes);
+            } catch (IOException e) {
+                System.out.println("erro na thread para atualizacao assincrona");
+            }
+            multicastSocket.close();
         }
     }
 
@@ -95,7 +115,7 @@ public class ProgramaCliente {
                 tarefa = new VerificaLigacao();
                 temporizador.schedule(tarefa, 0, 1000);
             }
-            case "SAIR" -> {
+            case "SAIR", "FIM" -> {
                 if (!terminou)
                     termina();
             }
@@ -123,7 +143,7 @@ public class ProgramaCliente {
         erro.set(erro.getValue() + 1);
     }
 
-    public synchronized void setLogado(String valor) {
+    public static synchronized void setLogado(String valor) {
         logado.set(valor);
     }
 
@@ -167,7 +187,7 @@ public class ProgramaCliente {
 
         if (password == null || password.isBlank() || verificaFormato(email))
             return;
-/*
+
         Msg_Login dadosLogin = new Msg_Login(email, password);
         try
         {
@@ -178,16 +198,18 @@ public class ProgramaCliente {
 
                 if(validacao.getTipo() == Message_types.ADMINISTRADOR || validacao.getTipo() == Message_types.UTILIZADOR) {
                     logado.set(validacao.getTipo() == Message_types.ADMINISTRADOR ? "ADMINISTRADOR" : "UTILIZADOR");
-                    try (Socket socketThread = new Socket(validacao.getConteudo(), this.socket.getPort())) {
-                        new Thread(new AtualizacaoAsync(socketThread)).start();
+                    try{
+                        new Thread(new AtualizacaoAsync(this.socket.getPort(), validacao.getConteudo())).start();
                     } catch (Exception e) {
                         setErro();
+                        setLogado("FIM");
                     }
                 }
             } catch (IOException | ClassNotFoundException e) {
                 setErro();
+                setLogado("FIM");
             }
-*/
+
         logado.set("UTILIZADOR");
     }
 

@@ -77,5 +77,8 @@ public class RootPane extends BorderPane {
         if(progClienteManager.getLogado().equals("EXCEDEU_TEMPO")) {
             this.setCenter(new SairApp("A sua ligação ao servidor expirou!", "ligacaoExpirou"));
         }
+        else if(progClienteManager.getLogado().equals("FIM")) {
+            Platform.exit();
+        }
     }
 }
