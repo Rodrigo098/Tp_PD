@@ -1,12 +1,11 @@
 package pt.isec.pd.trabalhoPratico.model;
 
-import javafx.beans.InvalidationListener;
-import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
-import pt.isec.pd.trabalhoPratico.model.classesPrograma.ProgramaCliente;
+import pt.isec.pd.trabalhoPratico.model.classesPrograma.*;
 
+import java.beans.PropertyChangeListener;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,26 +16,24 @@ public class ProgClienteManager {
         programaCliente = new ProgramaCliente();
     }
 
-    ////////////////////////////////////////////////////////////////////
-    public void addLogadoListener(InvalidationListener listener) {
-        programaCliente.addLogadoListener(listener);
+    //////////////////////////// PROPRIEDADE LISTENERS ////////////////////////////////////
+    public void addLogadoListener(PropertyChangeListener listener) {
+        programaCliente.addPropertyChangeListener(GereMudancasPLC.PROP_ATUALIZACAO ,listener);
     }
-    public void addAtualizacaoListener(InvalidationListener listener) {
-        programaCliente.addAtualizacaoListener(listener);
+    public void addAtualizacaoListener(PropertyChangeListener listener) {
+        programaCliente.addPropertyChangeListener(GereMudancasPLC.PROP_ATUALIZACAO ,listener);
     }
-    public void addErroListener(InvalidationListener listener) {
-        programaCliente.addErroListener(listener);
+    public void addErroListener(PropertyChangeListener listener) {
+        programaCliente.addPropertyChangeListener(GereMudancasPLC.PROP_ATUALIZACAO ,listener);
     }
+
     public String getLogado(){
-        return programaCliente.getLogado();
-    }
-    public void setLogado(String valor){
-        programaCliente.setLogado(valor);
+        return programaCliente.getEstadoNaAplicacao();
     }
     ////////////////////////////////////////////////////////////////////
 
     //COMUM:
-    public Pair<Boolean, String> criaSocket(List<String> list) {
+    public ParResposta criaSocket(List<String> list) {
         return programaCliente.criaSocket(list);
     }
 
@@ -44,8 +41,8 @@ public class ProgClienteManager {
         return programaCliente.login(email, password);
     }
 
-    public void logout() {
-        programaCliente.logout();
+    public void logout(String fonte) {
+        programaCliente.logout(fonte);
     }
 
     public Evento[] obterListaConsulta(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim){
@@ -56,7 +53,7 @@ public class ProgClienteManager {
     }
 
     //UTILIZADOR:
-    public Pair<String, Boolean> registar(String nome, String email, String numIdentificacao, String password, String confPass) {
+    public ParResposta registar(String nome, String email, String numIdentificacao, String password, String confPass) {
         return programaCliente.registarConta(nome, email, numIdentificacao, password, confPass);
     }
     public String registarPresenca(String evento, String codigo){
@@ -91,3 +88,20 @@ public class ProgClienteManager {
         return programaCliente.consultaEventosDeUmUtilizador(utilizador);
     }
 }
+
+    /*
+    public void addLogadoListener(InvalidationListener listener) {
+        programaCliente.addLogadoListener(listener);
+    }
+    public void addAtualizacaoListener(InvalidationListener listener) {
+        programaCliente.addAtualizacaoListener(listener);
+    }
+    public void addErroListener(PropertyChangeListener listener) {
+        programaCliente.addErroListener(listener);
+    }*/
+    /*public int getAtualizacoes(){
+        return programaCliente.getAtualizacoes();
+    }
+    public void setLogado(String valor){
+        programaCliente.setLogado(valor);
+    }*/

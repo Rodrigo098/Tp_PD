@@ -11,6 +11,7 @@ import javafx.scene.text.Text;
 import javafx.util.Pair;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
+import pt.isec.pd.trabalhoPratico.model.classesPrograma.ParResposta;
 
 public class RegistoUtilizadorUI extends BorderPane {
     private Text resultado;
@@ -71,13 +72,13 @@ public class RegistoUtilizadorUI extends BorderPane {
         });
 
         registar.setOnAction(e -> {
-            Pair<String, Boolean> res = progClienteManager.registar(nomeUtilizador.getText(), email.getText(), numIdentificacao.getText(), password.getText(), confirmar_password.getText());
-            if(res.getValue()) {
+            ParResposta res = progClienteManager.registar(nomeUtilizador.getText(), email.getText(), numIdentificacao.getText(), password.getText(), confirmar_password.getText());
+            if(res.resultado()) {
                 limparCampos();
                 MainCliente.menuSBP.set("MENU");
             }
             else {
-                resultado.setText(res.getKey());
+                resultado.setText(res.mensagem());
             }
         });
 

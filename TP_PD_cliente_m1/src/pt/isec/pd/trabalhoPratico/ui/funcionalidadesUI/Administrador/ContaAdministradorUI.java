@@ -75,7 +75,7 @@ public class ContaAdministradorUI extends BorderPane {
         eventosUti.setOnAction(e -> opcaoAdmin.set("EVENTOS_PRESENCA_UTI"));
 
         logout.setOnAction(e -> {
-            progClienteManager.logout();
+            progClienteManager.logout("ADMIN");
             MainCliente.menuSBP.set("MENU");
         });
 
