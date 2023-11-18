@@ -14,7 +14,7 @@ public enum Message_types {// varios tipos de mensagens que serão usados, se qu
     ELIMINA_PRES, INSERE_PRES,
 
     //RESULTADOS
-    VALIDO, ADMINISTRADOR, UTILIZADOR,
+    INVALIDO, VALIDO, ADMINISTRADOR, UTILIZADOR, FAZER_lOGIN,
 
     //ASYNC
     ATUALIZACAO

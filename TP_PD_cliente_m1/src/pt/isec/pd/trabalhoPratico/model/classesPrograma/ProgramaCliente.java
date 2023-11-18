@@ -30,6 +30,7 @@ public class ProgramaCliente {
 
     // COMUNICAÇÃO
     private Socket socket;
+    private int portoServidor;
     private ObjectOutputStream oout;
     private ObjectInputStream oin;
     private boolean termina;
@@ -159,13 +160,16 @@ public class ProgramaCliente {
         return email.split("[@.]").length != 3;
     }
 
-    ///////////////////////////////////////FUNCIONALIDADES:
-    /////////////////////////COMUNS:
+    /////////////////////////////////// FUNCIONALIDADES: ////////////////////////////////
+
+    /*---------------------------------- COMUNS: --------------------------------------*/
     public Pair<Boolean, String> criaSocket(List<String> list) {
         Pair<Boolean, String> pontoSituacao = new Pair<>(false, "Erro na criação do socket");
         if (list.size() == 2) {
             try {
-                socket = new Socket(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)));
+                portoServidor = Integer.parseInt(list.get(1));
+                InetAddress ip = InetAddress.getByName(list.get(0));
+                socket = new Socket(ip, portoServidor);
                 if (socket.isConnected()) {
                     oin = new ObjectInputStream(socket.getInputStream());
                     oout = new ObjectOutputStream(socket.getOutputStream());
@@ -183,10 +187,10 @@ public class ProgramaCliente {
         return pontoSituacao;
     }
 
-    public void login(String email, String password) {
+    public String login(String email, String password) {
 
         if (password == null || password.isBlank() || verificaFormato(email))
-            return;
+            return "Tem que preencher os dados corretamente!!";
 
         Msg_Login dadosLogin = new Msg_Login(email, password);
         try
@@ -194,28 +198,32 @@ public class ProgramaCliente {
             oout.writeObject(dadosLogin);
             oout.flush();
 
-            Msg_String validacao = (Msg_String) oin.readObject();
+            Object validacao = oin.readObject();
 
-                if(validacao.getTipo() == Message_types.ADMINISTRADOR || validacao.getTipo() == Message_types.UTILIZADOR) {
-                    logado.set(validacao.getTipo() == Message_types.ADMINISTRADOR ? "ADMINISTRADOR" : "UTILIZADOR");
-                    try{
-                        new Thread(new AtualizacaoAsync(this.socket.getPort(), validacao.getConteudo())).start();
-                    } catch (Exception e) {
-                        setErro();
-                        setLogado("FIM");
-                    }
+            if(validacao instanceof Geral g){
+                if(g.getTipo() == Message_types.INVALIDO){
+                    return "Não está registado na app :(";
                 }
-            } catch (IOException | ClassNotFoundException e) {
-                setErro();
-                setLogado("FIM");
-            }
+                logado.set(g.getTipo() == Message_types.ADMINISTRADOR ? "ADMINISTRADOR" : "UTILIZADOR");
 
-        logado.set("UTILIZADOR");
+                try{
+                    new Thread(new AtualizacaoAsync(portoServidor, ((Msg_String) g).getConteudo())).start();
+                    return "Estabeleceu ligação!!";
+                } catch (Exception e) {
+                    setErro();
+                    setLogado("FIM");
+                }
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            setErro();
+            setLogado("FIM");
+        }
+        return "Tente novamente...";
     }
 
     public void logout() {
         if (logado.getValue().equals("ADMINISTRADOR") || logado.getValue().equals("UTILIZADOR")) {
-            /*
+
             Geral logout = new Geral(Message_types.LOGOUT);
             try {
                 oout.writeObject(logout);
@@ -223,7 +231,7 @@ public class ProgramaCliente {
                 logado.set("ENTRADA");
             } catch (IOException e) {
                 setErro();
-            }*/
+            }
             logado.set("ENTRADA");
         }
     }
@@ -238,9 +246,11 @@ public class ProgramaCliente {
                 oout.writeObject(consultaEventos);
                 oout.flush();
 
-                Msg_ListaEventos lista = (Msg_ListaEventos) oin.readObject();
-                if (lista.getTipo() == Message_types.VALIDO)
-                    return lista.getLista();
+                Object lista = oin.readObject();
+                if(lista instanceof Geral l && l.getTipo() == Message_types.FAZER_lOGIN)
+                    return null;
+                if (lista instanceof Msg_ListaEventos l && l.getTipo() == Message_types.VALIDO)
+                    return l.getLista();
             } catch (IOException | ClassNotFoundException e) {
                 setErro();
             }
@@ -275,7 +285,7 @@ public class ProgramaCliente {
             return "Ocorreu um erro ao gerar o csv!";
         }
 
-        Msg_String csv = new Msg_String(nomeFicheiro, tipoCSV);
+        Geral csv = new Geral(tipoCSV);
 
         try (FileOutputStream localFileOutputStream = new FileOutputStream(localCSVCaminho)) {
 
@@ -294,15 +304,18 @@ public class ProgramaCliente {
         return "Erro ao gerar CSV";
     }
 
-    /////////////////////////UTILIZADOR:
+
+    /*---------------------------------- UTILIZADOR: --------------------------------------*/
     public Pair<String, Boolean> registarConta(String nome, String email, String numIdentificacao, String password, String confPass) {
 
-        if (nome == null || nome.isBlank() || password == null || password.isBlank() || confPass == null || confPass.isBlank() || !password.equals(confPass) || verificaFormato(email) || numIdentificacao == null || numIdentificacao.isBlank())
+        if (nome == null || nome.isBlank() || password == null || password.isBlank() ||
+            confPass == null || confPass.isBlank() || !password.equals(confPass) ||
+            verificaFormato(email) || numIdentificacao == null || numIdentificacao.isBlank())
             return new Pair<>("Os dados inseriados são inválidos :(", false);
 
-        long numID;
+        int numID;
         try {
-            numID = Integer.parseInt(numIdentificacao);//?? como é que ponho para long?
+            numID = Integer.parseInt(numIdentificacao);
         } catch (NumberFormatException e) {
             return new Pair<>("Insira um número de identificação válido!", false);
         }
@@ -312,11 +325,20 @@ public class ProgramaCliente {
         try {
             oout.writeObject(dadosRegisto);
             oout.flush();
-            Geral validacao = (Geral) oin.readObject();
 
-            if (validacao.getTipo() == Message_types.VALIDO) {
-                logado.set("UTILIZADOR");
-                return new Pair<>("", true);
+            Object validacao = oin.readObject();
+
+            if(validacao instanceof Msg_String g) {
+                if (g.getTipo() != Message_types.INVALIDO) {
+                    logado.set("UTILIZADOR");
+                    try {
+                        new Thread(new AtualizacaoAsync(portoServidor, g.getConteudo())).start();
+                        return new Pair<>("", true);
+                    } catch (Exception e) {
+                        setErro();
+                        setLogado("FIM");
+                    }
+                }
             }
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
@@ -335,10 +357,13 @@ public class ProgramaCliente {
             try {
                 oout.writeObject(registoPresenca);
                 oout.flush();
-                Geral validacao = (Geral) oin.readObject();
 
-                if (validacao.getTipo() == Message_types.VALIDO)
-                    return "Registou-se no evento com sucesso!";
+                Object validacao = oin.readObject();
+
+                if(validacao instanceof Geral l && l.getTipo() == Message_types.FAZER_lOGIN)
+                    return "Tem que fazer login para utilizar a app!";
+                else if (validacao instanceof Geral g && g.getTipo() == Message_types.VALIDO)
+                        return "Registou-se no evento com sucesso!";
             } catch (IOException | ClassNotFoundException ignored) {
                 setErro();
             }
@@ -352,33 +377,34 @@ public class ProgramaCliente {
         if (nome == null || nome.isBlank() || password == null || password.isBlank() || !password.equals(confPass) || numIdentificacao == null || numIdentificacao.isBlank())
             return "Dados de input inválidos :(";
 
-        long numID;
+        int numID;
         try {
             numID = Integer.parseInt(numIdentificacao);//?? como é que ponho para long?
             if (numID < 0)
                 return "O teu número acho que não é negativo...";
-        } catch (NumberFormatException e) {
-            return "O teu número deve ser inteiro!";
-        }
 
-        Mgs_RegistarEditar_Conta dadosRegisto = new Mgs_RegistarEditar_Conta(nome, null, password, numID, Message_types.EDITAR_REGISTO);
+            Mgs_RegistarEditar_Conta dadosRegisto = new Mgs_RegistarEditar_Conta(nome, null, password, numID, Message_types.EDITAR_REGISTO);
 
-        try (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream())) {
             oout.writeObject(dadosRegisto);
             oout.flush();
-            Geral validacao = (Geral) oin.readObject();
 
-            if (validacao.getTipo() == Message_types.VALIDO)
-                return "Registo editado com sucesso!";
+            Object validacao = oin.readObject();
+            if(validacao instanceof Geral g) {
+                if (g.getTipo() == Message_types.FAZER_lOGIN)
+                    return "Tem que fazer login para utilizar a app!";
+                else if (g.getTipo() == Message_types.VALIDO)
+                    return "Registo editado com sucesso!";
+            }
+        } catch (NumberFormatException e) {
+            return "O teu número deve ser inteiro!";
         } catch (ClassNotFoundException | IOException ignored) {
             setErro();
         }
         return "Erro";
     }
 
-    /////////////////////////ADMINISTRADOR:
-    //CRIAR OU EDITAR EVENTO, O ÚLTIMO PARÂMETRO É PARA SABER SE É PARA CRIAR OU EDITAR
+
+    /*---------------------------------- ADMINISTRADOR: --------------------------------------*/
     public String criar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim) {
         if (nome == null || nome.isBlank() || local == null || local.isBlank() || data == null || horaInicio >= horaFim)
             return "Dados de input inválidos :(";
@@ -389,16 +415,20 @@ public class ProgramaCliente {
         if (data.isBefore(dataAtual) || horaInicio < horaAtual.getHour())
             return "A data não pode estar no passadooo!";
 
-        Msg_Cria_Evento evento =
-                new Msg_Cria_Evento(new Evento(nome, local, data, horaInicio, horaFim));
+        Msg_Cria_Evento evento = new Msg_Cria_Evento(new Evento(nome, local, data, horaInicio, horaFim));
 
         try {
             oout.writeObject(evento);
             oout.flush();
-            Geral validacao = (Geral) oin.readObject();
 
-            if (validacao.getTipo() == Message_types.VALIDO)
-                return "Evento criado com sucesso!";
+            Object validacao = oin.readObject();
+
+            if(validacao instanceof Geral g) {
+                if (g.getTipo() == Message_types.FAZER_lOGIN)
+                    return "Tem que fazer login para utilizar a app!";
+                else if (g.getTipo() == Message_types.VALIDO)
+                    return "Evento criado com sucesso!";
+            }
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
         }
@@ -415,16 +445,20 @@ public class ProgramaCliente {
                 horaInicio < horaAtual.getHour() || horaInicio >= horaFim)
             return "Dados inválidos para criação de evento!";
 
-        Msg_Edita_Evento evento =
-                new Msg_Edita_Evento(new Evento(eventoNomeAntigo, local, data, horaInicio, horaFim), novoNome);
+        Msg_Edita_Evento evento = new Msg_Edita_Evento(new Evento(eventoNomeAntigo, local, data, horaInicio, horaFim), novoNome);
 
         try {
             oout.writeObject(evento);
             oout.flush();
-            Geral validacao = (Geral) oin.readObject();
 
-            if (validacao.getTipo() == Message_types.VALIDO)
-                return "Evento editado com sucesso!";
+            Object validacao = oin.readObject();
+
+            if(validacao instanceof Geral g) {
+                if (g.getTipo() == Message_types.FAZER_lOGIN)
+                    return "Tem que fazer login para utilizar a app!";
+                else if (g.getTipo() == Message_types.VALIDO)
+                    return "Evento editado com sucesso!";
+            }
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
         }
@@ -435,16 +469,20 @@ public class ProgramaCliente {
         if (eventoNome == null || eventoNome.isBlank())
             return "Evento inexistente...";
 
-        Msg_String evento =
-                new Msg_String(eventoNome, Message_types.ELIMINAR_EVENTO);
+        Msg_String evento = new Msg_String(eventoNome, Message_types.ELIMINAR_EVENTO);
 
         try {
             oout.writeObject(evento);
             oout.flush();
-            Geral validacao = (Geral) oin.readObject();
 
-            if (validacao.getTipo() == Message_types.VALIDO)
-                return "Evento eliminado com sucesso!";
+            Object validacao = oin.readObject();
+
+            if(validacao instanceof Geral g) {
+                if (g.getTipo() == Message_types.FAZER_lOGIN)
+                    return "Tem que fazer login para utilizar a app!";
+                else if (g.getTipo() == Message_types.VALIDO)
+                    return "Evento eliminado com sucesso!";
+            }
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
         }
@@ -461,28 +499,31 @@ public class ProgramaCliente {
                 emails.add(email);
         }
 
-        Msg_EliminaInsere_Presencas interacao =
-                new Msg_EliminaInsere_Presencas(tipo, evento, emails.toArray(new String[0]));
+        Msg_EliminaInsere_Presencas interacao = new Msg_EliminaInsere_Presencas(tipo, evento, emails.toArray(new String[0]));
 
         try {
             oout.writeObject(interacao);
             oout.flush();
 
-            Geral validacao = (Geral) oin.readObject();
+            Object validacao = oin.readObject();
 
-            if (validacao.getTipo() == Message_types.VALIDO)
-                return tipo == Message_types.ELIMINA_PRES ? "Presenças eliminadas com sucesso!" : "Presenças inseridas com sucesso!";
+            if(validacao instanceof Geral g) {
+                if (g.getTipo() == Message_types.FAZER_lOGIN)
+                    return "Tem que fazer login para utilizar a app!";
+                else if (g.getTipo() == Message_types.VALIDO)
+                    return tipo == Message_types.ELIMINA_PRES ? "Presenças eliminadas com sucesso!" : "Presenças inseridas com sucesso!";
+            }
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
         }
-        return "Presenças não inseridas!";
+        return "Tente novamente!";
     }
 
     public String gerarCodPresenca(String evento, String tempoValido) {
         if (evento == null || evento.isBlank())
             return "Evento inexistente...";
         if (tempoValido == null || tempoValido.isBlank())
-            return "Tempo inválido!";
+            return "Insira o tempo de validade!";
 
         int tempo;
         try {
@@ -493,17 +534,18 @@ public class ProgramaCliente {
             return "Tempo deve ser numérico!";
         }
 
-        Msg_String_Int geraCod =
-                new Msg_String_Int(evento, tempo, Message_types.GERAR_COD);
+        Msg_String_Int geraCod = new Msg_String_Int(evento, tempo, Message_types.GERAR_COD);
 
         try {
             oout.writeObject(geraCod);
             oout.flush();
 
-            Msg_String codigo = (Msg_String) oin.readObject();
+            Object codigo = oin.readObject();
 
-            if (codigo.getTipo() == Message_types.VALIDO) {
-                return codigo.getConteudo();
+            if(codigo instanceof Geral g && g.getTipo() == Message_types.FAZER_lOGIN)
+                return "Tem que fazer login pra usufruir da app!";
+            if (codigo instanceof Msg_String cod && cod.getTipo() == Message_types.VALIDO) {
+                return cod.getConteudo();
             }
         } catch (IOException | ClassNotFoundException ignored) {
             setErro();
@@ -514,17 +556,18 @@ public class ProgramaCliente {
     public Utilizador[] consultaPresencasEvento(String evento) {
         if (evento != null && !evento.isBlank()) {
 
-            Msg_String consulta =
-                    new Msg_String(evento, Message_types.CONSULTA_PRES_EVENT);
+            Msg_String consulta = new Msg_String(evento, Message_types.CONSULTA_PRES_EVENT);
 
             try {
                 oout.writeObject(consulta);
                 oout.flush();
 
-                Msg_ListaRegistos lista = (Msg_ListaRegistos) oin.readObject();
+                Object lista = oin.readObject();
 
-                if (lista.getTipo() == Message_types.VALIDO)
-                    return lista.getLista();
+                if(lista instanceof Geral g && g.getTipo() == Message_types.FAZER_lOGIN)
+                    return null;
+                if (lista instanceof Msg_ListaRegistos l && l.getTipo() == Message_types.VALIDO)
+                    return l.getLista();
             } catch (IOException | ClassNotFoundException ignored) {
                 setErro();
             }
@@ -534,18 +577,16 @@ public class ProgramaCliente {
 
     public Evento[] consultaEventosDeUmUtilizador(String utilizador) {
         if (!verificaFormato(utilizador)) {
-
-            Msg_String consulta =
-                    new Msg_String(utilizador, Message_types.CONSULTA_EVENTOS);
-
+            Msg_String consulta = new Msg_String(utilizador, Message_types.CONSULTA_PRES_UTILIZADOR);
             try {
                 oout.writeObject(consulta);
                 oout.flush();
 
-                Msg_ListaEventos lista = (Msg_ListaEventos) oin.readObject();
-
-                if (lista.getTipo() == Message_types.VALIDO)
-                    return lista.getLista();
+                Object lista = oin.readObject();
+                if(lista instanceof Geral g && g.getTipo() == Message_types.FAZER_lOGIN)
+                    return null;
+                if (lista instanceof Msg_ListaEventos l && l.getTipo() == Message_types.VALIDO)
+                    return l.getLista();
             } catch (IOException | ClassNotFoundException e) {
                 setErro();
             }

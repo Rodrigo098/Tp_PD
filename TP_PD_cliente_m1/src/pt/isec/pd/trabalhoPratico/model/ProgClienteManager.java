@@ -40,8 +40,8 @@ public class ProgClienteManager {
         return programaCliente.criaSocket(list);
     }
 
-    public void login(String email, String password) {
-        programaCliente.login(email, password);
+    public String login(String email, String password) {
+        return programaCliente.login(email, password);
     }
 
     public void logout() {

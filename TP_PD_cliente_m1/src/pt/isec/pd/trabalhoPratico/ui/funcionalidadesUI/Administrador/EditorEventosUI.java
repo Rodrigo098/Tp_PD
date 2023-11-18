@@ -166,8 +166,11 @@ public class EditorEventosUI extends BorderPane {
     private void extrairListaPresencas() {
         listaPresencas.getItems().clear();
 
-        for (Utilizador utilizador : progClienteManager.consultaPresencasEvento(ListarEventosUI.eventoSelecionado.nomeEvento())) {
-            listaPresencas.getItems().add(utilizador);
+        Utilizador[] lista = progClienteManager.consultaPresencasEvento(ListarEventosUI.eventoSelecionado.nomeEvento());
+        if(lista != null) {
+            for (Utilizador utilizador : lista) {
+                listaPresencas.getItems().add(utilizador);
+            }
         }
     }
 }

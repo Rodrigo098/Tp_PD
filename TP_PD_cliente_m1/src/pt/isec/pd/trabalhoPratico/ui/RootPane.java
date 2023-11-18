@@ -17,7 +17,7 @@ import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.RegistoUtiliza
 
 public class RootPane extends BorderPane {
     private Button login;
-    private Text registar;
+    private Text registar, resultado;
     private TextField username, password;
     private MensagemBox msgBox;
 
@@ -40,10 +40,12 @@ public class RootPane extends BorderPane {
         registar = new Text("Registar");
         registar.getStyleClass().add("links");
 
+        resultado = new Text();
+
         Label label = new Label("Entrar na aplicação");
         label.getStyleClass().add("titulo");
 
-        VBox vBox = new VBox(label, new HBox(new Text("Nome de utilizador: "), username), new HBox(new Text("Password: "), password), login, registar);
+        VBox vBox = new VBox(label, new HBox(new Text("Nome de utilizador: "), username), new HBox(new Text("Password: "), password), resultado, login, registar);
         vBox.getStyleClass().add("sombreamentoBox");
         VBox.setMargin(label, new Insets(0, 10, 30, 10));
 
@@ -62,7 +64,7 @@ public class RootPane extends BorderPane {
 
     private void registerHandlers() {
         login.setOnAction(e -> {
-            progClienteManager.login(username.getText(), password.getText());
+            resultado.setText(progClienteManager.login(username.getText(), password.getText()));
             username.setText(null);
             password.setText(null);
         });
