@@ -17,7 +17,7 @@ import java.util.*;
 ///////////////////////////////////// PROGRAMA CLIENTE ///////////////////////
 public class ProgramaCliente {
     // TEMPO
-    private static final int TEMPO_MAXIMO = 10; // 10 segundos
+    private static final int TEMPO_MAXIMO = 20; // 10 segundos
     private final Timer temporizador = new Timer();
     private int contagem = 0;
     private TimerTask tarefa;
@@ -74,6 +74,7 @@ public class ProgramaCliente {
             } catch (IOException e) {
                 System.out.println("erro na thread para atualizacao assincrona");
             }
+
             multicastSocket.close();
         }
     }
@@ -237,8 +238,8 @@ public class ProgramaCliente {
     }
 
     public Evento[] obterListaConsultaEventos(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim) {
-        //return new Evento[]{new Evento("ola", "HelloMate", LocalDate.now(), 11, 12)};
-
+        return new Evento[]{new Evento("ola", "HelloMate", LocalDate.now(), 11, 12)};
+/*
         if(nome != null && !nome.isBlank() && local != null && !local.isBlank() && limData1 != null && limData2 != null && horaInicio >= horaFim) {
             Msg_ConsultaComFiltros consultaEventos = new Msg_ConsultaComFiltros(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
 
@@ -255,7 +256,7 @@ public class ProgramaCliente {
                 setErro();
             }
         }
-        return new Evento[]{};
+        return new Evento[]{};*/
     }
 
     public String obterCSV(String caminhoCSV, String nomeFicheiro, Message_types tipoCSV) {

@@ -16,6 +16,7 @@ public class ProgServidor {
     private InetAddress grupoMulticast;
     private DatagramSocket socketMulticast;
     private final int portoClientes;
+    private ServerSocket socketServidor;
     List<Socket> clients = new ArrayList<>();
     private Boolean pararServidor = false;
 
@@ -26,34 +27,34 @@ public class ProgServidor {
     //////////////////////////////////// SERVIÇO /////////////////////////////
     public void servico() {
         new Thread(new ThreadLeLinhaComandos()).start();
-        try(ServerSocket socket = new ServerSocket(portoClientes))
+        try
         {
+            socketServidor = new ServerSocket(portoClientes);
             try {
                 socketMulticast = new DatagramSocket();
                 this.grupoMulticast = InetAddress.getByName(ipMuticastString);
             } catch (SocketException | UnknownHostException e) {
                 throw new RuntimeException("Nao foi possivel criar o socket para multicast, erro [" + e + "]");
             }
+
             while(!pararServidor){
-                Socket cli = socket.accept();// aceita clientes
+                Socket cli = socketServidor.accept();// aceita clientes
                 cli.setSoTimeout(10000);
                 clients.add(cli);// adiciona cliente conectado a lista de clientes
                 new Thread(new ThreadCliente(cli)).start();
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            clients.clear();
+            System.out.println("<SERVIDOR> já não se aceitam mais clientes.");
         }
     }
 
     ////////////////////////////// ATUALIZAÇÃO ASSÍNCRONA /////////////////////////////
     public synchronized void envioDeAvisoDeAtualizacao(String msgAtaulizacao) {
         byte[] msg = msgAtaulizacao.getBytes();
-        DatagramPacket atualizacaoPacket = new DatagramPacket(msg, msg.length, grupoMulticast, socketMulticast.getPort());
+        DatagramPacket atualizacaoPacket = new DatagramPacket(msg, msg.length, grupoMulticast, portoClientes);
         try {
             socketMulticast.send(atualizacaoPacket);
-            socketMulticast.close();
+            System.out.println("Aviso de atualizacao enviado aos clientes...");
         } catch (IOException e) {
             throw new RuntimeException("Nao foi possivel informar da atualizacao ao clientes...");
         }
@@ -68,8 +69,17 @@ public class ProgServidor {
                 Scanner linhaComandos = new Scanner(System.in);
                 System.out.println("<SERVIDOR> Escreva \"sair\" para terminar o servidor");
                 inserido = linhaComandos.nextLine();
+                if(inserido.equals("atua"))
+                    envioDeAvisoDeAtualizacao("atualizacao");
             }while (!inserido.equals("sair"));
             envioDeAvisoDeAtualizacao("fimServidor");
+            try {
+                socketServidor.close();
+                socketMulticast.close();
+                clients.clear();
+            } catch (IOException e) {
+                throw new RuntimeException("erro a fechar sockets");
+            }
             pararServidor = true;
         }
     }

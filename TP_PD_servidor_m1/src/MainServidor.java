@@ -6,7 +6,7 @@ import java.util.Date;
 
 public class MainServidor {
     public static void main(String[] args) throws ParseException {
-        if(args.length != 4){
+  /*      if(args.length != 4){
             System.out.println("<SERVIDOR> Argumentos inválidos:\n" +
                     "\t[1] - Porto escuta para conexao e clientes;" +
                     "\t[2] - Caminho da diretoria de armazenamento da BD SQLite;" +
@@ -14,13 +14,13 @@ public class MainServidor {
                     "\t[4] - Porto escuta para lancar o resgistry local.");
             return;
         }
-
+*/
         //Para termos dados para testar as horas e datas dos eventos
         LocalTime horainicio = LocalTime.of(00, 00);
         LocalTime horafim = LocalTime.of(23, 55);
         SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
         Date data = df.parse("09-11-2023");
-
+/*
         try {
             Integer.parseInt(args[0]);//verifica validade do porto inserido para conexao - cliente
             Integer.parseInt(args[3]);//verifica validade do porto inserido para registry
@@ -42,8 +42,8 @@ public class MainServidor {
         } catch (NumberFormatException e) {
             throw new NumberFormatException("<SERVIDOR> Os portos inseridos devem ter ser inteiros! [ERRO] " + e.getCause());
         }
-
-        ProgServidor prog = new ProgServidor(Integer.parseInt(args[0]));
+*/
+        ProgServidor prog = new ProgServidor(6001);//Integer.parseInt(args[0]));
         prog.servico();
 
 

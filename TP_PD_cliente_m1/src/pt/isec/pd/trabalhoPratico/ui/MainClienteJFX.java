@@ -36,8 +36,8 @@ public class MainClienteJFX extends Application {
         Scene scene;
 
         //-----------------------------------
-        //Pair<Boolean, String> conexao = clienteManager.criaSocket(list);
-        //if(conexao.getKey()) {
+        Pair<Boolean, String> conexao = clienteManager.criaSocket(list);
+        if(conexao.getKey()) {
         RootPane root = new RootPane(clienteManager);
         scene = new Scene(root, 700, 500);
         stage.setMaxHeight(600);
@@ -45,11 +45,11 @@ public class MainClienteJFX extends Application {
             clienteManager.setLogado("SAIR");
             clienteManager.logout();
         });
-        //}
-        /*else{
+        }
+        else{
             SairApp root = new SairApp(conexao.getValue(), "conexao");
             scene = new Scene( root,400, 400);
-        }*/
+        }
         //-----------------------------------
 
         scene.getStylesheets().add(css);
