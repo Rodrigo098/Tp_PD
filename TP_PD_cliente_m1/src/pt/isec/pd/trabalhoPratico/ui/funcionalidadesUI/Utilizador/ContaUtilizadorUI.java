@@ -67,7 +67,7 @@ public class ContaUtilizadorUI extends BorderPane {
         editarRegisto.setOnAction(e -> opcaoUti.set("EDITAR_REGISTO"));
 
         logout.setOnAction(e -> {
-            progClienteManager.logout();
+            progClienteManager.logout("UTI");
             MainCliente.menuSBP.set("MENU");
         });
 
