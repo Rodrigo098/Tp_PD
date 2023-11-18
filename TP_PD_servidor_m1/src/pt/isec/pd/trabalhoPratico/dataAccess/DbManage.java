@@ -13,7 +13,6 @@ import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -31,7 +30,7 @@ public class DbManage {
     }
 
 
-    public static boolean Registonovouser(Utilizador user, String password){
+    public static boolean RegistoNovoUser(Utilizador user, String password){
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
             Statement statement = connection.createStatement()){
@@ -289,7 +288,6 @@ public class DbManage {
     public static List<Utilizador> Presencas_evento(String nome_evento){
         List<Utilizador> res = new ArrayList<>();
         try(Connection connection = DriverManager.getConnection(dbUrl);
-
             Statement statement = connection.createStatement()){
             String GetQuery = "SELECT * FROM Assiste where nome_evento='" + nome_evento + "';";
             ResultSet rs = statement.executeQuery(GetQuery);
@@ -297,20 +295,15 @@ public class DbManage {
             {
                 System.out.println("Nenhum evento encontrado");
                 return null;
-
             }
             while (rs.next()){
-                Utilizador aux=new Utilizador(rs.getString("nome"),rs.getString("email"),rs.getInt("num_estudante"));
+                Utilizador aux = new Utilizador(rs.getString("nome"),rs.getString("email"),rs.getInt("num_estudante"));
                 res.add(aux);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-
-
-
-
-        return res ;
+        return res;
     }
 
 //----------------------------------------------------------------------------Novas funções para o Admin
