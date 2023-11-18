@@ -4,16 +4,15 @@ import pt.isec.pd.trabalhoPratico.model.recordDados.*;
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 
 public class ProgServidor {
     public static final int MAX_SIZE = 4000;
+    private static final int portobackup=4444;
     private final String ipMuticastString = "224.0.1.0";
-    private InetAddress grupoMulticast;
+    private final String Heartbeatip=" 230.44.44.44";
+    private InetAddress grupoMulticast,heartbeatgroup;
     private DatagramSocket socketMulticast;
     private final int portoClientes;
     private ServerSocket socketServidor;
@@ -33,13 +32,14 @@ public class ProgServidor {
             try {
                 socketMulticast = new DatagramSocket();
                 this.grupoMulticast = InetAddress.getByName(ipMuticastString);
+              //  heartbeatgroup=InetAddress.getByName(Heartbeatip);
             } catch (SocketException | UnknownHostException e) {
                 throw new RuntimeException("Nao foi possivel criar o socket para multicast, erro [" + e + "]");
             }
 
             while(!pararServidor){
                 Socket cli = socketServidor.accept();// aceita clientes
-                cli.setSoTimeout(10000);
+                //cli.setSoTimeout(10000);
                 clients.add(cli);// adiciona cliente conectado a lista de clientes
                 new Thread(new ThreadCliente(cli)).start();
             }
@@ -59,6 +59,49 @@ public class ProgServidor {
             throw new RuntimeException("Nao foi possivel informar da atualizacao ao clientes...");
         }
     }
+    class ThreadHeartbeat extends Thread{
+
+
+
+
+        @Override
+        public void run() {
+            DadosRmi exemplo=new DadosRmi("Exemplo");
+          try(MulticastSocket socket=new MulticastSocket(portobackup)
+          ) {
+             socket.joinGroup(heartbeatgroup);
+             ByteArrayOutputStream help=new ByteArrayOutputStream();
+             ObjectOutputStream objout=new ObjectOutputStream(help);
+             objout.writeObject(exemplo);
+
+             DatagramPacket packet=new DatagramPacket(help.toByteArray(),help.toByteArray().length,heartbeatgroup,portobackup);
+                 while (!pararServidor){
+                     Timer temporizador=new Timer();
+                     TimerTask timerTask=new TimerTask() {
+                         int timer;
+                         @Override
+                         public void run() {
+                            timer++;
+                            if(timer%10==0) {
+                                try {socket.send(packet);}
+                                catch (IOException e) {
+                                    System.out.println(e.getMessage());}
+                            }
+                         }
+                     };
+                     temporizador.schedule(timerTask,0,1000);
+
+             }
+
+
+
+          } catch (IOException e) {
+              throw new RuntimeException(e);
+          }
+        }
+    }
+
+
 
     ////////////////////////////////// THREAD LINHA DE COMANDOS /////////////////////////////
     class ThreadLeLinhaComandos extends Thread {
@@ -85,9 +128,11 @@ public class ProgServidor {
     }
     ////////////////////////////////// THREAD CLIENTE /////////////////////////////
     class ThreadCliente extends Thread {
-        boolean flagStop, isadmin, logado;
+        boolean flagStop, isadmin, logado,stopthread;
         Socket client;
+        Timerask timerask;
         String email;
+
         List <Evento> eventosPresencasUser = new ArrayList<>();
         List <Evento> eventosPresencasAdmin = new ArrayList<>();
 
@@ -95,6 +140,7 @@ public class ProgServidor {
             client = cli;
             flagStop = false;
             isadmin = false;
+            stopthread=false;
         }
 
         @Override
@@ -102,7 +148,9 @@ public class ProgServidor {
             try(ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
                 ObjectInputStream in = new ObjectInputStream(client.getInputStream())
             ) {
-                while(!pararServidor) {
+
+
+                while(!pararServidor&& !stopthread) {
                     Geral msgRecebida = (Geral) in.readObject();
 
                     //Pedidos de Registo e Login
@@ -123,6 +171,7 @@ public class ProgServidor {
                             } else
                                 out.writeObject(new Msg_String(ipMuticastString, Message_types.UTILIZADOR));
                         }
+
                     }
                     else if (msgRecebida.getTipo() == Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
                         logado = true;
@@ -137,10 +186,14 @@ public class ProgServidor {
                     }else{
                         out.writeObject(new Geral(Message_types.FAZER_LOGIN));
                     }
-
+                    if(timerask!=null && logado){
+                        timerask.cancel();
+                        System.out.println("Parou o timing");
+                        flagStop=false;
+                    }
                     //Pedidos para clientes to tipo UTILIZADOR
-                    if(!isadmin) {
-                        while (!flagStop && !pararServidor) {
+                    if(!isadmin && logado) {
+                        while (!flagStop ) {
                             Geral message = (Geral) in.readObject();
                             switch (message.getTipo()) {
                                 case EDITAR_REGISTO ->{
@@ -155,9 +208,14 @@ public class ProgServidor {
                                 }
                                 case SUBMICAO_COD -> {
                                     //vai à BD verificar -> têm de fazer, por enquanto está inválido
-                                    out.writeObject(new Geral(Message_types.INVALIDO));
-                                /*se for valido fazer
+                                    Msg_String_Int aux= (Msg_String_Int)message;
+                                 if(!DbManage.submitcod(aux.getNumero(),aux.getConteudo(),email)){
+                                     out.writeObject(new Geral(Message_types.INVALIDO));
+                                 }else{
                                     envioDeAvisoDeAtualizacao("atualizacao");
+                                    out.writeObject(new Geral(Message_types.VALIDO));}
+                                /*se for valido fazer
+
                                  */
                                 }
                                 case CONSULTA_PRES_UTILIZADOR -> {
@@ -186,13 +244,27 @@ public class ProgServidor {
                                     DbManage.PresencasCSV(eventosPresencasUser,file);
                                     sendfile(out,file);
                                 }
-                                case LOGOUT -> flagStop = true;
+                                case LOGOUT -> {
+                                    /* Tive a fzr experiencias caso quisessem por um timer no logout
+                                    Timerask timerask =new Timerask(in);
+                                    Timer usar=new Timer();
+                                    usar.schedule(timerask,0,1000);
+                                    //flagStop = true;*/
+                                    flagStop=true;
+                                    logado=false;
+                                    Timer startcount=new Timer();
+                                    timerask=new Timerask(in);
+                                    startcount.schedule(timerask,0,1000);
+
+
+
+                                }
                                 default -> out.writeObject(new Geral(Message_types.INVALIDO));
                             }
                         }
-                    } else {
+                    } else if(logado){
                         //Pedidos para clientes to tipo UTILIZADOR
-                        while (!flagStop && !pararServidor) {
+                        while (!flagStop ) {
                             Geral message = (Geral) in.readObject();
                             switch (message.getTipo()) {
                                 case CRIA_EVENTO -> {
@@ -322,16 +394,56 @@ public class ProgServidor {
                         }
                     }
                 }
+                System.out.println("Chegou ao fim");
             } catch (IOException | ClassNotFoundException ignored) {
             } finally {
                 try {
                     client.close();
                 } catch (IOException ignored) {
                 }
+                if(timerask!=null)timerask.cancel();
                 clients.remove(client);
                 System.out.println("Cliente: "+ email +"terminado");
             }
         }
+
+
+
+        class Timerask extends TimerTask{
+            private int contador;
+            private ObjectInputStream oin;
+
+
+            public Timerask(ObjectInputStream oin) {
+                this.oin=oin;
+            }
+
+
+
+            @Override
+            public void run() {
+                System.out.println("Fez "+contador);
+                contador++;
+
+                if(contador==60){
+                    stopthread=true;
+                    try {
+
+                        oin.close();
+
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+
+                    }
+                    this.cancel();
+                }
+            }
+        }
+
+
+
+
+
     }
 
     private void sendfile(OutputStream out,File file){
@@ -352,5 +464,43 @@ public class ProgServidor {
         }
 
     }
-
 }
+     //Isto foi uma classe que usei para experimentar um timer para o logout para dar oportunidade ao cliente de reconectar
+    /*
+        class Timerask extends TimerTask{
+            private static int contador;
+            private ObjectInputStream oin;
+
+
+            public Timerask(ObjectInputStream oin) {
+                this.oin=oin;
+                instance=this;
+            }
+            ~~
+
+
+            @Override
+            public void run() {
+                System.out.println("Fez "+contador);
+                contador++;
+
+                if(contador==10){
+                    flagStop=true;
+                    pararServidor=true;
+                    try {
+
+                        oin.close();
+
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+
+                    }
+                    this.cancel();
+                }
+            }
+        }
+                */
+
+
+
+
