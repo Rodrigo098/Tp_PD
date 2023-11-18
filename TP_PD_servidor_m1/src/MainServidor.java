@@ -46,6 +46,7 @@ public class MainServidor {
         ProgServidor prog = new ProgServidor(Integer.parseInt(args[0]));
         prog.servico();
 
+
       // DbManage dbManage = new DbManage();
      //  DbManage.Registonovouser(new Utilizador("Joao","eu@tu.isec","9876"),"12345");
     //  DbManage.autentica_user("eu","12345");
