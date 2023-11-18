@@ -388,7 +388,13 @@ public class ProgServidor {
                                     //out.writeObject(new Geral(Message_types.VALIDO));
                                     // Na toerio
                                 } //Serão necessários 2 ficheiros csv
-                                case LOGOUT -> flagStop = true;
+                                case LOGOUT -> {
+                                    flagStop=true;
+                                    logado=false;
+                                    Timer startcount=new Timer();
+                                    timerask=new Timerask(in);
+                                    startcount.schedule(timerask,0,1000);
+                                }
                                 default -> out.writeObject(new Geral(Message_types.INVALIDO));
                             }
                         }
