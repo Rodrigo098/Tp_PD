@@ -60,7 +60,7 @@ public class ProgServidor {
         }
     }
 
-    ////////////////////////////////// THREAD CLIENTE /////////////////////////////
+    ////////////////////////////////// THREAD LINHA DE COMANDOS /////////////////////////////
     class ThreadLeLinhaComandos extends Thread {
         @Override
         public void run(){
@@ -69,8 +69,8 @@ public class ProgServidor {
                 Scanner linhaComandos = new Scanner(System.in);
                 System.out.println("<SERVIDOR> Escreva \"sair\" para terminar o servidor");
                 inserido = linhaComandos.nextLine();
-                if(inserido.equals("atua"))
-                    envioDeAvisoDeAtualizacao("atualizacao");
+                //if(inserido.equals("atua"))
+                  //  envioDeAvisoDeAtualizacao("atualizacao");
             }while (!inserido.equals("sair"));
             envioDeAvisoDeAtualizacao("fimServidor");
             try {
@@ -83,6 +83,7 @@ public class ProgServidor {
             pararServidor = true;
         }
     }
+    ////////////////////////////////// THREAD CLIENTE /////////////////////////////
     class ThreadCliente extends Thread {
         boolean flagStop, isadmin, logado;
         Socket client;
