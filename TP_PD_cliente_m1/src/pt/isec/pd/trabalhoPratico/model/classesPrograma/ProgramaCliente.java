@@ -14,7 +14,7 @@ import java.util.*;
 ///////////////////////////////////// PROGRAMA CLIENTE ///////////////////////
 public class ProgramaCliente {
     // TEMPO
-    private static final int TEMPO_MAXIMO = 10; // 10 segundos
+    private static final int TEMPO_MAXIMO = 60; // 10 segundos
     private final Timer temporizador = new Timer();
     private int contagem = 0;
     private TimerTask tarefa;
@@ -177,6 +177,7 @@ public class ProgramaCliente {
     public String login(String email, String password) {
         //gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.UTILIZADOR);
         //return "ola";
+
         if(!fezLogin) {
             if (password == null || password.isBlank() || verificaFormato(email))
                 return "Tem que preencher os dados corretamente!!";

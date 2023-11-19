@@ -46,6 +46,7 @@ public class MainClienteJFX extends Application {
         });
         }
         else{
+
             SairApp root = new SairApp(conexao.mensagem(), "conexao");
             scene = new Scene( root,400, 400);
         }
