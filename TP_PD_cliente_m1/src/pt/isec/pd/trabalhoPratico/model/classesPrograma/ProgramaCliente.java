@@ -158,7 +158,7 @@ public class ProgramaCliente {
                 if (socket.isConnected()) {
                     oin = new ObjectInputStream(socket.getInputStream());
                     oout = new ObjectOutputStream(socket.getOutputStream());
-                    pontoSituacao = new ParResposta(true, "Conexão bem sucedida");
+                    return new ParResposta(true, "Conexão bem sucedida");
                 }
             } catch (IllegalArgumentException e) {
                 pontoSituacao = new ParResposta(false, "Introduziu um porto inválido.");
