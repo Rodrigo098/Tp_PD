@@ -202,6 +202,39 @@ public class DbManage {
 
     }
 
+    public static List<Evento> ConsultaPresencas_User_Admin(String email_utilizador){
+        List<Evento> eventos_assistidos=new ArrayList<>();
+        try(Connection connection=DriverManager.getConnection(dbUrl)){
+            String GetQuery = "SELECT * FROM EVENTO INNER JOIN ASSISTE ON EVENTO.nome_evento=ASSISTE.nome_evento where ASSISTE.email= ?;";
+            PreparedStatement preparedStatement = connection.prepareStatement(GetQuery);
+            preparedStatement.setString(1, email_utilizador);
+            ResultSet rs = preparedStatement.executeQuery();
+            if(rs.isBeforeFirst()){
+                while (rs.next()) {
+                    String nomeEvento = rs.getString("nome_evento");
+                    String localEvento = rs.getString("local");
+                    String dataRealizacao = rs.getString("data_realizacao");
+                    int horaInicioEvento = rs.getInt("hora_inicio");
+                    int horaFimEvento = rs.getInt("hora_fim");
+                    LocalDate date=LocalDate.parse(dataRealizacao);
+
+                    Evento evento = new Evento( nomeEvento,localEvento, date, horaInicioEvento, horaFimEvento );
+                    eventos_assistidos.add(evento);
+                }
+                return eventos_assistidos;
+
+            }else{
+                System.out.println("Nenhum evento encontrado");
+                return eventos_assistidos;
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return eventos_assistidos;
+        }
+
+    }
+
     //Alterei esta classe para retornar os eventos em que o utilizador tem presenças registadas
     //E para conter já os filtros
     public static List <Evento> ConsultaPresencas_user(String email_utilizador, Msg_ConsultaComFiltros filtros){
