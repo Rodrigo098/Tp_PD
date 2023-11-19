@@ -201,31 +201,6 @@ public class DbManage {
 
 
     }
-    public static boolean CriaEvento(Evento evento){
-        try(Connection connection = DriverManager.getConnection(dbUrl);
-
-            Statement statement = connection.createStatement()){
-
-
-            String createEntryQuery = "INSERT INTO Evento (nome_evento,local,data_realizacao,hora_inicio,hora_fim) VALUES ('"
-                    + evento.nomeEvento()+"','" + evento.local()+"','" +evento.data()+"','" +evento.horaInicio()+"','" +evento.horaFim()+"')";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
-
-            if(statement.executeUpdate(createEntryQuery)<1){
-                System.out.println("Entry insertion or update failed");
-                return false;
-            }
-            else{
-                System.out.println("Entry insertion succeeded");
-                return true;
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
-
-
-    }
-
 
     //Alterei esta classe para retornar os eventos em que o utilizador tem presenças registadas
     //E para conter já os filtros
@@ -264,7 +239,6 @@ public class DbManage {
             }
 
             ResultSet rs = statement.executeQuery(FiltroEventosUser);
-
 
 
             while (rs.next()){
@@ -526,8 +500,7 @@ public class DbManage {
         }
     }
 
-//Gerar codigo (Este é complicadinho =D)
-
+//Gerar codigo
     public static int GeraCodigoRegisto(String evento, int validadeMinutos) {
         //Estou a utilizar o PreparedStatement pq é necessário para passar valores dinâmicos por parametros (para consultas)
         String verificaEventoQuery = "SELECT data_realizacao, hora_inicio, hora_fim FROM Evento WHERE nome_evento = ?";
@@ -568,7 +541,7 @@ public class DbManage {
 
 
                     // Eu alterei para passar a eliminar os codigos antigos e substituir pelos novos, nao me parece muito logico guarda-los, dps diz me o que achas
-                  String EliminaCodigosAnterioresQuery = "DELETE  FROM Codigo_Registo  WHERE nome_evento = ?";//
+                    String EliminaCodigosAnterioresQuery = "DELETE  FROM Codigo_Registo  WHERE nome_evento = ?";//
                     PreparedStatement expiraStatement = connection.prepareStatement(EliminaCodigosAnterioresQuery);
                     expiraStatement.setString(1, evento); // Define o valor do nome_evento para o ? da query
                     expiraStatement.executeUpdate();// se existirem codigos antigos são eliminados se nao existirem nao acontece nada
@@ -617,44 +590,7 @@ public class DbManage {
         int cod= rand.nextInt(maximo - minimo + 1) + minimo;
         return cod;
     }
-    //Fazer a outra funcção Csv
-    //Ficheiro CSV
-    public static void PresencasCSV(List<Evento> eventos, File csvFile ) {
-        String csvSplit = ","; // Delimitador!!
 
-        try (FileWriter writer = new FileWriter(csvFile)) {
-            // Escrita do cabeçalho:
-             writer.append("Nome do Evento");
-             writer.append(csvSplit);
-             writer.append("Local");
-             writer.append(csvSplit);
-             writer.append("Data de Realizacao");
-             writer.append(csvSplit);
-             writer.append("Hora de Inicio");
-             writer.append(csvSplit);
-             writer.append("Hora de Fim");
-             writer.append("\n");
-
-             //Escrita dos dados obtidos da base de dados:
-            for (Evento evento : eventos) {
-                writer.append(evento.nomeEvento());
-                writer.append(csvSplit);
-                writer.append(evento.local());
-                writer.append(csvSplit);
-                writer.append(evento.data().toString());
-                writer.append(csvSplit);
-                writer.append(evento.horaInicio() + "");
-                writer.append(csvSplit);
-                writer.append(evento.horaFim() + "");
-                writer.append("\n");
-            }
-
-
-            System.out.println("Ficheiro CSV criado com sucesso");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }
 
 

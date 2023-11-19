@@ -135,6 +135,7 @@ public class ProgServidor {
 
         List <Evento> eventosPresencasUser = new ArrayList<>();
         List <Evento> eventosPresencasAdmin = new ArrayList<>();
+        List<Utilizador> utilizadoresEvento = new ArrayList<>();
 
         public ThreadCliente(Socket cli) {
             client = cli;
@@ -173,7 +174,7 @@ public class ProgServidor {
                         }
 
                     }
-                    else if (msgRecebida.getTipo() == Message_types.REGISTO) {// Aqui neste caso faltam fazer mais coisas como guardar na base de dados
+                    else if (msgRecebida.getTipo() == Message_types.REGISTO) {
                         logado = true;
 
                         Mgs_RegistarEditar_Conta aux=(Mgs_RegistarEditar_Conta)msgRecebida;
@@ -191,7 +192,7 @@ public class ProgServidor {
                         System.out.println("Parou o timing");
                         flagStop=false;
                     }
-                    //Pedidos para clientes to tipo UTILIZADOR
+                    //Pedidos para clientes do tipo UTILIZADOR
                     if(!isadmin && logado) {
                         while (!flagStop ) {
                             Geral message = (Geral) in.readObject();
@@ -234,14 +235,13 @@ public class ProgServidor {
                                     }
                                 }
                                 case CSV_UTILIZADOR -> {
-                                    //NÃO DEVIAM ESTAR A FAZER ISTO, VÃO BUSCAR OS DADOS E CRIAR O CSV DESTE LADO
                                     File file = new File("minhasPresencas.csv");
                                     if(!file.exists()) {
                                         if(!file.createNewFile())
                                             out.writeObject(new Geral(Message_types.ERRO));
                                     }
 
-                                    DbManage.PresencasCSV(eventosPresencasUser,file);
+                                    presencasUtilizadorCSV(eventosPresencasUser,file);
                                     sendfile(out,file);
                                 }
                                 case LOGOUT -> {
@@ -315,28 +315,32 @@ public class ProgServidor {
                                     else
                                         out.writeObject(new Geral(Message_types.ERRO));
                                 }
-                                case INSERE_PRES ->  {
-                                    Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas)message;
-                                    if(DbManage.InserePresencas(aux.getNome_evento(),aux.getLista())) {
-                                        out.writeObject(new Geral(Message_types.VALIDO));
-                                        envioDeAvisoDeAtualizacao("atualizacao");
+                                case CONSULTA_PRES_EVENT -> {
+                                    Msg_String aux = (Msg_String)message;
+                                     utilizadoresEvento = DbManage.Presencas_evento(aux.getConteudo());
+                                    if(utilizadoresEvento != null) {
+                                        Utilizador[] res = new Utilizador[utilizadoresEvento.size()];
+                                        for (int i = 0; i <utilizadoresEvento.size() ; i++) {
+                                            res[i]= utilizadoresEvento.get(i);
+                                        }
+                                        out.writeObject(new Msg_ListaRegistos(Message_types.VALIDO, res));
                                     }
                                     else
                                         out.writeObject(new Geral(Message_types.ERRO));
                                 }
-                                case ELIMINA_PRES -> {
-                                    Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas)message;
-                                    if(DbManage.EliminaPresencas(aux.getNome_evento(),aux.getLista())) {
-                                        out.writeObject(new Geral(Message_types.VALIDO));
-                                        envioDeAvisoDeAtualizacao("atualizacao");
+                                case CSV_PRESENCAS_DO_EVENTO -> {
+                                    File file=new File("presencasEvento.csv");
+                                    if(!file.exists()) {
+                                        if(!file.createNewFile())
+                                            out.writeObject(new Geral(Message_types.ERRO));
                                     }
-                                    else
-                                        out.writeObject(new Geral(Message_types.ERRO));
+                                    eventosPresencasCSV(utilizadoresEvento,file);
+                                    sendfile(out,file);
                                 }
-                                // ver esta (a baixo):
                                 case CONSULTA_PRES_UTILIZADOR -> {
-                                    //tem de ser este:
+
                                     Msg_String aux = (Msg_String) message;
+
                                     //NAO ESTA BEM!!! NAO SAO NECESSARIOS FILTROS
                                 /*
                                 Msg_ConsultaComFiltros aux = (Msg_ConsultaComFiltros)message;
@@ -349,19 +353,7 @@ public class ProgServidor {
                                 out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));*/
                                     out.writeObject(new Geral(Message_types.ERRO));
                                 }
-                                case CONSULTA_PRES_EVENT -> {
-                                    Msg_String aux = (Msg_String)message;
-                                    List<Utilizador> cenas = DbManage.Presencas_evento(aux.getConteudo());
-                                    if(cenas != null) {
-                                        Utilizador[] res = new Utilizador[cenas.size()];
-                                        for (int i = 0; i <cenas.size() ; i++) {
-                                            res[i]= cenas.get(i);
-                                        }
-                                        out.writeObject(new Msg_ListaRegistos(Message_types.VALIDO, res));
-                                    }
-                                    else
-                                        out.writeObject(new Geral(Message_types.ERRO));
-                                }
+
                                 case CSV_PRESENCAS_UTI_NUM_EVENTO -> {
                                     //NÃO DEVIAM ESTAR A FAZER ISTO, VÃO BUSCAR OS DADOS E CRIAR O CSV DESTE LADO
                                     File file = new File("Presencas.csv");// talvez o nome do ficheiro seja outro ,idk
@@ -369,25 +361,28 @@ public class ProgServidor {
                                         if(!file.createNewFile())
                                             out.writeObject(new Geral(Message_types.ERRO));
                                     }
-                                    DbManage.PresencasCSV(eventosPresencasUser, file);// not sure se e esta a funcao
+                                    presencasUtilizadorCSV(eventosPresencasUser, file);// not sure se e esta a funcao
                                     // Aqui colocar a funcao que vamos chamar na db
                                     sendfile(out,file);
                                 }
-                                case CSV_PRESENCAS_DO_EVENTO -> {
-                                    //NÃO DEVIAM ESTAR A FAZER ISTO, VÃO BUSCAR OS DADOS E CRIAR O CSV DESTE LADO
-                                    File file=new File("minhasPresencas.csv");// talvez o nome do ficheiro seja outro ,idk
-                                    if(!file.exists()) {
-                                        if(!file.createNewFile())
-                                            out.writeObject(new Geral(Message_types.ERRO));
+                                case ELIMINA_PRES -> {
+                                    Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas)message;
+                                    if(DbManage.EliminaPresencas(aux.getNome_evento(),aux.getLista())) {
+                                        out.writeObject(new Geral(Message_types.VALIDO));
+                                        envioDeAvisoDeAtualizacao("atualizacao");
                                     }
-
-                                    //  DbManage.PresencasCSV(eventosPresencasUser,file);
-                                    // Aqui colocar a funcao que vamos chamar na db
-                                    sendfile(out,file);
-                                    //PresencasCSV(eventosPresencasAdmin,"presencasUtilizadores.csv");
-                                    //out.writeObject(new Geral(Message_types.VALIDO));
-                                    // Na toerio
-                                } //Serão necessários 2 ficheiros csv
+                                    else
+                                        out.writeObject(new Geral(Message_types.ERRO));
+                                }
+                                case INSERE_PRES ->  {
+                                    Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas)message;
+                                    if(DbManage.InserePresencas(aux.getNome_evento(),aux.getLista())) {
+                                        out.writeObject(new Geral(Message_types.VALIDO));
+                                        envioDeAvisoDeAtualizacao("atualizacao");
+                                    }
+                                    else
+                                        out.writeObject(new Geral(Message_types.ERRO));
+                                }
                                 case LOGOUT -> {
                                     flagStop=true;
                                     logado=false;
@@ -451,6 +446,75 @@ public class ProgServidor {
 
 
     }
+
+
+    //Ficheiros CSV
+    public static void presencasUtilizadorCSV(List<Evento> eventos, File csvFile ) {
+        String csvSplit = ","; // Delimitador!!
+
+        try (FileWriter writer = new FileWriter(csvFile)) {
+            // Escrita do cabeçalho:
+            writer.append("Nome do Evento");
+            writer.append(csvSplit);
+            writer.append("Local");
+            writer.append(csvSplit);
+            writer.append("Data de Realizacao");
+            writer.append(csvSplit);
+            writer.append("Hora de Inicio");
+            writer.append(csvSplit);
+            writer.append("Hora de Fim");
+            writer.append("\n");
+
+            //Escrita dos dados obtidos da base de dados:
+            for (Evento evento : eventos) {
+                writer.append(evento.nomeEvento());
+                writer.append(csvSplit);
+                writer.append(evento.local());
+                writer.append(csvSplit);
+                writer.append(evento.data().toString());
+                writer.append(csvSplit);
+                writer.append(evento.horaInicio() + "");
+                writer.append(csvSplit);
+                writer.append(evento.horaFim() + "");
+                writer.append("\n");
+            }
+
+
+            System.out.println("Ficheiro CSV criado com sucesso");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void eventosPresencasCSV(List<Utilizador> users, File csvFile ) {
+        String csvSplit = ","; // Delimitador!!
+
+        try (FileWriter writer = new FileWriter(csvFile)) {
+            // Escrita do cabeçalho:
+            writer.append("Nome");
+            writer.append(csvSplit);
+            writer.append("Email");
+            writer.append(csvSplit);
+            writer.append("Numero de estudante");
+            writer.append(csvSplit);
+            writer.append("\n");
+
+            //Escrita dos dados obtidos da base de dados:
+            for (Utilizador user : users) {
+                writer.append(user.nome());
+                writer.append(csvSplit);
+                writer.append(user.email());
+                writer.append(csvSplit);
+                writer.append((char) user.numIdentificacao());
+                writer.append(csvSplit);
+                writer.append("\n");
+            }
+            System.out.println("Ficheiro CSV criado com sucesso");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private void sendfile(OutputStream out,File file){
         byte []fileChunk = new byte[MAX_SIZE];
