@@ -262,9 +262,11 @@ public class DbManage {
     public static List<Utilizador> Presencas_evento(String nome_evento){
         List<Utilizador> res = new ArrayList<>();
         try(Connection connection = DriverManager.getConnection(dbUrl);
-            Statement statement = connection.createStatement()){
-            String GetQuery = "SELECT * FROM UTILIZADOR INNER JOIN ASSISTE ON UTILIZADOR.EMAIL=ASSISTE.EMAIL where ASSISTE.nome_evento='" + nome_evento + "';";
-            ResultSet rs = statement.executeQuery(GetQuery);
+            ){
+            String GetQuery = "SELECT * FROM UTILIZADOR INNER JOIN ASSISTE ON UTILIZADOR.EMAIL=ASSISTE.EMAIL where ASSISTE.nome_evento= ?;";
+            PreparedStatement preparedStatement = connection.prepareStatement(GetQuery);
+            preparedStatement.setString(1, nome_evento);
+            ResultSet rs = preparedStatement.executeQuery();
             if(!rs.isBeforeFirst())
             {
                 System.out.println("Nenhum evento encontrado");

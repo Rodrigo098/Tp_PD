@@ -1,3 +1,5 @@
+import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
+
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -45,6 +47,7 @@ public class MainServidor {
 */
         ProgServidor prog = new ProgServidor(6001);//Integer.parseInt(args[0]));
         prog.servico();
+
 
 
       // DbManage dbManage = new DbManage();
