@@ -14,7 +14,7 @@ import java.util.*;
 ///////////////////////////////////// PROGRAMA CLIENTE ///////////////////////
 public class ProgramaCliente {
     // TEMPO
-    private static final int TEMPO_MAXIMO = 20; // 10 segundos
+    private static final int TEMPO_MAXIMO = 10; // 10 segundos
     private final Timer temporizador = new Timer();
     private int contagem = 0;
     private TimerTask tarefa;
@@ -83,9 +83,8 @@ public class ProgramaCliente {
         @Override
         public void run() {
             contagem++;
-            if (contagem == TEMPO_MAXIMO && !fezLogin) {
+            if ((contagem == TEMPO_MAXIMO && !fezLogin) || terminou) {
                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.EXCEDEU_TEMPO);
-                //setLogado("EXCEDEU_TEMPO");
                 termina();
             }
             System.out.println(contagem);
@@ -96,8 +95,8 @@ public class ProgramaCliente {
 
     public ProgramaCliente() {
         gereMudancasPLC = new GereMudancasPLC();
-        gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.ENTRADA);
         gereMudancasPLC.addPropertyChangeListener(gereMudancasPLC.PROP_ESTADO, est -> verificacaoLigacao());
+        gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.ENTRADA);
     }
 
 
@@ -111,8 +110,6 @@ public class ProgramaCliente {
         temporizador.cancel();
         tarefa.cancel();
         gereMudancasPLC.removePropertyChangeListener(gereMudancasPLC.PROP_ESTADO, evt -> verificacaoLigacao());
-        //remover os listener? ver
-        //logado.removeListener(observable -> verificacaoLigacao());
         try {
             if (socket != null)
                 socket.close();
@@ -172,6 +169,7 @@ public class ProgramaCliente {
             }
         } else
             pontoSituacao = new ParResposta(false, "Não foram introduzidos dados suficientes como argumento.");
+        terminou = true;
         return pontoSituacao;
     }
 
@@ -237,6 +235,7 @@ public class ProgramaCliente {
                 //setErro();
             }
         }
+        gereMudancasPLC.setEstadoNaAplicacao(fonte.equals("Window") ? EstadoNaAplicacao.SAIR : EstadoNaAplicacao.ENTRADA);
         return false;
     }
 

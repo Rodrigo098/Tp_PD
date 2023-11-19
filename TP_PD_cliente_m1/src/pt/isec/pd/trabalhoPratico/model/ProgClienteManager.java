@@ -18,13 +18,13 @@ public class ProgClienteManager {
 
     //////////////////////////// PROPRIEDADE LISTENERS ////////////////////////////////////
     public void addLogadoListener(PropertyChangeListener listener) {
-        programaCliente.addPropertyChangeListener(GereMudancasPLC.PROP_ATUALIZACAO ,listener);
+        programaCliente.addPropertyChangeListener(GereMudancasPLC.PROP_ESTADO ,listener);
     }
     public void addAtualizacaoListener(PropertyChangeListener listener) {
         programaCliente.addPropertyChangeListener(GereMudancasPLC.PROP_ATUALIZACAO ,listener);
     }
     public void addErroListener(PropertyChangeListener listener) {
-        programaCliente.addPropertyChangeListener(GereMudancasPLC.PROP_ATUALIZACAO ,listener);
+        programaCliente.addPropertyChangeListener(GereMudancasPLC.PROP_ERRO ,listener);
     }
 
     public String getLogado(){

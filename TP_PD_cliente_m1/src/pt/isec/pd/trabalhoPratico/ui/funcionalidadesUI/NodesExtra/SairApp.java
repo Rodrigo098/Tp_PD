@@ -37,6 +37,7 @@ public class SairApp extends VBox {
     private void registerHandlers() {
         sair.setOnAction(e -> {
             temporizador.cancel();
+
             Platform.exit();
         });
     }

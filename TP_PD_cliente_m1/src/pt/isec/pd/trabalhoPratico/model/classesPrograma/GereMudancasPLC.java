@@ -4,7 +4,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 enum EstadoNaAplicacao {
-    ENTRADA, ADMINISTRADOR, UTILIZADOR, EXCEDEU_TEMPO, SAIR, FIM;
+    ENTRADA, ADMINISTRADOR, UTILIZADOR, EXCEDEU_TEMPO, SAIR, FIM, NADA;
 }
 public class GereMudancasPLC {
     public static String PROP_ATUALIZACAO = "atualizacao", PROP_ERRO = "erro", PROP_ESTADO = "estado";
@@ -14,6 +14,7 @@ public class GereMudancasPLC {
     private PropertyChangeSupport suporteAtualizacao;
 
     public GereMudancasPLC() {
+        estadoNaAplicacao = EstadoNaAplicacao.NADA;
         suporteAtualizacao = new PropertyChangeSupport(this);
     }
 
@@ -26,18 +27,18 @@ public class GereMudancasPLC {
     }
 
     public void setNovaAtualizacao() {
-        suporteAtualizacao.firePropertyChange(PROP_ATUALIZACAO, null, null);
         numAtualizacoes++;
+        suporteAtualizacao.firePropertyChange(PROP_ATUALIZACAO, null, null);
     }
 
     public void setEstadoNaAplicacao(EstadoNaAplicacao novoEstado) {
-        suporteAtualizacao.firePropertyChange(PROP_ESTADO, null, null);
         estadoNaAplicacao = novoEstado;
+        suporteAtualizacao.firePropertyChange(PROP_ESTADO, null, null);
     }
 
     public void setErros() {
-        suporteAtualizacao.firePropertyChange(PROP_ERRO, null, null);
         erros++;
+        suporteAtualizacao.firePropertyChange(PROP_ERRO, null, null);
     }
 
     public EstadoNaAplicacao getEstadoNaAplicacao() {
