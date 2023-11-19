@@ -341,18 +341,12 @@ public class ProgServidor {
                                 case CONSULTA_PRES_UTILIZADOR -> {
 
                                     Msg_String aux = (Msg_String) message;
-
-                                    //NAO ESTA BEM!!! NAO SAO NECESSARIOS FILTROS
-                                /*
-                                Msg_ConsultaComFiltros aux = (Msg_ConsultaComFiltros)message;
-                                List<Evento> eventosAssistidos = DbManage.ConsultaPresencas_user(email, aux);
-                                Evento[] res = new Evento[eventosAssistidos.size()];
-                                for (int i = 0; i <eventosAssistidos.size() ; i++) {
-                                    res[i]= eventosAssistidos.get(i);
-                                }
-                                //Mandarmos isso pela classe que recebe a lista de eventos
-                                out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));*/
-                                    out.writeObject(new Geral(Message_types.ERRO));
+                                   eventosPresencasAdmin= DbManage.ConsultaPresencas_User_Admin(aux.getConteudo());
+                                   if(eventosPresencasAdmin!=null){
+                                   Evento[]res=eventosPresencasAdmin.toArray(new Evento[0]);
+                                   out.writeObject(new Msg_ListaEventos(Message_types.VALIDO,res));}
+                                   else
+                                       out.writeObject(new Geral(Message_types.ERRO));
                                 }
 
                                 case CSV_PRESENCAS_UTI_NUM_EVENTO -> {
@@ -366,6 +360,8 @@ public class ProgServidor {
                                     // Aqui colocar a funcao que vamos chamar na db
                                     sendfile(out,file);
                                 }
+
+
                                 case ELIMINA_PRES -> {
                                     Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas)message;
                                     if(DbManage.EliminaPresencas(aux.getNome_evento(),aux.getLista())) {
@@ -375,6 +371,8 @@ public class ProgServidor {
                                     else
                                         out.writeObject(new Geral(Message_types.ERRO));
                                 }
+
+
                                 case INSERE_PRES ->  {
                                     Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas)message;
                                     if(DbManage.InserePresencas(aux.getNome_evento(),aux.getLista())) {
@@ -384,6 +382,8 @@ public class ProgServidor {
                                     else
                                         out.writeObject(new Geral(Message_types.ERRO));
                                 }
+
+
                                 case LOGOUT -> {
                                     flagStop=true;
                                     logado=false;
@@ -396,7 +396,7 @@ public class ProgServidor {
                         }
                     }
                 }
-                System.out.println("Chegou ao fim");
+
             } catch (IOException | ClassNotFoundException ignored) {
                 ignored.printStackTrace();
             } finally {
@@ -414,7 +414,7 @@ public class ProgServidor {
 
         class Timerask extends TimerTask{
             private int contador;
-            private ObjectInputStream oin;
+            private final ObjectInputStream oin;
 
 
             public Timerask(ObjectInputStream oin) {
@@ -537,41 +537,7 @@ public class ProgServidor {
 
     }
 }
-     //Isto foi uma classe que usei para experimentar um timer para o logout para dar oportunidade ao cliente de reconectar
-    /*
-        class Timerask extends TimerTask{
-            private static int contador;
-            private ObjectInputStream oin;
 
-
-            public Timerask(ObjectInputStream oin) {
-                this.oin=oin;
-                instance=this;
-            }
-            ~~
-
-
-            @Override
-            public void run() {
-                System.out.println("Fez "+contador);
-                contador++;
-
-                if(contador==10){
-                    flagStop=true;
-                    pararServidor=true;
-                    try {
-
-                        oin.close();
-
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-
-                    }
-                    this.cancel();
-                }
-            }
-        }
-                */
 
 
 
