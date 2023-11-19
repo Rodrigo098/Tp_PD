@@ -175,9 +175,6 @@ public class ProgramaCliente {
     }
 
     public String login(String email, String password) {
-        //gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.UTILIZADOR);
-        //return "ola";
-
         if(!fezLogin) {
             if (password == null || password.isBlank() || verificaFormato(email))
                 return "Tem que preencher os dados corretamente!!";
@@ -197,14 +194,11 @@ public class ProgramaCliente {
                             try {
                                 new Thread(new AtualizacaoAsync(portoServidor, ((Msg_String) g).getConteudo())).start();
                                 gereMudancasPLC.setEstadoNaAplicacao(g.getTipo() == Message_types.UTILIZADOR ? EstadoNaAplicacao.UTILIZADOR : EstadoNaAplicacao.ADMINISTRADOR);
-                                //logado.set(g.getTipo() == Message_types.ADMINISTRADOR ? "ADMINISTRADOR" : "UTILIZADOR");
                                 fezLogin = true;
                                 return "Estabeleceu ligação!!";
                             } catch (Exception e) {
                                 gereMudancasPLC.setErros();
                                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.FIM);
-                                //setErro();
-                                //setLogado("FIM");
                             }
                             return "Erro ao preparar a aplicação";
                         }
