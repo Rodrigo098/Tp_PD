@@ -263,7 +263,7 @@ public class DbManage {
         List<Utilizador> res = new ArrayList<>();
         try(Connection connection = DriverManager.getConnection(dbUrl);
             Statement statement = connection.createStatement()){
-            String GetQuery = "SELECT * FROM Assiste where nome_evento='" + nome_evento + "';";
+            String GetQuery = "SELECT * FROM UTILIZADOR INNER JOIN ASSISTE ON UTILIZADOR.EMAIL=ASSISTE.EMAIL where ASSISTE.nome_evento='" + nome_evento + "';";
             ResultSet rs = statement.executeQuery(GetQuery);
             if(!rs.isBeforeFirst())
             {

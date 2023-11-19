@@ -152,6 +152,7 @@ public class ProgServidor {
 
 
                 while(!pararServidor&& !stopthread) {
+                    System.out.println("Teve aqui");
                     Geral msgRecebida = (Geral) in.readObject();
 
                     //Pedidos de Registo e Login
@@ -397,6 +398,7 @@ public class ProgServidor {
                 }
                 System.out.println("Chegou ao fim");
             } catch (IOException | ClassNotFoundException ignored) {
+                ignored.printStackTrace();
             } finally {
                 try {
                     client.close();
