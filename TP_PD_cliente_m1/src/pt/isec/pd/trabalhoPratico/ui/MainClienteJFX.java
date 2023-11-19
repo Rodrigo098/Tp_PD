@@ -42,7 +42,7 @@ public class MainClienteJFX extends Application {
         scene = new Scene(root, 700, 500);
         stage.setMaxHeight(600);
         stage.setOnCloseRequest(e -> {
-            clienteManager.logout("SAIR");
+            clienteManager.logout("Window");
         });
         }
         else{

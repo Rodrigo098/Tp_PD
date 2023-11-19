@@ -131,6 +131,7 @@ public class ProgramaCliente {
             case ADMINISTRADOR, UTILIZADOR -> {
                 tarefa.cancel();
                 contagem = 0;
+                System.out.println("cancelou a tarefa");
             }
         }
     }
@@ -174,9 +175,8 @@ public class ProgramaCliente {
     }
 
     public String login(String email, String password) {
-        gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.UTILIZADOR);
-        return "ola";
-/*
+        //gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.UTILIZADOR);
+        //return "ola";
         if(!fezLogin) {
             if (password == null || password.isBlank() || verificaFormato(email))
                 return "Tem que preencher os dados corretamente!!";
@@ -217,7 +217,7 @@ public class ProgramaCliente {
             }
             return "Tente novamente...";
         }
-        return "Já fez login!";*/
+        return "Já fez login!";
     }
 
     public Boolean logout(String fonte) {
@@ -227,12 +227,10 @@ public class ProgramaCliente {
                 oout.writeObject(logout);
                 oout.flush();
                 gereMudancasPLC.setEstadoNaAplicacao(fonte.equals("Window") ? EstadoNaAplicacao.SAIR : EstadoNaAplicacao.ENTRADA);
-                //logado.set("ENTRADA");
                 fezLogin = false;
                 return true;
             } catch (IOException e) {
                 gereMudancasPLC.setErros();
-                //setErro();
             }
         }
         gereMudancasPLC.setEstadoNaAplicacao(fonte.equals("Window") ? EstadoNaAplicacao.SAIR : EstadoNaAplicacao.ENTRADA);
