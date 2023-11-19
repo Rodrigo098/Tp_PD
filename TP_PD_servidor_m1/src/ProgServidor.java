@@ -152,9 +152,9 @@ public class ProgServidor {
 
 
                 while(!pararServidor&& !stopthread) {
-                    System.out.println("Teve aqui");
-                    Geral msgRecebida = (Geral) in.readObject();
 
+                    Geral msgRecebida = (Geral) in.readObject();
+                    System.out.println("Teve aqui");
                     //Pedidos de Registo e Login
                     if(msgRecebida.getTipo() == Message_types.LOGIN){// para descobrir qual a classe estava a pensar em algo para o processamento depois dos dados
                         Msg_Login aux = (Msg_Login) msgRecebida;
