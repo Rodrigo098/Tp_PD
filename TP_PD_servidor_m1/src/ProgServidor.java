@@ -68,7 +68,7 @@ public class ProgServidor {
         public void run() {
 
           try(MulticastSocket socket=new MulticastSocket(portobackup)
-          ) {DadosRmi exemplo=new DadosRmi(InetAddress.getLocalHost().getHostAddress(),"Servidor");// nao tenho a certeza se seria este o IP
+          ) {DadosRmi exemplo=new DadosRmi("","Servidor",0);// nao tenho a certeza se seria este o IP
              socket.joinGroup(heartbeatgroup);
              ByteArrayOutputStream help=new ByteArrayOutputStream();
              ObjectOutputStream objout=new ObjectOutputStream(help);
