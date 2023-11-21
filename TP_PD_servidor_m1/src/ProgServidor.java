@@ -66,9 +66,9 @@ public class ProgServidor {
 
         @Override
         public void run() {
-            DadosRmi exemplo=new DadosRmi("Exemplo");
+
           try(MulticastSocket socket=new MulticastSocket(portobackup)
-          ) {
+          ) {DadosRmi exemplo=new DadosRmi(InetAddress.getLocalHost().getHostAddress(),"Servidor");// nao tenho a certeza se seria este o IP
              socket.joinGroup(heartbeatgroup);
              ByteArrayOutputStream help=new ByteArrayOutputStream();
              ObjectOutputStream objout=new ObjectOutputStream(help);
