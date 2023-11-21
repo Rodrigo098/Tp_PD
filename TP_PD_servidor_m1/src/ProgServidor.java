@@ -11,7 +11,7 @@ public class ProgServidor {
     public static final int MAX_SIZE = 4000;
     private static final int portobackup=4444;
     private final String ipMuticastString = "224.0.1.0";
-    private final String Heartbeatip=" 230.44.44.44";
+    private final String Heartbeatip="230.44.44.44";
     private InetAddress grupoMulticast,heartbeatgroup;
     private DatagramSocket socketMulticast;
     private final int portoClientes;
@@ -32,7 +32,7 @@ public class ProgServidor {
             try {
                 socketMulticast = new DatagramSocket();
                 this.grupoMulticast = InetAddress.getByName(ipMuticastString);
-              //  heartbeatgroup=InetAddress.getByName(Heartbeatip);
+                heartbeatgroup=InetAddress.getByName(Heartbeatip);
             } catch (SocketException | UnknownHostException e) {
                 throw new RuntimeException("Nao foi possivel criar o socket para multicast, erro [" + e + "]");
             }
@@ -83,6 +83,7 @@ public class ProgServidor {
                          public void run() {
                             timer++;
                             if(timer%10==0) {
+                                timer=0;
                                 try {socket.send(packet);}
                                 catch (IOException e) {
                                     System.out.println(e.getMessage());}
