@@ -50,6 +50,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 this.grupoMulticast = InetAddress.getByName(ipMuticastString);
                 heartbeatgroup=InetAddress.getByName(Heartbeatip);
                 multicastSocket=new MulticastSocket(portobackup);
+                multicastSocket.joinGroup(heartbeatgroup);
                 rmi=new ProgServidor(portoClientes);
                 String myIpIdress=InetAddress.getLocalHost().getHostAddress();
                 Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
@@ -83,7 +84,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
             ObjectOutputStream objout = new ObjectOutputStream(help);
             objout.writeObject(data);
-            DatagramPacket backupPacket=new DatagramPacket(help.toByteArray(),help.toByteArray().length);
+            DatagramPacket backupPacket=new DatagramPacket(help.toByteArray(),help.toByteArray().length,heartbeatgroup,portobackup);
             multicastSocket.send(backupPacket);
             System.out.println("Aviso de atualizacao enviado aos clientes...");
         } catch (IOException e) {
@@ -120,7 +121,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
           try
           {
              DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,DbManage.getVersao());// nao tenho a certeza se seria este o IP
-             multicastSocket.joinGroup(heartbeatgroup);
+
              ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
              ObjectOutputStream objout = new ObjectOutputStream(help);
              objout.writeObject(data);
@@ -444,7 +445,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 }
 
             } catch (IOException | ClassNotFoundException ignored) {
-                ignored.printStackTrace();
+
             } finally {
                 try {
                     client.close();
