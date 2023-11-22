@@ -24,9 +24,8 @@ import java.util.Random;
 public class DbManage {
     private static final String dbAdress = "databasePD.db";
     private static final String dbUrl= "jdbc:sqlite:"+dbAdress;
-    private static int versao;
-
-    private static PropertyChangeSupport versaoSuporte;
+    private int versao;
+    private PropertyChangeSupport versaoSuporte;
 
     public DbManage() {
         versao = getversaobd();
@@ -61,8 +60,7 @@ public class DbManage {
         }
     }
 
-    public static void setVersao() {
-
+    public void setVersao() {
         versao++;
         try (Connection connection=DriverManager.getConnection(dbUrl)){
             String UpdateVersao="UPDATE Versao SET versao_id=? where versao_id=?";
@@ -79,11 +77,11 @@ public class DbManage {
         }
     }
 
-    public static int getVersao() {
+    public int getVersao() {
         return versao;
     }
 
-    public static boolean RegistoNovoUser(Utilizador user, String password){
+    public boolean RegistoNovoUser(Utilizador user, String password){
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
             Statement statement = connection.createStatement())
@@ -107,7 +105,7 @@ public class DbManage {
 
 
     }
-    public static Boolean[] autentica_user(String user, String password){
+    public Boolean[] autentica_user(String user, String password){
 
         // processar adnistrador
         Boolean[]res={false,false};//o primeiro é se a o user ta certo e a segunda é se é Admin ou não
@@ -138,7 +136,7 @@ public class DbManage {
         }
         return res;
     }
-    public static boolean edita_registo( Utilizador user, String pasword ){
+    public boolean edita_registo( Utilizador user, String pasword ){
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
             Statement statement = connection.createStatement()){
@@ -172,7 +170,7 @@ public class DbManage {
         }
 
     }
-    public static boolean submitcod(int codigo,String nome_evento,String emailuser){
+    public boolean submitcod(int codigo,String nome_evento,String emailuser){
         try(Connection connection = DriverManager.getConnection(dbUrl);
             Statement statement = connection.createStatement())
         {
@@ -248,7 +246,7 @@ public class DbManage {
         }
     }
 
-    public static List<Evento> ConsultaPresencas_User_Admin(String email_utilizador){
+    public List<Evento> ConsultaPresencas_User_Admin(String email_utilizador){
         List<Evento> eventos_assistidos=new ArrayList<>();
         try(Connection connection=DriverManager.getConnection(dbUrl)){
             String GetQuery = "SELECT * FROM EVENTO INNER JOIN ASSISTE ON EVENTO.nome_evento=ASSISTE.nome_evento where ASSISTE.email= ?;";
@@ -283,7 +281,7 @@ public class DbManage {
 
     //Alterei esta classe para retornar os eventos em que o utilizador tem presenças registadas
     //E para conter já os filtros
-    public static List <Evento> ConsultaPresencas_user(String email_utilizador, Msg_ConsultaComFiltros filtros){
+    public List <Evento> ConsultaPresencas_user(String email_utilizador, Msg_ConsultaComFiltros filtros){
         List<Evento> eventosAssistidos = new ArrayList<>();
 
         try(Connection connection = DriverManager.getConnection(dbUrl);
@@ -338,7 +336,7 @@ public class DbManage {
         return eventosAssistidos;
 
     }
-    public static List<Utilizador> Presencas_evento(String nome_evento){
+    public List<Utilizador> Presencas_evento(String nome_evento){
         List<Utilizador> res = new ArrayList<>();
         try(Connection connection = DriverManager.getConnection(dbUrl);
             ){
@@ -362,7 +360,7 @@ public class DbManage {
     }
 
 //----------------------------------------------------------------------------Novas funções para o Admin
-    public static boolean Cria_evento(Msg_Cria_Evento evento){//String nome, String local, Date data, LocalTime horainicio, LocalTime horafim) {
+    public boolean Cria_evento(Msg_Cria_Evento evento){//String nome, String local, Date data, LocalTime horainicio, LocalTime horafim) {
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
             Statement statement = connection.createStatement()){
@@ -386,7 +384,7 @@ public class DbManage {
     return false;
     }
 
-    public static boolean Edita_evento(Msg_Edita_Evento evento) {
+    public boolean Edita_evento(Msg_Edita_Evento evento) {
         try (Connection connection = DriverManager.getConnection(dbUrl);
              Statement statement = connection.createStatement()) {
 
@@ -429,7 +427,7 @@ public class DbManage {
         return true;
     }
 
-    public static boolean Elimina_evento(String nome_evento) {
+    public boolean Elimina_evento(String nome_evento) {
         try (Connection connection = DriverManager.getConnection(dbUrl);
              Statement statement = connection.createStatement()) {
 
@@ -460,7 +458,7 @@ public class DbManage {
         return false;
     }
 
-    public static List <Evento> Consulta_eventos(Msg_ConsultaComFiltros evento) {
+    public List <Evento> Consulta_eventos(Msg_ConsultaComFiltros evento) {
         List<Evento> eventos = new ArrayList<>();
 
 
@@ -514,7 +512,7 @@ public class DbManage {
         return eventos;
     }
 
-    public static boolean InserePresencas(String nomeEvento, String[] emails) {
+    public boolean InserePresencas(String nomeEvento, String[] emails) {
         try (Connection connection = DriverManager.getConnection(dbUrl)) {
 
             //Att: Vi na net que para cenas na bd que envolvam duas chaves primárias deve se utilizar esse PreparedStatement
@@ -563,7 +561,7 @@ public class DbManage {
     }
 
 
-    public static boolean EliminaPresencas(String nomeEvento, String [] emails) {
+    public boolean EliminaPresencas(String nomeEvento, String [] emails) {
         try (Connection connection = DriverManager.getConnection(dbUrl)) {
 
             for (String emailEstudante : emails) {
@@ -589,7 +587,7 @@ public class DbManage {
     }
 
 //Gerar codigo
-    public static int GeraCodigoRegisto(String evento, int validadeMinutos) {
+    public int GeraCodigoRegisto(String evento, int validadeMinutos) {
         //Estou a utilizar o PreparedStatement pq é necessário para passar valores dinâmicos por parametros (para consultas)
         String verificaEventoQuery = "SELECT data_realizacao, hora_inicio, hora_fim FROM Evento WHERE nome_evento = ?";
 
@@ -665,7 +663,7 @@ public class DbManage {
         }
     }
 
-    private static int geraCodigoAleatorio() {
+    private int geraCodigoAleatorio() {
         int tamanhoCodigo = 6;
 
         // O código vai ter 6 digitos, então o valor mínimo é 100000 e o máximo é 999999

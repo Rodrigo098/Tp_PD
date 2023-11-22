@@ -16,25 +16,33 @@ import java.util.*;
 
 
 public class ProgServidor  extends UnicastRemoteObject implements RemoteInterface {
+    // BACKUPS
     public static final int MAX_SIZE = 4000;
-    private static final int portobackup=4444;
+    private static final int portobackup = 4444;
     public static final String SERVICE_NAME = "servidor";
     private final String ipMuticastString = "224.0.1.0";
     private final String Heartbeatip="230.44.44.44";
-    private InetAddress grupoMulticast,heartbeatgroup;
-    private DatagramSocket socketMulticast;
     private RemoteInterface rmi;
-    private MulticastSocket multicastSocket;
+    private MulticastSocket multicastSocketBackup;
+    List<ObservableInterface> observers;
+    private DbManage dbManager;
+    
+    // CLIENTES (e ip heartbeat)
+    private InetAddress grupoMulticast, heartbeatgroup;
+    private DatagramSocket socketMulticastClientes;
     private final int portoClientes;
     private ServerSocket socketServidor;
     List<Socket> clients = new ArrayList<>();
-    List<ObservableInterface> observers;
     private Boolean pararServidor = false;
 
     public ProgServidor(int portoClientes) throws RemoteException {
         this.portoClientes = portoClientes;
-        observers=new ArrayList<>();
+        observers = new ArrayList<>();
 
+    }
+
+    public void setDbManager(DbManage dbManager) {
+        this.dbManager = dbManager;
     }
 
     //////////////////////////////////// SERVIÇO /////////////////////////////
@@ -44,14 +52,16 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
         {
             socketServidor = new ServerSocket(portoClientes);
             try {
+                // multicast clientes
+                socketMulticastClientes = new DatagramSocket();
+                this.grupoMulticast = InetAddress.getByName(ipMuticastString);
+
                 LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
                 System.out.println("Registry lancado");
-                socketMulticast = new DatagramSocket();
-                this.grupoMulticast = InetAddress.getByName(ipMuticastString);
-                heartbeatgroup=InetAddress.getByName(Heartbeatip);
-                multicastSocket=new MulticastSocket(portobackup);
-                multicastSocket.joinGroup(heartbeatgroup);
-                rmi=new ProgServidor(portoClientes);
+                heartbeatgroup = InetAddress.getByName(Heartbeatip);
+                multicastSocketBackup = new MulticastSocket(portobackup);
+                multicastSocketBackup.joinGroup(heartbeatgroup);
+                rmi = new ProgServidor(portoClientes); //???
                 String myIpIdress=InetAddress.getLocalHost().getHostAddress();
                 Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
 
@@ -75,22 +85,25 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
 
     ////////////////////////////// ATUALIZAÇÃO ASSÍNCRONA /////////////////////////////
     public synchronized void envioDeAvisoDeAtualizacao(String msgAtaulizacao) {
-        byte[] msg = msgAtaulizacao.getBytes();
-        DatagramPacket atualizacaoPacket = new DatagramPacket(msg, msg.length, grupoMulticast, portoClientes);
 
         try {
-            DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,DbManage.getVersao());
-            socketMulticast.send(atualizacaoPacket);
+            //aviso de atualizacao aos clientes
+            byte[] msg = msgAtaulizacao.getBytes();
+            DatagramPacket atualizacaoPacket = new DatagramPacket(msg, msg.length, grupoMulticast, portoClientes);
+            socketMulticastClientes.send(atualizacaoPacket);
+
+            //aviso de atualizacao aos backups
+            DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao());
             ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
             ObjectOutputStream objout = new ObjectOutputStream(help);
             objout.writeObject(data);
-            DatagramPacket backupPacket=new DatagramPacket(help.toByteArray(),help.toByteArray().length,heartbeatgroup,portobackup);
-            multicastSocket.send(backupPacket);
+            DatagramPacket backupPacket = new DatagramPacket(help.toByteArray(),help.toByteArray().length,heartbeatgroup,portobackup);
+            multicastSocketBackup.send(backupPacket);
+
             System.out.println("Aviso de atualizacao enviado aos clientes...");
         } catch (IOException e) {
             throw new RuntimeException("Nao foi possivel informar da atualizacao ao clientes...");
         }
-        //atualizar DataPacket aqui!!
     }
 
     @Override
@@ -120,7 +133,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
 
           try
           {
-             DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,DbManage.getVersao());// nao tenho a certeza se seria este o IP
+             DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao());// nao tenho a certeza se seria este o IP
 
              ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
              ObjectOutputStream objout = new ObjectOutputStream(help);
@@ -136,7 +149,8 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                             timer++;
                             if(timer == 10) {
                                 timer = 0;
-                                try {multicastSocket.send(packet);}
+                                try {
+                                    multicastSocketBackup.send(packet);}
                                 catch (IOException e) {
                                     System.out.println(e.getMessage());}
                             }
@@ -167,7 +181,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             envioDeAvisoDeAtualizacao("fimServidor");
             try {
                 socketServidor.close();
-                socketMulticast.close();
+                socketMulticastClientes.close();
                 clients.clear();
             } catch (IOException e) {
                 throw new RuntimeException("erro a fechar sockets");
@@ -210,13 +224,13 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                         email = aux.getEmail();
                         System.out.println(email);
 
-                        Boolean [] resposta = DbManage.autentica_user(email, aux.getPassword());
+                        Boolean [] resposta = dbManager.autentica_user(email, aux.getPassword());
 
                         if(!resposta[0])
                             out.writeObject(new Geral(Message_types.INVALIDO));
                         else {
                             logado = true;
-                            System.out.println(resposta[0]);
+                            //System.out.println(resposta[0]);
                             if(resposta[1]) {
                                 isadmin = true;
                                 out.writeObject(new Msg_String(ipMuticastString, Message_types.ADMINISTRADOR));
@@ -232,7 +246,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                         email = aux.getEmail();
                         Utilizador user = new Utilizador(aux.getNome(),aux.getEmail(),aux.getNum_estudante());
 
-                           if( DbManage.RegistoNovoUser(user,aux.getPassword())){
+                           if( dbManager.RegistoNovoUser(user,aux.getPassword())){
                         out.writeObject(new Msg_String(ipMuticastString, Message_types.UTILIZADOR));
                            logado=true;
                            }else {
@@ -256,7 +270,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                     Mgs_RegistarEditar_Conta aux = (Mgs_RegistarEditar_Conta)message;
                                     Utilizador user = new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
 
-                                    if(DbManage.edita_registo(user,aux.getPassword())){
+                                    if(dbManager.edita_registo(user,aux.getPassword())){
                                         out.writeObject(new Geral(Message_types.VALIDO));
                                     }else
                                         out.writeObject(new Geral(Message_types.ERRO));
@@ -264,7 +278,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                 case SUBMICAO_COD -> {
                                     //vai à BD verificar -> têm de fazer, por enquanto está inválido
                                     Msg_String_Int aux= (Msg_String_Int)message;
-                                 if(!DbManage.submitcod(aux.getNumero(),aux.getConteudo(),email)){
+                                 if(!dbManager.submitcod(aux.getNumero(),aux.getConteudo(),email)){
                                      out.writeObject(new Geral(Message_types.INVALIDO));
                                  }else{
                                     out.writeObject(new Geral(Message_types.VALIDO));}
@@ -277,7 +291,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
 
                                     //Depois temos que mandar aí a classe com os critérios/filtros e substituir esses parametros extras
 
-                                    List<Evento> eventosAssistidos = DbManage.ConsultaPresencas_user(email, aux);
+                                    List<Evento> eventosAssistidos = dbManager.ConsultaPresencas_user(email, aux);
                                     if(eventosAssistidos.isEmpty())
                                         out.writeObject(new Geral(Message_types.ERRO));
                                     else {
@@ -322,7 +336,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                             switch (message.getTipo()) {
                                 case CRIA_EVENTO -> {
                                     Msg_Cria_Evento evento = (Msg_Cria_Evento) message;
-                                    if(DbManage.Cria_evento(evento)) {//.getNome(), evento.getLocal(), evento.getData(), evento.getHoreInicio(), evento.getHoraFim())){
+                                    if(dbManager.Cria_evento(evento)) {//.getNome(), evento.getLocal(), evento.getData(), evento.getHoreInicio(), evento.getHoraFim())){
                                         out.writeObject(new Geral(Message_types.VALIDO));
                                     }
                                     else
@@ -330,7 +344,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                 }
                                 case EDIT_EVENTO -> {
                                     Msg_Edita_Evento evento = (Msg_Edita_Evento) message;
-                                    if(DbManage.Edita_evento(evento)) {
+                                    if(dbManager.Edita_evento(evento)) {
                                         out.writeObject(new Geral(Message_types.VALIDO));
                                     }
                                     else
@@ -338,7 +352,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                 }
                                 case ELIMINAR_EVENTO -> {
                                     Msg_String aux = (Msg_String)message;
-                                    if(DbManage.Elimina_evento(aux.getConteudo())) {
+                                    if(dbManager.Elimina_evento(aux.getConteudo())) {
                                         out.writeObject(new Geral(Message_types.VALIDO));
                                     }
                                     else
@@ -347,7 +361,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                 case CONSULTA_EVENTOS -> {
                                     Msg_ConsultaComFiltros aux = (Msg_ConsultaComFiltros) message;
 
-                                    List <Evento> eventosConsultados = DbManage.Consulta_eventos(aux);
+                                    List <Evento> eventosConsultados = dbManager.Consulta_eventos(aux);
                                     if(eventosConsultados.isEmpty())
                                         out.writeObject(new Geral(Message_types.ERRO));
                                     else {
@@ -359,7 +373,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                 }
                                 case GERAR_COD ->{
                                     Msg_String_Int aux = (Msg_String_Int)message;
-                                    int  code = DbManage.GeraCodigoRegisto(aux.getConteudo(), aux.getNumero());
+                                    int  code = dbManager.GeraCodigoRegisto(aux.getConteudo(), aux.getNumero());
                                     if(code != 0)
                                         out.writeObject(new Msg_String(Integer.toString(code), Message_types.VALIDO));
                                     else
@@ -367,7 +381,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                 }
                                 case CONSULTA_PRES_EVENT -> {
                                     Msg_String aux = (Msg_String)message;
-                                     utilizadoresEvento = DbManage.Presencas_evento(aux.getConteudo());
+                                     utilizadoresEvento = dbManager.Presencas_evento(aux.getConteudo());
                                     if(utilizadoresEvento != null) {
                                         Utilizador[] res = new Utilizador[utilizadoresEvento.size()];
                                         for (int i = 0; i <utilizadoresEvento.size() ; i++) {
@@ -390,7 +404,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                 case CONSULTA_PRES_UTILIZADOR -> {
 
                                     Msg_String aux = (Msg_String) message;
-                                   eventosPresencasAdmin= DbManage.ConsultaPresencas_User_Admin(aux.getConteudo());
+                                   eventosPresencasAdmin= dbManager.ConsultaPresencas_User_Admin(aux.getConteudo());
                                    if(eventosPresencasAdmin!=null){
                                    Evento[]res=eventosPresencasAdmin.toArray(new Evento[0]);
                                    out.writeObject(new Msg_ListaEventos(Message_types.VALIDO,res));}
@@ -413,7 +427,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
 
                                 case ELIMINA_PRES -> {
                                     Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas)message;
-                                    if(DbManage.EliminaPresencas(aux.getNome_evento(),aux.getLista())) {
+                                    if(dbManager.EliminaPresencas(aux.getNome_evento(),aux.getLista())) {
                                         out.writeObject(new Geral(Message_types.VALIDO));
                                     }
                                     else
@@ -423,7 +437,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
 
                                 case INSERE_PRES ->  {
                                     Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas)message;
-                                    if(DbManage.InserePresencas(aux.getNome_evento(),aux.getLista())) {
+                                    if(dbManager.InserePresencas(aux.getNome_evento(),aux.getLista())) {
                                         out.writeObject(new Geral(Message_types.VALIDO));
                                     }
                                     else

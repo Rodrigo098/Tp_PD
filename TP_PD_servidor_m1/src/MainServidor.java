@@ -52,8 +52,8 @@ public class MainServidor {
         try {
             prog = new ProgServidor(6001);
             dbManage.addVersaoListener(event -> prog.envioDeAvisoDeAtualizacao("atualizacao"));
+            prog.setDbManager(dbManage);
             prog.servico();
-
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
