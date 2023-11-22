@@ -1,6 +1,6 @@
+import pt.isec.pd.trabalhoPratico.ObservableInterface;
 import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
 import pt.isec.pd.trabalhoPratico.model.RemoteInterface;
-import pt.isec.pd.trabalhoPratico.model.RmiImplementation;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 import pt.isec.pd.trabalhoPratico.model.recordDados.*;
 
@@ -10,10 +10,11 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
 
-public class ProgServidor {
+public class ProgServidor extends UnicastRemoteObject implements RemoteInterface {
     public static final int MAX_SIZE = 4000;
     private static final int portobackup=4444;
     public static final String SERVICE_NAME = "servidor";
@@ -25,10 +26,12 @@ public class ProgServidor {
     private final int portoClientes;
     private ServerSocket socketServidor;
     List<Socket> clients = new ArrayList<>();
+    List<ObservableInterface> observers;
     private Boolean pararServidor = false;
 
-    public ProgServidor(int portoClientes) {
+    public ProgServidor(int portoClientes) throws RemoteException {
         this.portoClientes = portoClientes;
+        observers=new ArrayList<>();
 
     }
 
@@ -44,7 +47,7 @@ public class ProgServidor {
                 socketMulticast = new DatagramSocket();
                 this.grupoMulticast = InetAddress.getByName(ipMuticastString);
                 heartbeatgroup=InetAddress.getByName(Heartbeatip);
-                rmi=new RmiImplementation();
+
                 String myIpIdress=InetAddress.getLocalHost().getHostAddress();
                 Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
 
@@ -78,6 +81,27 @@ public class ProgServidor {
         }
         //atualizar DataPacket aqui!!
     }
+
+    @Override
+    public void getDB() {
+        for (ObservableInterface obv:observers
+             ) {
+            obv.avisaobservables();// acho que seria algo assim que usariamos para atualizar os observables
+
+        }
+    }
+
+    @Override
+    public synchronized void addObservable(ObservableInterface obv) {
+      if(!observers.contains(obv))
+          observers.add(obv);
+    }
+
+    @Override
+    public synchronized void RemoveObservable(ObservableInterface obv) {
+        observers.remove(obv);
+    }
+
     class ThreadHeartbeat extends Thread{
 
         @Override

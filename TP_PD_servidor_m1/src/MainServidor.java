@@ -1,6 +1,7 @@
 import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
 
 import java.io.File;
+import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
@@ -47,9 +48,15 @@ public class MainServidor {
 */
 
         DbManage dbManage = new DbManage();
-        ProgServidor prog = new ProgServidor(6001);//Integer.parseInt(args[0]));
-        dbManage.addVersaoListener(event -> prog.envioDeAvisoDeAtualizacao("atualizacao"));
-        prog.servico();
+        ProgServidor prog ;//Integer.parseInt(args[0]));
+        try {
+            prog = new ProgServidor(6001);
+            dbManage.addVersaoListener(event -> prog.envioDeAvisoDeAtualizacao("atualizacao"));
+            prog.servico();
+
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
 
      //  DbManage.Registonovouser(new Utilizador("Joao","eu@tu.isec","9876"),"12345");
     //  DbManage.autentica_user("eu","12345");
