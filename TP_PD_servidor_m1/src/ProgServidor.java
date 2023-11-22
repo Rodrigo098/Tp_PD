@@ -1,19 +1,27 @@
 import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
+import pt.isec.pd.trabalhoPratico.model.RemoteInterface;
+import pt.isec.pd.trabalhoPratico.model.RmiImplementation;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 import pt.isec.pd.trabalhoPratico.model.recordDados.*;
 
 import java.io.*;
 import java.net.*;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.*;
 
 
 public class ProgServidor {
     public static final int MAX_SIZE = 4000;
     private static final int portobackup=4444;
+    public static final String SERVICE_NAME = "servidor";
     private final String ipMuticastString = "224.0.1.0";
     private final String Heartbeatip="230.44.44.44";
     private InetAddress grupoMulticast,heartbeatgroup;
     private DatagramSocket socketMulticast;
+    private RemoteInterface rmi;
     private final int portoClientes;
     private ServerSocket socketServidor;
     List<Socket> clients = new ArrayList<>();
@@ -21,6 +29,7 @@ public class ProgServidor {
 
     public ProgServidor(int portoClientes) {
         this.portoClientes = portoClientes;
+
     }
 
     //////////////////////////////////// SERVIÇO /////////////////////////////
@@ -30,11 +39,20 @@ public class ProgServidor {
         {
             socketServidor = new ServerSocket(portoClientes);
             try {
+                LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
+                System.out.println("Registry lancado");
                 socketMulticast = new DatagramSocket();
                 this.grupoMulticast = InetAddress.getByName(ipMuticastString);
                 heartbeatgroup=InetAddress.getByName(Heartbeatip);
+                rmi=new RmiImplementation();
+                String myIpIdress=InetAddress.getLocalHost().getHostAddress();
+                Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
+
+                new Thread(new ThreadHeartbeat()).start();
             } catch (SocketException | UnknownHostException e) {
                 throw new RuntimeException("Nao foi possivel criar o socket para multicast, erro [" + e + "]");
+            }catch (RemoteException e){
+                System.out.println("Registy ja em execucao");
             }
 
             while(!pararServidor){
@@ -68,7 +86,8 @@ public class ProgServidor {
         public void run() {
 
           try(MulticastSocket socket=new MulticastSocket(portobackup)
-          ) {DadosRmi exemplo=new DadosRmi("","Servidor",0);// nao tenho a certeza se seria este o IP
+          ) {
+              DadosRmi exemplo=new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,0);// nao tenho a certeza se seria este o IP
              socket.joinGroup(heartbeatgroup);
              ByteArrayOutputStream help=new ByteArrayOutputStream();
              ObjectOutputStream objout=new ObjectOutputStream(help);
