@@ -78,10 +78,6 @@ public class ProgServidor {
         }
     }
     class ThreadHeartbeat extends Thread{
-
-
-
-
         @Override
         public void run() {
 
