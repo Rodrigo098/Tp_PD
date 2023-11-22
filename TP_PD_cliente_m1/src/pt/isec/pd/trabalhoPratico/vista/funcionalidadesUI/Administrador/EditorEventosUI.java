@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
+package pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.Administrador;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -13,7 +13,7 @@ import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra.EventoUI;
+import pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.NodesExtra.EventoUI;
 
 public class EditorEventosUI extends BorderPane {
     protected static SimpleStringProperty opcaoEdicao = new SimpleStringProperty("Lista Presenças");

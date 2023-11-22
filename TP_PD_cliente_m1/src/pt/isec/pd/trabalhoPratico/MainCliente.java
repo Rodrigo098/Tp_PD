@@ -1,9 +1,8 @@
 package pt.isec.pd.trabalhoPratico;
 import javafx.application.Application;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
-import pt.isec.pd.trabalhoPratico.ui.MainClienteJFX;
+import pt.isec.pd.trabalhoPratico.vista.MainClienteJFX;
 
 public class MainCliente {
     public static ProgClienteManager progClienteManager;

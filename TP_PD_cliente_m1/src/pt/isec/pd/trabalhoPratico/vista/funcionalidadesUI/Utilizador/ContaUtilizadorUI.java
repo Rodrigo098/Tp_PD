@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador;
+package pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.Utilizador;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;

@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra;
+package pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.NodesExtra;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.*;

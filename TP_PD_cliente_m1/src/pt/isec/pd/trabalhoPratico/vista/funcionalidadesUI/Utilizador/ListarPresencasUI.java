@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador;
+package pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.Utilizador;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -13,7 +13,7 @@ import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra.FiltrosUI;
+import pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.NodesExtra.FiltrosUI;
 
 public class ListarPresencasUI extends BorderPane {
     private FiltrosUI filtros;

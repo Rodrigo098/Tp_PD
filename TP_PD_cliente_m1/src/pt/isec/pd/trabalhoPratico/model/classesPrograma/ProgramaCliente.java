@@ -4,12 +4,14 @@ import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 
+import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.List;
 
 ///////////////////////////////////// PROGRAMA CLIENTE ///////////////////////
 public class ProgramaCliente {
@@ -209,21 +211,16 @@ public class ProgramaCliente {
         return "Já fez login!";
     }
 
-    public Boolean logout(String fonte) {
-        if (fezLogin) {
-            Geral logout = new Geral(Message_types.LOGOUT);
-            try {
-                oout.writeObject(logout);
-                oout.flush();
-                gereMudancasPLC.setEstadoNaAplicacao(fonte.equals("Window") ? EstadoNaAplicacao.SAIR : EstadoNaAplicacao.ENTRADA);
-                fezLogin = false;
-                return true;
-            } catch (IOException e) {
-                gereMudancasPLC.setErros();
-            }
+    public void logout(String fonte) {
+        Geral logout = new Geral(fonte.equals("WND") ? Message_types.FECHOU_APP : Message_types.LOGOUT);
+        try {
+            oout.writeObject(logout);
+            oout.flush();
+            gereMudancasPLC.setEstadoNaAplicacao(fonte.equals("WND") ? EstadoNaAplicacao.SAIR : EstadoNaAplicacao.ENTRADA);
+            fezLogin = false;
+        } catch (IOException e) {
+            gereMudancasPLC.setErros();
         }
-        gereMudancasPLC.setEstadoNaAplicacao(fonte.equals("Window") ? EstadoNaAplicacao.SAIR : EstadoNaAplicacao.ENTRADA);
-        return false;
     }
 
     public Evento[] obterListaConsultaEventos(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim) {

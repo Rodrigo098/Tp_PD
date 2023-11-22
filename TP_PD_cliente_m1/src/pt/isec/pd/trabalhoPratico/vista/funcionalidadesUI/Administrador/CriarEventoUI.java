@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
+package pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.Administrador;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -7,7 +7,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra.EventoUI;
+import pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.NodesExtra.EventoUI;
 
 public class CriarEventoUI extends BorderPane {
     private Button confirmar, cancelar;

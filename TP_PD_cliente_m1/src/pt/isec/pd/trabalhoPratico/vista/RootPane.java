@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.ui;
+package pt.isec.pd.trabalhoPratico.vista;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -9,11 +9,11 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador.ContaAdministradorUI;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra.MensagemBox;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra.SairApp;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.ContaUtilizadorUI;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Utilizador.RegistoUtilizadorUI;
+import pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.Administrador.ContaAdministradorUI;
+import pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.NodesExtra.MensagemBox;
+import pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.NodesExtra.SairApp;
+import pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.Utilizador.ContaUtilizadorUI;
+import pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.Utilizador.RegistoUtilizadorUI;
 
 public class RootPane extends BorderPane {
     private Button login;

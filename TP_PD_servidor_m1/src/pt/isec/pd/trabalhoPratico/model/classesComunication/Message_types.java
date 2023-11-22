@@ -1,8 +1,8 @@
 package pt.isec.pd.trabalhoPratico.model.classesComunication;
 
 public enum Message_types {// varios tipos de mensagens que serão usados, se quiserem podem adicionar mais ou remover(mas remover atenção que pode causar problemas noutras partes do codigo)
-    //COMUM
-    LOGIN, LOGOUT,
+    //APP
+    LOGIN, LOGOUT, FECHOU_APP,
 
     //UTILIZADOR
     REGISTO, EDITAR_REGISTO, SUBMICAO_COD, CONSULTA_PRES_UTILIZADOR, CSV_UTILIZADOR,

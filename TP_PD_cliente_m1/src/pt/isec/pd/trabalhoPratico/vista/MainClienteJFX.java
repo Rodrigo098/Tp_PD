@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.ui;
+package pt.isec.pd.trabalhoPratico.vista;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -6,7 +6,7 @@ import javafx.stage.Stage;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesPrograma.ParResposta;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra.SairApp;
+import pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.NodesExtra.SairApp;
 
 import java.util.List;
 
@@ -38,12 +38,12 @@ public class MainClienteJFX extends Application {
         //-----------------------------------
         ParResposta conexao = clienteManager.criaSocket(list);
         if(conexao.resultado()) {
-        RootPane root = new RootPane(clienteManager);
-        scene = new Scene(root, 700, 500);
-        stage.setMaxHeight(600);
-        stage.setOnCloseRequest(e -> {
-            clienteManager.logout("Window");
-        });
+            RootPane root = new RootPane(clienteManager);
+            scene = new Scene(root, 700, 500);
+            stage.setMaxHeight(600);
+            stage.setOnCloseRequest(e -> {
+                clienteManager.logout("WND");
+            });
         }
         else{
 

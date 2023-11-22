@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
+package pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.Administrador;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;

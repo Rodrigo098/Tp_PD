@@ -1,6 +1,5 @@
-package pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.Administrador;
+package pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.Administrador;
 
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -10,7 +9,7 @@ import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
-import pt.isec.pd.trabalhoPratico.ui.funcionalidadesUI.NodesExtra.FiltrosUI;
+import pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.NodesExtra.FiltrosUI;
 
 public class ListarEventosUI extends BorderPane {
     protected static Evento eventoSelecionado;
