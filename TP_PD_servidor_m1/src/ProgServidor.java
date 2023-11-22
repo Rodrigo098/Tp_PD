@@ -15,7 +15,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
 
-public class ProgServidor extends UnicastRemoteObject implements RemoteInterface {
+public class ProgServidor  extends UnicastRemoteObject implements RemoteInterface {
     public static final int MAX_SIZE = 4000;
     private static final int portobackup=4444;
     public static final String SERVICE_NAME = "servidor";
@@ -24,6 +24,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
     private InetAddress grupoMulticast,heartbeatgroup;
     private DatagramSocket socketMulticast;
     private RemoteInterface rmi;
+    private MulticastSocket multicastSocket;
     private final int portoClientes;
     private ServerSocket socketServidor;
     List<Socket> clients = new ArrayList<>();
@@ -48,7 +49,8 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                 socketMulticast = new DatagramSocket();
                 this.grupoMulticast = InetAddress.getByName(ipMuticastString);
                 heartbeatgroup=InetAddress.getByName(Heartbeatip);
-
+                multicastSocket=new MulticastSocket(portobackup);
+                rmi=new ProgServidor(portoClientes);
                 String myIpIdress=InetAddress.getLocalHost().getHostAddress();
                 Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
 
@@ -74,8 +76,15 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
     public synchronized void envioDeAvisoDeAtualizacao(String msgAtaulizacao) {
         byte[] msg = msgAtaulizacao.getBytes();
         DatagramPacket atualizacaoPacket = new DatagramPacket(msg, msg.length, grupoMulticast, portoClientes);
+
         try {
+            DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,DbManage.getVersao());
             socketMulticast.send(atualizacaoPacket);
+            ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
+            ObjectOutputStream objout = new ObjectOutputStream(help);
+            objout.writeObject(data);
+            DatagramPacket backupPacket=new DatagramPacket(help.toByteArray(),help.toByteArray().length);
+            multicastSocket.send(backupPacket);
             System.out.println("Aviso de atualizacao enviado aos clientes...");
         } catch (IOException e) {
             throw new RuntimeException("Nao foi possivel informar da atualizacao ao clientes...");
@@ -99,7 +108,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
     }
 
     @Override
-    public synchronized void RemoveObservable(ObservableInterface obv) {
+    public synchronized   void RemoveObservable(ObservableInterface obv) {
         observers.remove(obv);
     }
 
@@ -108,13 +117,13 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
         @Override
         public void run() {
 
-          try(MulticastSocket socket = new MulticastSocket(portobackup))
+          try
           {
-             DadosRmi exemplo = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,DbManage.getVersao());// nao tenho a certeza se seria este o IP
-             socket.joinGroup(heartbeatgroup);
+             DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,DbManage.getVersao());// nao tenho a certeza se seria este o IP
+             multicastSocket.joinGroup(heartbeatgroup);
              ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
              ObjectOutputStream objout = new ObjectOutputStream(help);
-             objout.writeObject(exemplo);
+             objout.writeObject(data);
 
              DatagramPacket packet = new DatagramPacket(help.toByteArray(),help.toByteArray().length,heartbeatgroup,portobackup);
                  while (!pararServidor){
@@ -126,7 +135,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                             timer++;
                             if(timer == 10) {
                                 timer = 0;
-                                try {socket.send(packet);}
+                                try {multicastSocket.send(packet);}
                                 catch (IOException e) {
                                     System.out.println(e.getMessage());}
                             }
