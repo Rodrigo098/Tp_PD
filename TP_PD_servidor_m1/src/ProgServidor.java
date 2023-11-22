@@ -205,7 +205,6 @@ public class ProgServidor {
 
                                     if(DbManage.edita_registo(user,aux.getPassword())){
                                         out.writeObject(new Geral(Message_types.VALIDO));
-                                        envioDeAvisoDeAtualizacao("atualizacao");
                                     }else
                                         out.writeObject(new Geral(Message_types.ERRO));
                                 }
@@ -215,7 +214,6 @@ public class ProgServidor {
                                  if(!DbManage.submitcod(aux.getNumero(),aux.getConteudo(),email)){
                                      out.writeObject(new Geral(Message_types.INVALIDO));
                                  }else{
-                                    envioDeAvisoDeAtualizacao("atualizacao");
                                     out.writeObject(new Geral(Message_types.VALIDO));}
                                 /*se for valido fazer
 
@@ -273,7 +271,6 @@ public class ProgServidor {
                                     Msg_Cria_Evento evento = (Msg_Cria_Evento) message;
                                     if(DbManage.Cria_evento(evento)) {//.getNome(), evento.getLocal(), evento.getData(), evento.getHoreInicio(), evento.getHoraFim())){
                                         out.writeObject(new Geral(Message_types.VALIDO));
-                                        envioDeAvisoDeAtualizacao("atualizacao");
                                     }
                                     else
                                         out.writeObject(new Geral(Message_types.ERRO));
@@ -282,7 +279,6 @@ public class ProgServidor {
                                     Msg_Edita_Evento evento = (Msg_Edita_Evento) message;
                                     if(DbManage.Edita_evento(evento)) {
                                         out.writeObject(new Geral(Message_types.VALIDO));
-                                        envioDeAvisoDeAtualizacao("atualizacao");
                                     }
                                     else
                                         out.writeObject(new Geral(Message_types.ERRO));
@@ -291,7 +287,6 @@ public class ProgServidor {
                                     Msg_String aux = (Msg_String)message;
                                     if(DbManage.Elimina_evento(aux.getConteudo())) {
                                         out.writeObject(new Geral(Message_types.VALIDO));
-                                        envioDeAvisoDeAtualizacao("atualizacao");
                                     }
                                     else
                                         out.writeObject(new Geral(Message_types.ERRO));
@@ -367,7 +362,6 @@ public class ProgServidor {
                                     Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas)message;
                                     if(DbManage.EliminaPresencas(aux.getNome_evento(),aux.getLista())) {
                                         out.writeObject(new Geral(Message_types.VALIDO));
-                                        envioDeAvisoDeAtualizacao("atualizacao");
                                     }
                                     else
                                         out.writeObject(new Geral(Message_types.ERRO));
@@ -378,7 +372,6 @@ public class ProgServidor {
                                     Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas)message;
                                     if(DbManage.InserePresencas(aux.getNome_evento(),aux.getLista())) {
                                         out.writeObject(new Geral(Message_types.VALIDO));
-                                        envioDeAvisoDeAtualizacao("atualizacao");
                                     }
                                     else
                                         out.writeObject(new Geral(Message_types.ERRO));
