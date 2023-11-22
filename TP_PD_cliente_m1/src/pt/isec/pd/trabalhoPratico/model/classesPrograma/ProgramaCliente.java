@@ -42,8 +42,6 @@ public class ProgramaCliente {
             } catch (IOException e) {
                 gereMudancasPLC.setErros();
                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.FIM);
-                //setErro();
-                //setLogado("FIM");
             }
         }
         @Override
@@ -55,18 +53,14 @@ public class ProgramaCliente {
                     multicastSocket.receive(packet);
                 } catch (IOException e) {
                     gereMudancasPLC.setErros();
-                    //setErro();
                 }
                 msgConteudo = new String(packet.getData(), 0, packet.getLength());
                 if (msgConteudo.equals("fimServidor")) {
                     gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.FIM);
-                    //setLogado("FIM");
                     break;
                 }
                 else {
                     gereMudancasPLC.setNovaAtualizacao();
-                    //atualizacao.setValue(atualizacao.getValue() + 1);
-                    //System.out.println("mais uma " + atualizacao.getValue());
                 }
             }
             try {

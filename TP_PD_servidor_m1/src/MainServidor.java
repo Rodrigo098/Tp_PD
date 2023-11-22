@@ -45,12 +45,12 @@ public class MainServidor {
             throw new NumberFormatException("<SERVIDOR> Os portos inseridos devem ter ser inteiros! [ERRO] " + e.getCause());
         }
 */
+
+        DbManage dbManage = new DbManage();
         ProgServidor prog = new ProgServidor(6001);//Integer.parseInt(args[0]));
+        dbManage.addPropertyChangeListener(event -> prog.envioDeAvisoDeAtualizacao("atualizacao"));
         prog.servico();
 
-
-
-      // DbManage dbManage = new DbManage();
      //  DbManage.Registonovouser(new Utilizador("Joao","eu@tu.isec","9876"),"12345");
     //  DbManage.autentica_user("eu","12345");
          //DbManage.edita_registo(new Utilizador("Joao","eu@tu.isec","9876"),"123");
