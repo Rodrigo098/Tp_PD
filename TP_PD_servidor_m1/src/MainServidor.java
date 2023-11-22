@@ -48,7 +48,7 @@ public class MainServidor {
 
         DbManage dbManage = new DbManage();
         ProgServidor prog = new ProgServidor(6001);//Integer.parseInt(args[0]));
-        dbManage.addPropertyChangeListener(event -> prog.envioDeAvisoDeAtualizacao("atualizacao"));
+        dbManage.addVersaoListener(event -> prog.envioDeAvisoDeAtualizacao("atualizacao"));
         prog.servico();
 
      //  DbManage.Registonovouser(new Utilizador("Joao","eu@tu.isec","9876"),"12345");

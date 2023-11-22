@@ -24,24 +24,42 @@ import java.util.Random;
 public class DbManage {
     private static final String dbAdress = "databasePD.db";
     private static final String dbUrl= "jdbc:sqlite:"+dbAdress;
-
-    private int versao;
+    private static int versao;
 
     private static PropertyChangeSupport versaoSuporte;
 
     public DbManage() {
+        versao = 0;
         versaoSuporte = new PropertyChangeSupport(this);
         int codigo_registo = 1;
         String nome_evento = "Evento1";
         String email="email";
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        versaoSuporte.addPropertyChangeListener(pcl);
+    public void addVersaoListener(PropertyChangeListener novoListener) {
+        versaoSuporte.addPropertyChangeListener(novoListener);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        versaoSuporte.removePropertyChangeListener(pcl);
+    public void removeVersaoChangeListener(PropertyChangeListener novoListener) {
+        versaoSuporte.removePropertyChangeListener(novoListener);
+    }
+
+    public static void setVersao() {
+        versaoSuporte.firePropertyChange("versao", null, null);
+        versao++;
+        try (Connection connection=DriverManager.getConnection(dbUrl)){
+            String UpdateVersao="UPDATE Versao SET versao_id=? where versao_id=?";
+            PreparedStatement statement=connection.prepareStatement(UpdateVersao);
+            statement.setInt(1,versao);
+            statement.setInt(2,versao-1);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static int getVersao() {
+        return versao;
     }
 
     public static boolean RegistoNovoUser(Utilizador user, String password){
@@ -52,12 +70,12 @@ public class DbManage {
                     + user.email() + "','" + user.nome() + "','" + user.numIdentificacao() + "','" + password +"')";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
 
             if(statement.executeUpdate(createEntryQuery)<1){
-                System.out.println("Entry insertion or update failed");
+                System.out.println("Insercao de novo utilizador falhou");
                 return false;
             }
             else{
-                System.out.println("Entry insertion succeeded");
-                versaoSuporte.firePropertyChange("versao", null, null);
+                System.out.println("Insercao de novo utilizador com sucesso");
+                setVersao();
                 return true;
             }
         } catch (SQLException e) {
@@ -72,8 +90,6 @@ public class DbManage {
         Boolean[]res={false,false};//o primeiro é se a o user ta certo e a segunda é se é Admin ou não
         try(Connection connection = DriverManager.getConnection(dbUrl);
             Statement statement = connection.createStatement())
-
-
         {
             String verificaEstudanteQuery = "SELECT * FROM Utilizador WHERE email = ?";
             PreparedStatement alunoStatement = connection.prepareStatement(verificaEstudanteQuery);
@@ -93,7 +109,6 @@ public class DbManage {
             }
             else{ System.out.println("Não encontrou nenhum utilizador");
                 return res;
-
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -121,7 +136,7 @@ public class DbManage {
                 preparedStatement.setString(3, pasword);
                 preparedStatement.setString(4, user.email());
                 preparedStatement.executeUpdate();
-                versaoSuporte.firePropertyChange("versao", null, null);
+                setVersao();
                 return true;
             }
             else{
@@ -165,8 +180,6 @@ public class DbManage {
             getquery.setLong(2,0);
             ResultSet rs=getquery.executeQuery();
 
-
-
             if(rs.isBeforeFirst())
             {   rs.next();
                 Date Data=new Date();
@@ -192,8 +205,8 @@ public class DbManage {
                     }
                     else{
                         System.out.println("Entry insertion succeeded");
-                        versaoSuporte.firePropertyChange("versao", null, null);
-                        return true;
+                        setVersao();
+                                return true;
                     }
 
                 }else{
@@ -202,9 +215,7 @@ public class DbManage {
                 }
             }
             else{
-
                 System.out.println("Nenhum item corresponde a pesquisa");
-
                 return false;
             }
         } catch (SQLException e) {
@@ -212,8 +223,6 @@ public class DbManage {
             System.out.println(e.getMessage());
             return false;
         }
-
-
     }
 
     public static List<Evento> ConsultaPresencas_User_Admin(String email_utilizador){
@@ -346,12 +355,12 @@ public class DbManage {
             }
             else{
                 System.out.println("Evento criado com sucesso");
-                versaoSuporte.firePropertyChange("versao", null, null);
+                setVersao();
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-    return true;
+    return false;
     }
 
     public static boolean Edita_evento(Msg_Edita_Evento evento) {
@@ -364,7 +373,7 @@ public class DbManage {
             resultSet.next();
             int presencas = resultSet.getInt(1);
 
-            if (presencas > 0) {
+            /*if (presencas > 0) {
                 // Se houver presenças registadas,apenas permite editar o nome e o local (??)
                 String updateEventQuery = "UPDATE Evento SET nome_evento = '" + evento.getNovoNome() + "', local = '" + evento.getLocal() + "' WHERE nome_evento = '" + evento.getNome() + "'";
 
@@ -373,8 +382,10 @@ public class DbManage {
                     return false;
                 } else {
                     System.out.println("Nome e local do evento editados com sucesso.");
+                    setVersao();
                 }
-            } else {
+            } else {*/
+            if(presencas == 0){
                 // Se não houver presenças edita todos os campos
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
                 String dataString = dateFormat.format(evento.getData()); //Alterei isso para termos a data nesse formato, facilita os testes mas sempre se pode alterar
@@ -386,8 +397,8 @@ public class DbManage {
                     return false;
                 } else {
                     System.out.println("Evento editado com sucesso");
-                    versaoSuporte.firePropertyChange("versao", null, null);
-                }
+                    setVersao();
+                    }
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -417,13 +428,13 @@ public class DbManage {
                     return false; // erro na eliminação do evento
                 } else {
                     System.out.println("Evento eliminado com sucesso");
-                    versaoSuporte.firePropertyChange("versao", null, null);
-                }
+                    setVersao();
+                    }
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        return true;
+        return false;
     }
 
     public static List <Evento> Consulta_eventos(Msg_ConsultaComFiltros evento) {
@@ -513,14 +524,14 @@ public class DbManage {
                         System.out.println("A presenca do estudante " + emailEstudante + " no evento " + nomeEvento + " foi registada com sucesso");
                     } else {
                         System.out.println("Erro ao registar a presença do estudante " + emailEstudante + ".");
-                        return false;
+                        //return false;
                     }
                 } else {
                     System.out.println("Evento e/ou aluno nao existem.");
-                    return false;
+                    //return false;
                 }
             }
-            versaoSuporte.firePropertyChange("versao", null, null);
+            setVersao();
             return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -542,11 +553,11 @@ public class DbManage {
 
                 if (rowsAffected == 1) {
                     System.out.println("A Presença do estudante " + emailEstudante +" do evento " + nomeEvento + " foi eliminada com sucesso.");
-                    versaoSuporte.firePropertyChange("versao", null, null);
-                } else {
+                    } else {
                     System.out.println("Nao foi encontrada a presenca do estudante " + emailEstudante + " no evento " + nomeEvento + ".");
                 }
             }
+            setVersao();
             return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -615,9 +626,8 @@ public class DbManage {
                     insereStatement.setTimestamp(3, horarioValidade); //Estou a salvar em TimeStamp porque é melhor para verificar a validade do codigo
                     insereStatement.executeUpdate();
                     System.out.println("Inseriu o codigo na database");
-                    versaoSuporte.firePropertyChange("versao", null, null);
-                    return codigo;
-
+                    setVersao();
+                        return codigo;
                 } else {
                     System.out.println("O evento não esta a decorrer no momento");
                     return 0;

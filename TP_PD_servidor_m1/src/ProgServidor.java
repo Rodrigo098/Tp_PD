@@ -76,20 +76,22 @@ public class ProgServidor {
         } catch (IOException e) {
             throw new RuntimeException("Nao foi possivel informar da atualizacao ao clientes...");
         }
+        //atualizar DataPacket aqui!!
     }
     class ThreadHeartbeat extends Thread{
+
         @Override
         public void run() {
 
-          try(MulticastSocket socket=new MulticastSocket(portobackup)
-          ) {
-              DadosRmi exemplo=new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,0);// nao tenho a certeza se seria este o IP
+          try(MulticastSocket socket = new MulticastSocket(portobackup))
+          {
+             DadosRmi exemplo = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,DbManage.getVersao());// nao tenho a certeza se seria este o IP
              socket.joinGroup(heartbeatgroup);
-             ByteArrayOutputStream help=new ByteArrayOutputStream();
-             ObjectOutputStream objout=new ObjectOutputStream(help);
+             ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
+             ObjectOutputStream objout = new ObjectOutputStream(help);
              objout.writeObject(exemplo);
 
-             DatagramPacket packet=new DatagramPacket(help.toByteArray(),help.toByteArray().length,heartbeatgroup,portobackup);
+             DatagramPacket packet = new DatagramPacket(help.toByteArray(),help.toByteArray().length,heartbeatgroup,portobackup);
                  while (!pararServidor){
                      Timer temporizador=new Timer();
                      TimerTask timerTask=new TimerTask() {
@@ -97,8 +99,8 @@ public class ProgServidor {
                          @Override
                          public void run() {
                             timer++;
-                            if(timer%10==0) {
-                                timer=0;
+                            if(timer == 10) {
+                                timer = 0;
                                 try {socket.send(packet);}
                                 catch (IOException e) {
                                     System.out.println(e.getMessage());}
@@ -106,11 +108,7 @@ public class ProgServidor {
                          }
                      };
                      temporizador.schedule(timerTask,0,1000);
-
              }
-
-
-
           } catch (IOException e) {
               throw new RuntimeException(e);
           }
@@ -418,9 +416,6 @@ public class ProgServidor {
                 System.out.println("Cliente: "+ email +"terminado");
             }
         }
-
-
-
         class Timerask extends TimerTask{
             private int contador;
             private final ObjectInputStream oin;
@@ -451,11 +446,6 @@ public class ProgServidor {
                 }
             }
         }
-
-
-
-
-
     }
 
 
@@ -525,7 +515,6 @@ public class ProgServidor {
             e.printStackTrace();
         }
     }
-
 
     private void sendfile(OutputStream out,File file){
         byte []fileChunk = new byte[MAX_SIZE];
