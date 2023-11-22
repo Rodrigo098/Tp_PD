@@ -66,13 +66,9 @@ public class Utils {
                 writer.append(evento.horaFim() + "");
                 writer.append("\n");
             }
-
-
             System.out.println("Ficheiro CSV criado com sucesso");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-
 }
