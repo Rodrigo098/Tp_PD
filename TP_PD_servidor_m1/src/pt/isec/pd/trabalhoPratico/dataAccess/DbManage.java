@@ -6,6 +6,8 @@ import pt.isec.pd.trabalhoPratico.model.classesComunication.Msg_Edita_Evento;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -23,12 +25,24 @@ public class DbManage {
     private static final String dbAdress = "databasePD.db";
     private static final String dbUrl= "jdbc:sqlite:"+dbAdress;
 
+    private int versao;
+
+    private static PropertyChangeSupport versaoSuporte;
+
     public DbManage() {
+        versaoSuporte = new PropertyChangeSupport(this);
         int codigo_registo = 1;
         String nome_evento = "Evento1";
         String email="email";
     }
 
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        versaoSuporte.addPropertyChangeListener(pcl);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        versaoSuporte.removePropertyChangeListener(pcl);
+    }
 
     public static boolean RegistoNovoUser(Utilizador user, String password){
         try(Connection connection = DriverManager.getConnection(dbUrl);
@@ -43,8 +57,8 @@ public class DbManage {
             }
             else{
                 System.out.println("Entry insertion succeeded");
+                versaoSuporte.firePropertyChange("versao", null, null);
                 return true;
-
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -75,8 +89,6 @@ public class DbManage {
                     res[0]=true;
                 if(rs.getString("tipo_utilizador").equals("admin"))
                     res[1]=true;
-
-
                 return res;// devolve true se a password for a mesma
             }
             else{ System.out.println("Não encontrou nenhum utilizador");
@@ -109,6 +121,7 @@ public class DbManage {
                 preparedStatement.setString(3, pasword);
                 preparedStatement.setString(4, user.email());
                 preparedStatement.executeUpdate();
+                versaoSuporte.firePropertyChange("versao", null, null);
                 return true;
             }
             else{
@@ -179,6 +192,7 @@ public class DbManage {
                     }
                     else{
                         System.out.println("Entry insertion succeeded");
+                        versaoSuporte.firePropertyChange("versao", null, null);
                         return true;
                     }
 
@@ -332,6 +346,7 @@ public class DbManage {
             }
             else{
                 System.out.println("Evento criado com sucesso");
+                versaoSuporte.firePropertyChange("versao", null, null);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -371,6 +386,7 @@ public class DbManage {
                     return false;
                 } else {
                     System.out.println("Evento editado com sucesso");
+                    versaoSuporte.firePropertyChange("versao", null, null);
                 }
             }
         } catch (SQLException e) {
@@ -401,6 +417,7 @@ public class DbManage {
                     return false; // erro na eliminação do evento
                 } else {
                     System.out.println("Evento eliminado com sucesso");
+                    versaoSuporte.firePropertyChange("versao", null, null);
                 }
             }
         } catch (SQLException e) {
@@ -503,6 +520,7 @@ public class DbManage {
                     return false;
                 }
             }
+            versaoSuporte.firePropertyChange("versao", null, null);
             return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -524,6 +542,7 @@ public class DbManage {
 
                 if (rowsAffected == 1) {
                     System.out.println("A Presença do estudante " + emailEstudante +" do evento " + nomeEvento + " foi eliminada com sucesso.");
+                    versaoSuporte.firePropertyChange("versao", null, null);
                 } else {
                     System.out.println("Nao foi encontrada a presenca do estudante " + emailEstudante + " no evento " + nomeEvento + ".");
                 }
@@ -596,7 +615,7 @@ public class DbManage {
                     insereStatement.setTimestamp(3, horarioValidade); //Estou a salvar em TimeStamp porque é melhor para verificar a validade do codigo
                     insereStatement.executeUpdate();
                     System.out.println("Inseriu o codigo na database");
-
+                    versaoSuporte.firePropertyChange("versao", null, null);
                     return codigo;
 
                 } else {
