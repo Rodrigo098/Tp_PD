@@ -103,7 +103,6 @@ public class ProgramaCliente {
         terminou = true;
         temporizador.cancel();
         tarefa.cancel();
-        gereMudancasPLC.removePropertyChangeListener(gereMudancasPLC.PROP_ESTADO, evt -> verificacaoLigacao());
         try {
             if (socket != null)
                 socket.close();
@@ -155,6 +154,13 @@ public class ProgramaCliente {
                     oout = new ObjectOutputStream(socket.getOutputStream());
                     return new ParResposta(true, "Conexão bem sucedida");
                 }
+                else {
+                    try {
+                        if (socket != null)
+                            socket.close();
+                    } catch (IOException ignored) {
+                    }
+                }
             } catch (IllegalArgumentException e) {
                 pontoSituacao = new ParResposta(false, "Introduziu um porto inválido.");
             } catch (NullPointerException e) {
@@ -170,8 +176,10 @@ public class ProgramaCliente {
 
     public String login(String email, String password) {
         if(!fezLogin) {
-            if (password == null || password.isBlank() || verificaFormato(email))
+            contagem = 0;
+            if (password == null || password.isBlank() || verificaFormato(email)) {
                 return "Tem que preencher os dados corretamente!!";
+            }
 
             Msg_Login dadosLogin = new Msg_Login(email, password);
             try {
@@ -201,8 +209,6 @@ public class ProgramaCliente {
             } catch (IOException | ClassNotFoundException e) {
                 gereMudancasPLC.setErros();
                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.FIM);
-                //setErro();
-                //setLogado("FIM");
             }
             return "Tente novamente...";
         }

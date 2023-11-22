@@ -37,7 +37,6 @@ public class SairApp extends VBox {
     private void registerHandlers() {
         sair.setOnAction(e -> {
             temporizador.cancel();
-
             Platform.exit();
         });
     }
@@ -54,11 +53,4 @@ public class SairApp extends VBox {
             }
         }, 0, 1000);
     }
-    /*
-        espera = new PauseTransition(Duration.seconds(10));
-        espera.setOnFinished(e -> {
-            Platform.exit();
-
-        });
-        espera.play();*/
 }

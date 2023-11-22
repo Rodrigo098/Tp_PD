@@ -38,15 +38,14 @@ public class MainClienteJFX extends Application {
         //-----------------------------------
         ParResposta conexao = clienteManager.criaSocket(list);
         if(conexao.resultado()) {
-        RootPane root = new RootPane(clienteManager);
-        scene = new Scene(root, 700, 500);
-        stage.setMaxHeight(600);
-        stage.setOnCloseRequest(e -> {
-            clienteManager.logout("Window");
-        });
+            RootPane root = new RootPane(clienteManager);
+            scene = new Scene(root, 700, 500);
+            stage.setMaxHeight(600);
+            stage.setOnCloseRequest(e -> {
+                clienteManager.logout("Window");
+            });
         }
         else{
-
             SairApp root = new SairApp(conexao.mensagem(), "conexao");
             scene = new Scene( root,400, 400);
         }
