@@ -9,8 +9,6 @@ import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -28,11 +26,88 @@ public class DbManage {
     private PropertyChangeSupport versaoSuporte;
 
     public DbManage() {
+        if(!DbManage.existeDb())
+            criarDb();
+
         versao = getversaobd();
         versaoSuporte = new PropertyChangeSupport(this);
         int codigo_registo = 1;
         String nome_evento = "Evento1";
         String email="email";
+    }
+
+//Função para verificar se a bd existe
+    private static boolean existeDb() {
+        try {
+            File dbFile = new File(dbAdress);
+            return dbFile.exists();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+//Função para criar uma nova db vazia
+    private void criarDb() {
+        try {
+            Connection connection = DriverManager.getConnection(dbUrl);
+            Statement statement = connection.createStatement();
+
+            // Tabela Assiste
+            String criaAssiste = "CREATE TABLE Assiste ("
+                    + "assiste_id INTEGER PRIMARY KEY,"
+                    + "nome_evento TEXT,"
+                    + "email TEXT,"
+                    + "FOREIGN KEY(email) REFERENCES Utilizador(email),"
+                    + "FOREIGN KEY(nome_evento) REFERENCES Evento(nome_evento)"
+                    + ")";
+            statement.executeUpdate(criaAssiste);
+
+            // Tabela Codigo_Registo
+            String criaCodigoRegisto = "CREATE TABLE Codigo_Registo ("
+                    + "n_codigo_registo INTEGER PRIMARY KEY,"
+                    + "nome_evento TEXT,"
+                    + "validade TIMESTAMP,"
+                    + "FOREIGN KEY(nome_evento) REFERENCES Evento(nome_evento)"
+                    + ")";
+            statement.executeUpdate(criaCodigoRegisto);
+
+            // Tabela Evento
+            String criaEvento = "CREATE TABLE Evento ("
+                    + "nome_evento TEXT PRIMARY KEY,"
+                    + "local TEXT,"
+                    + "data_realizacao DATE,"
+                    + "hora_inicio TIME,"
+                    + "hora_fim TIME"
+                    + ")";
+            statement.executeUpdate(criaEvento);
+
+            // Tabela Utilizador
+            String criaUtilizador = "CREATE TABLE Utilizador ("
+                    + "email TEXT PRIMARY KEY,"
+                    + "nome TEXT,"
+                    + "numero_estudante INTEGER,"
+                    + "palavra_passe TEXT,"
+                    + "tipo_utilizador TEXT"
+                    + ")";
+            statement.executeUpdate(criaUtilizador);
+
+            // Tabela Versao
+            String criaVersao = "CREATE TABLE Versao ("
+                    + "versao_id INTEGER PRIMARY KEY,"
+                    + "descricao TEXT"
+                    + ")";
+            statement.executeUpdate(criaVersao);
+
+            // versao_id = 0
+            String insereVersao = "INSERT INTO Versao (versao_id, descricao) VALUES (0, 'Versão Inicial')";
+            statement.executeUpdate(insereVersao);
+
+            statement.close();
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void addVersaoListener(PropertyChangeListener novoListener) {
