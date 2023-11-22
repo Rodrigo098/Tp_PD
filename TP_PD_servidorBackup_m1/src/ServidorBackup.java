@@ -1,9 +1,7 @@
 import pt.isec.pd.trabalhoPratico.model.recordDados.DadosRmi;
 import pt.isec.pd.trabalhoPratico.model.recordDados.RemoteInterface;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -27,13 +25,16 @@ public class ServidorBackup {
     public static void main(String[] args) {
 
     }
-    class Heartbeat extends Thread{
+    class Heartbeat extends Thread{// im not sure pq é que criei este thread  mas agr ta criadad
         @Override
         public void run() {
            try(MulticastSocket multicastSocket=new MulticastSocket(portobackup)){
                group=InetAddress.getByName(Heartbeatip);
                 multicastSocket.joinGroup(group);
-               DatagramPacket packet=new DatagramPacket(new byte[20],20);
+
+
+
+               DatagramPacket packet=new DatagramPacket(new byte[2024],2024);// aqui tenho de por um valor diferente i guess
                multicastSocket.receive(packet);
                ByteArrayInputStream bye=new ByteArrayInputStream(packet.getData(),0, packet.getLength());
                ObjectInputStream oin=new ObjectInputStream(bye);
@@ -41,6 +42,7 @@ public class ServidorBackup {
                if(!conected){
                     registration="rmi://"+dados.Registo()+"/"+dados.nome_servico();
                     rmi= (RemoteInterface) Naming.lookup(registration);
+                    conected=true;
                }
 
            } catch (IOException e) {
