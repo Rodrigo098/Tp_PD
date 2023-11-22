@@ -181,6 +181,7 @@ public class ProgServidor {
                             out.writeObject(new Geral(Message_types.INVALIDO));
                         else {
                             logado = true;
+                            System.out.println(resposta[0]);
                             if(resposta[1]) {
                                 isadmin = true;
                                 out.writeObject(new Msg_String(ipMuticastString, Message_types.ADMINISTRADOR));
@@ -190,14 +191,18 @@ public class ProgServidor {
 
                     }
                     else if (msgRecebida.getTipo() == Message_types.REGISTO) {
-                        logado = true;
+
 
                         Mgs_RegistarEditar_Conta aux=(Mgs_RegistarEditar_Conta)msgRecebida;
                         email = aux.getEmail();
                         Utilizador user = new Utilizador(aux.getNome(),aux.getEmail(),aux.getNum_estudante());
 
-                        DbManage.RegistoNovoUser(user,aux.getPassword());
+                           if( DbManage.RegistoNovoUser(user,aux.getPassword())){
                         out.writeObject(new Msg_String(ipMuticastString, Message_types.UTILIZADOR));
+                           logado=true;
+                           }else {
+                               out.writeObject(new Geral(Message_types.ERRO));
+                           }
 
                     }else{
                         out.writeObject(new Geral(Message_types.FAZER_LOGIN));

@@ -45,14 +45,18 @@ public class DbManage {
     }
 
     public static void setVersao() {
-        versaoSuporte.firePropertyChange("versao", null, null);
+
         versao++;
         try (Connection connection=DriverManager.getConnection(dbUrl)){
             String UpdateVersao="UPDATE Versao SET versao_id=? where versao_id=?";
             PreparedStatement statement=connection.prepareStatement(UpdateVersao);
             statement.setInt(1,versao);
             statement.setInt(2,versao-1);
-            statement.executeUpdate();
+           if( statement.executeUpdate()<1)
+               System.out.println("Erro a atualizar a versao");
+           else{
+               versaoSuporte.firePropertyChange("versao", null, null);
+               System.out.println("Versao atualizada com sucesso");}
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -65,9 +69,10 @@ public class DbManage {
     public static boolean RegistoNovoUser(Utilizador user, String password){
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
-            Statement statement = connection.createStatement()){
-            String createEntryQuery = "INSERT INTO Utilizador (email,nome,numero_estudante,palavra_passe) VALUES ('"
-                    + user.email() + "','" + user.nome() + "','" + user.numIdentificacao() + "','" + password +"')";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
+            Statement statement = connection.createStatement())
+        {
+            String createEntryQuery = "INSERT INTO Utilizador (email,nome,numero_estudante,palavra_passe,tipo_utilizador) VALUES ('"
+                    + user.email() + "','" + user.nome() + "','" + user.numIdentificacao() + "','" + password +"','" + "cliente" +"')";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
 
             if(statement.executeUpdate(createEntryQuery)<1){
                 System.out.println("Insercao de novo utilizador falhou");
@@ -82,6 +87,7 @@ public class DbManage {
             System.out.println(e.getMessage());
             return false;
         }
+
 
     }
     public static Boolean[] autentica_user(String user, String password){
