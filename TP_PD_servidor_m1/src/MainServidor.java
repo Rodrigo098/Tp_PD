@@ -49,6 +49,7 @@ public class MainServidor {
 
         DbManage dbManage = new DbManage();
         ProgServidor prog ;//Integer.parseInt(args[0]));
+
         try {
             prog = new ProgServidor(6001);
             dbManage.addVersaoListener(event -> prog.envioDeAvisoDeAtualizacao("atualizacao"));
