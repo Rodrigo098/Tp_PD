@@ -29,7 +29,7 @@ public class DbManage {
     private static PropertyChangeSupport versaoSuporte;
 
     public DbManage() {
-        versao = 0;
+        versao = getversaobd();
         versaoSuporte = new PropertyChangeSupport(this);
         int codigo_registo = 1;
         String nome_evento = "Evento1";
@@ -42,6 +42,23 @@ public class DbManage {
 
     public void removeVersaoChangeListener(PropertyChangeListener novoListener) {
         versaoSuporte.removePropertyChangeListener(novoListener);
+    }
+    private int getversaobd(){
+        try(Connection connection=DriverManager.getConnection(dbUrl)) {
+            String GetQuery="Select versao_id FROM VERSAO";
+            PreparedStatement statement=connection.prepareStatement(GetQuery);
+            ResultSet rs= statement.executeQuery();
+            if(rs.isBeforeFirst()){
+                rs.next();
+                return rs.getInt("versao_id");
+
+            }else{
+                return 0;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void setVersao() {
