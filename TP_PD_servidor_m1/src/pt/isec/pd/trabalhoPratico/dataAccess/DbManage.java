@@ -27,9 +27,8 @@ public class DbManage {
     private static PropertyChangeSupport versaoSuporte;
 
     public DbManage() {
-        if(!DbManage.existeDb()){
+        if(!DbManage.existeDb())
             criarDb();
-        }
 
         versao = getversaobd();
         versaoSuporte = new PropertyChangeSupport(this);
@@ -48,6 +47,7 @@ public class DbManage {
             return false;
         }
     }
+
 //Função para criar uma nova db vazia
     private void criarDb() {
         try {
