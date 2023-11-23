@@ -1,9 +1,11 @@
 package pt.isec.pd.trabalhoPratico.model.Utils;
 
+
 import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 
 import java.io.*;
+
 import java.util.List;
 
 public class Utils {
@@ -32,7 +34,7 @@ public class Utils {
             }
             System.out.println("Ficheiro CSV criado com sucesso");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 
@@ -68,7 +70,9 @@ public class Utils {
             }
             System.out.println("Ficheiro CSV criado com sucesso");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
+
+
 }

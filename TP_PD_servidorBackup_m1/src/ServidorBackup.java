@@ -203,11 +203,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
 
                }
 
-           } catch (IOException e) {
-               throw new RuntimeException(e);
-           } catch (ClassNotFoundException e) {
-               throw new RuntimeException(e);
-           } catch (NotBoundException e) {
+           } catch (IOException | ClassNotFoundException | NotBoundException e) {
                throw new RuntimeException(e);
            }
         }

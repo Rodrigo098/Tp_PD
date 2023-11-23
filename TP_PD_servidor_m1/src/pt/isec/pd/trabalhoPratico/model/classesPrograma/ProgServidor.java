@@ -114,12 +114,10 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             socketMulticastClientes.send(atualizacaoPacket);
 
             //aviso de atualizacao aos backups
-            DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao(),1);
-            ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
-            ObjectOutputStream objout = new ObjectOutputStream(help);
-            objout.writeObject(data);
+            byte[] help= getDados(1);
             synchronized (heartBeatPacket){
-                heartBeatPacket = new DatagramPacket(help.toByteArray(),help.toByteArray().length,heartbeatgroup,portobackup);
+
+                heartBeatPacket = new DatagramPacket(help,help.length,heartbeatgroup,portobackup);
             }
             synchronized (multicastSocketBackup){
 
@@ -171,6 +169,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
 
 
 
+
     ////////////////////////////////// THREAD HEART BEAT /////////////////////////////
     class HeartBeatTask extends TimerTask {
         @Override
@@ -179,12 +178,9 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             if(timerCount == 10) {
                 timerCount = 0;
                 try {
-                    DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao(),2);
-                    ByteArrayOutputStream helpi = new ByteArrayOutputStream(); //for real "help"
-                    ObjectOutputStream objout = new ObjectOutputStream(helpi);
-                    objout.writeObject(data);
+                    byte[] aux=getDados(2);
                     synchronized (heartBeatPacket){
-                        heartBeatPacket = new DatagramPacket(helpi.toByteArray(),helpi.toByteArray().length,heartbeatgroup,portobackup);;
+                        heartBeatPacket = new DatagramPacket(aux,aux.length,heartbeatgroup,portobackup);
                     }
                     synchronized (multicastSocketBackup) {
 
@@ -294,12 +290,10 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                 System.out.println("<SERVIDOR> [OPERACAO DE REGISTO] -> " + resposta.mensagem());
                             }
                             case LOGOUT -> logado=false;
-                            case FECHOU_APP -> {
-                                stopthreadCliente = true;
-                            }
-                            default -> {
-                                out.writeObject(new Geral(Message_types.FAZER_LOGIN));
-                            }
+                            case FECHOU_APP -> stopthreadCliente = true;
+
+                            default -> out.writeObject(new Geral(Message_types.FAZER_LOGIN));
+
                         }
                         //Pedidos para clientes do tipo UTILIZADOR
                         if(logado) {
@@ -351,9 +345,8 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                 Utils.presencasUtilizadorCSV(eventosPresencasUser, file);
                                                 sendfile(out, file);
                                             }
-                                            case LOGOUT -> {
-                                                logado = false;
-                                            }
+                                            case LOGOUT -> logado = false;
+
                                             case FECHOU_APP -> {
                                                 logado = false;
                                                 stopthreadCliente = true;
@@ -480,9 +473,8 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                 } else
                                                     out.writeObject(new Geral(Message_types.ERRO));
                                             }
-                                            case LOGOUT -> {
-                                                logado = false;
-                                            }
+                                            case LOGOUT -> logado = false;
+
                                             case FECHOU_APP -> {
                                                 logado = false;
                                                 stopthreadCliente = true;
@@ -541,6 +533,21 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
 
         } catch (IOException e) {
             System.out.println(""+e.getCause());
+        }
+    }
+    private byte[] getDados(int versao){// como vamos ter duas versos de dados diferentes temis
+
+        if(versao!=1 && versao!=2)
+            throw new RuntimeException("nao podem ser outros valores");
+        try {
+            DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao(),versao);
+            ByteArrayOutputStream helpi = new ByteArrayOutputStream(); //for real "help"
+            ObjectOutputStream objout = new ObjectOutputStream(helpi);
+            objout.writeObject(data);
+            return helpi.toByteArray();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return new byte[0];
         }
     }
 }
