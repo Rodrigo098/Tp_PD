@@ -334,16 +334,6 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                             }
                                             case LOGOUT -> {
                                                 logado = false;
-                                    /* Tive a fzr experiencias caso quisessem por um timer no logout
-                                    Timerask timerask =new Timerask(in);
-                                    Timer usar=new Timer();
-                                    usar.schedule(timerask,0,1000);
-                                    //flagStop = true;*//*
-                                    flagStop=true;
-                                    logado=false;
-                                    Timer startcount=new Timer();
-                                    timerask=new Timerask(in);
-                                    startcount.schedule(timerask,0,1000);*/
                                             }
                                             case FECHOU_APP -> {
                                                 logado = false;
