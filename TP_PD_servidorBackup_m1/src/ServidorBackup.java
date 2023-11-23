@@ -28,7 +28,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
     private static String diretoria;
     private static ObservableInterface obs;
 
-    private DbManager dbManager = new DbManager();
+    private final DbManager dbManager = new DbManager();
 
     protected ServidorBackup() throws RemoteException {
     }
@@ -124,9 +124,9 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                 Msg_String mg=(Msg_String) Msg;
                 DbManager.Elimina_evento(mg.getConteudo());
             }
-            case GERAR_COD -> {
+            case GERAR_COD ->
                 System.out.println("Por fazer");
-            }
+
             case INSERE_PRES -> {
                 Msg_EliminaInsere_Presencas mg=(Msg_EliminaInsere_Presencas) Msg;
                 DbManager.InserePresencas(mg.getNome_evento(),mg.getLista());
@@ -161,7 +161,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
 
                DatagramPacket packet=new DatagramPacket(new byte[2024],2024);// aqui tenho de por um valor diferente i guess
 
-               TimeoutTask timeoutTask = new TimeoutTask();
+
 
                while (true) {
                    multicastSocket.receive(packet);
@@ -172,7 +172,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
 
                    if (!conected)
                    {
-                       registration = "rmi://" +"localhost"+ "/" + dados.nome_servico();
+                       registration = "rmi://" +InetAddress.getLocalHost().getHostAddress()+ "/" + dados.nome_servico();
                        rmi = (RemoteInterface) Naming.lookup(registration);
                        conected = true;
 
@@ -198,7 +198,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
 
                    timeoutTimer.cancel();
                    timeoutTimer = new Timer();
-                   timeoutTask=new TimeoutTask();
+                  TimeoutTask timeoutTask=new TimeoutTask();
                    timeoutTimer.schedule(timeoutTask, 30000);
 
                }
