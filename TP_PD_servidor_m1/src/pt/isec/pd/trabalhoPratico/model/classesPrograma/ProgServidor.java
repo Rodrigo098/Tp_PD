@@ -509,7 +509,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 System.out.println(dbManager.getVersao());
                 obv.avisaObservables(Lastupdate, dbManager.getVersao());
             } catch (RemoteException e) {
-                throw new RuntimeException(e);
+                observers.remove(obv);// se o o observer nao tiver a funcionar removo o
             }
         }
     }
