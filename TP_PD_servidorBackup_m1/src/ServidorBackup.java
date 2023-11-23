@@ -188,7 +188,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                    // Compara a versão da base de dados recebida com a versão local
 
 
-                   if (dados.versao() != dbManager.getVersaoDb() && dados.tipo()!=1) {
+                   if (dados.versao() != dbManager.getVersaoDb() ) {
 
                        System.out.println("Dados "+dados.versao()+" Manager:"+dbManager.getVersaoDb());
                        System.out.println("Versao da base de dados diferente. A encerrar o servidor backup...");

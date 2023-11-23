@@ -114,13 +114,13 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             socketMulticastClientes.send(atualizacaoPacket);
 
             //aviso de atualizacao aos backups
-            byte[] help= getDados(1);
+            byte[] help= getDados();
             synchronized (heartBeatPacket){
 
                 heartBeatPacket = new DatagramPacket(help,help.length,heartbeatgroup,portobackup);
             }
             synchronized (multicastSocketBackup){
-
+                enviatodosobv(Lastupdate);
                 multicastSocketBackup.send(heartBeatPacket);
             }
             System.out.println("Aviso de atualizacao enviado aos clientes...");
@@ -178,10 +178,6 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             if(timerCount == 10) {
                 timerCount = 0;
                 try {
-                    byte[] aux=getDados(2);
-                    synchronized (heartBeatPacket){
-                        heartBeatPacket = new DatagramPacket(aux,aux.length,heartbeatgroup,portobackup);
-                    }
                     synchronized (multicastSocketBackup) {
 
                         multicastSocketBackup.send(heartBeatPacket);
@@ -255,7 +251,6 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                     Object interacao = in.readObject();
 
                     if (interacao instanceof Geral loginRegisto) {
-
                         switch (loginRegisto.getTipo()) {
                             case LOGIN -> {
                                 Msg_Login aux = (Msg_Login) interacao;
@@ -280,12 +275,12 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                 Mgs_RegistarEditar_Conta aux = (Mgs_RegistarEditar_Conta) interacao;
                                 email = aux.getEmail();
                                 Utilizador user = new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
-
+                                Lastupdate=aux;
                                 BDResposta resposta = dbManager.RegistoNovoUser(user, aux.getPassword());
                                 if (resposta.resultado()) {
                                     out.writeObject(new Msg_String(ipMuticastString, Message_types.UTILIZADOR));
                                     logado = true;
-                                    enviatodosobv(aux);
+
                                 } else {
                                     out.writeObject(new Geral(resposta.conteudo() ? Message_types.INVALIDO : Message_types.ERRO));
                                 }
@@ -307,20 +302,19 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                             case EDITAR_REGISTO -> {
                                                 Mgs_RegistarEditar_Conta aux = (Mgs_RegistarEditar_Conta) message;
                                                 Utilizador user = new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
-
+                                                Lastupdate=aux;
                                                 if (dbManager.edita_registo(user, aux.getPassword())) {
                                                     out.writeObject(new Geral(Message_types.VALIDO));
-                                                    enviatodosobv(aux);
+
                                                 } else
                                                     out.writeObject(new Geral(Message_types.ERRO));
                                             }
                                             case SUBMICAO_COD -> {
                                                 //vai à BD verificar -> têm de fazer, por enquanto está inválido
                                                 Msg_String_Int aux = (Msg_String_Int) message;
+                                                Lastupdate=new Msg_Sub_Cod(aux.getTipo(),email,aux.getConteudo(), aux.getNumero());
                                                 if (!dbManager.submitcod(aux.getNumero(), aux.getConteudo(), email)) {
                                                     out.writeObject(new Geral(Message_types.INVALIDO));
-                                                    Msg_Sub_Cod help=new Msg_Sub_Cod(aux.getTipo(),email,aux.getConteudo(), aux.getNumero());
-                                                    enviatodosobv(help);
                                                 } else {
                                                     out.writeObject(new Geral(Message_types.VALIDO));
                                                 }
@@ -368,25 +362,25 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                         switch (geral.getTipo()) {
                                             case CRIA_EVENTO -> {
                                                 Msg_Cria_Evento evento = (Msg_Cria_Evento) message;
+                                                Lastupdate=evento;
                                                 if (dbManager.Cria_evento(evento)) {//.getNome(), evento.getLocal(), evento.getData(), evento.getHoreInicio(), evento.getHoraFim())){
                                                     out.writeObject(new Geral(Message_types.VALIDO));
-                                                    enviatodosobv(evento);
                                                 } else
                                                     out.writeObject(new Geral(Message_types.ERRO));
                                             }
                                             case EDIT_EVENTO -> {
                                                 Msg_Edita_Evento evento = (Msg_Edita_Evento) message;
+                                                Lastupdate=evento;
                                                 if (dbManager.Edita_evento(evento)) {
                                                     out.writeObject(new Geral(Message_types.VALIDO));
-                                                    enviatodosobv(evento);
                                                 } else
                                                     out.writeObject(new Geral(Message_types.ERRO));
                                             }
                                             case ELIMINAR_EVENTO -> {
                                                 Msg_String aux = (Msg_String) message;
+                                                Lastupdate=aux;
                                                 if (dbManager.Elimina_evento(aux.getConteudo())) {
                                                     out.writeObject(new Geral(Message_types.VALIDO));
-                                                    enviatodosobv(aux);
                                                 } else
                                                     out.writeObject(new Geral(Message_types.ERRO));
                                             }
@@ -406,9 +400,9 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                             case GERAR_COD -> {
                                                 Msg_String_Int aux = (Msg_String_Int) message;
                                                 int code = dbManager.GeraCodigoRegisto(aux.getConteudo(), aux.getNumero());
+                                                Lastupdate=aux;
                                                 if (code != 0){
                                                     out.writeObject(new Msg_String(Integer.toString(code), Message_types.VALIDO));
-                                                    enviatodosobv(aux);
                                                 }
                                                 else
                                                     out.writeObject(new Geral(Message_types.ERRO));
@@ -457,22 +451,20 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                 sendfile(out, file);
                                             }
 
-
                                             case ELIMINA_PRES -> {
                                                 Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas) message;
+                                                Lastupdate=aux;
                                                 if (dbManager.EliminaPresencas(aux.getNome_evento(), aux.getLista())) {
                                                     out.writeObject(new Geral(Message_types.VALIDO));
-                                                    enviatodosobv(aux);
                                                 } else
                                                     out.writeObject(new Geral(Message_types.ERRO));
                                             }
 
-
                                             case INSERE_PRES -> {
                                                 Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas) message;
+                                                Lastupdate=aux;
                                                 if (dbManager.InserePresencas(aux.getNome_evento(), aux.getLista())) {
                                                     out.writeObject(new Geral(Message_types.VALIDO));
-                                                    enviatodosobv(aux);
                                                 } else
                                                     out.writeObject(new Geral(Message_types.ERRO));
                                             }
@@ -509,6 +501,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
 
 
     }
+    // funcoes uteis que são usadas pelo servidor
     public synchronized void enviatodosobv(Geral msg){
         Lastupdate=msg;
         for (ObservableInterface obv:observers) {
@@ -538,12 +531,10 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             System.out.println(""+e.getCause());
         }
     }
-    private byte[] getDados(int versao){// como vamos ter duas versos de dados diferentes temis
+    private byte[] getDados(){// como vamos ter duas versos de dados diferentes temis
 
-        if(versao!=1 && versao!=2)
-            throw new RuntimeException("nao podem ser outros valores");
         try {
-            DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao(),versao);
+            DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao(),1);
             ByteArrayOutputStream helpi = new ByteArrayOutputStream(); //for real "help"
             ObjectOutputStream objout = new ObjectOutputStream(helpi);
             objout.writeObject(data);
