@@ -8,7 +8,13 @@ public class RmiImplementation extends UnicastRemoteObject implements RemoteInte
     }
 
     @Override
-    public void getDB() {
-        //TODO
+    public byte[] getCopiaDb() throws RemoteException {
+        return new byte[0];
+    }
+
+    @Override
+    public void registaBackupServers(String backupServiceURL) throws RemoteException {
+
     }
 }
+

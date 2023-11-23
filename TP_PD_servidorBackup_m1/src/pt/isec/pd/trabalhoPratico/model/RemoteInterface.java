@@ -1,7 +1,9 @@
 package pt.isec.pd.trabalhoPratico.model;
 
 import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 public interface RemoteInterface extends Remote {
-        public void getDB();
+        public byte[] getCopiaDb() throws RemoteException;
+        void registaBackupServers(String backupServiceURL) throws RemoteException;
 }

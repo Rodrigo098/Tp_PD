@@ -1,5 +1,5 @@
 import pt.isec.pd.trabalhoPratico.model.recordDados.DadosRmi;
-import pt.isec.pd.trabalhoPratico.model.recordDados.RemoteInterface;
+import pt.isec.pd.trabalhoPratico.model.RemoteInterface;
 
 import java.io.*;
 import java.net.DatagramPacket;
@@ -18,13 +18,43 @@ public class ServidorBackup {
     private InetAddress group;
 
 
-    public void receive(){
-
-    }
-
     public static void main(String[] args) {
+        ServidorBackup servidorBackup = new ServidorBackup();
+        Heartbeat heartbeatThread = servidorBackup.new Heartbeat();
+
+        heartbeatThread.start();
+
+        try {
+            heartbeatThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
+
+    public static void receiveDb() {
+        try {
+            String serviceURL = "rmi://" + "localhost"+ "/" + "servidor";
+            RemoteInterface rmi = (RemoteInterface) Naming.lookup(serviceURL);
+
+            byte[] copiaDb = rmi.getCopiaDb();
+            salvarCopiaDb(copiaDb, "copiaDb.db");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static void salvarCopiaDb(byte[] copiaDb, String nomeFicheiro) {
+        try (FileOutputStream fos = new FileOutputStream(nomeFicheiro)) {
+            fos.write(copiaDb);
+            System.out.println("Cópia da base de dados salva localmente: " + nomeFicheiro);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     class Heartbeat extends Thread{// im not sure pq é que criei este thread  mas agr ta criadad
         @Override
         public void run() {
@@ -39,10 +69,20 @@ public class ServidorBackup {
                ByteArrayInputStream bye=new ByteArrayInputStream(packet.getData(),0, packet.getLength());
                ObjectInputStream oin=new ObjectInputStream(bye);
                DadosRmi dados= (DadosRmi) oin.readObject();
+
                if(!conected){
                     registration="rmi://"+dados.Registo()+"/"+dados.nome_servico();
                     rmi= (RemoteInterface) Naming.lookup(registration);
                     conected=true;
+                    System.out.println("Servidor de backup conectado ao servidor principal");
+
+                   receiveDb(); //recebe a copia da base de dados do servidor principal
+
+                   String backupIpAddress = InetAddress.getLocalHost().getHostAddress();
+                   String backupServiceURL = "rmi://" + backupIpAddress + "/" + dados.nome_servico();
+                   // Registra o servidor de backup para callbacks (rever isso ???)
+                   rmi.registaBackupServers(backupServiceURL);
+
                }
 
            } catch (IOException e) {
