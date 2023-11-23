@@ -78,7 +78,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
 
 
-                DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao(),1);// nao tenho a certeza se seria este o IP
+                DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao());// nao tenho a certeza se seria este o IP
 
                 ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
                 ObjectOutputStream objout = new ObjectOutputStream(help);
@@ -534,7 +534,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     private byte[] getDados(){// como vamos ter duas versos de dados diferentes temis
 
         try {
-            DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao(),1);
+            DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao());
             ByteArrayOutputStream helpi = new ByteArrayOutputStream(); //for real "help"
             ObjectOutputStream objout = new ObjectOutputStream(helpi);
             objout.writeObject(data);
