@@ -1,4 +1,4 @@
-package pt.isec.pd.trabalhoPratico.model.recordDados;
+package pt.isec.pd.trabalhoPratico.model;
 
 import java.rmi.Remote;
 

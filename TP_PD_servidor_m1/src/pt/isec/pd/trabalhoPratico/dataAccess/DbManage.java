@@ -36,7 +36,11 @@ public class DbManage {
         String email="email";
     }
 
-//Função para verificar se a bd existe
+    public static String getDbAdress() {
+        return dbAdress;
+    }
+
+    //Função para verificar se a bd existe
     private static boolean existeDb() {
         try {
             File dbFile = new File(dbAdress);

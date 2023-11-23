@@ -10,6 +10,8 @@ import pt.isec.pd.trabalhoPratico.model.recordDados.*;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -73,6 +75,8 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 String myIpIdress=InetAddress.getLocalHost().getHostAddress();
                 Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
 
+                //getCopiaDb(); //vai  a copia da db
+
                 DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao());// nao tenho a certeza se seria este o IP
 
                 ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
@@ -126,11 +130,20 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     }
     ////////////////////////////////// OBSERVABLE /////////////////////////////
     @Override
-    public void getDB() {
+    public byte[] getCopiaDb() throws RemoteException {
         for (ObservableInterface obv:observers
-             ) {
+        ) {
             obv.avisaobservables();// acho que seria algo assim que usariamos para atualizar os observables, depois chamavamos esta funcao nos outros metodos
         }
+        try {
+            //Para evitar que sejam feitas alterações enquanto a cópia é feita
+            synchronized (this){
+                return Files.readAllBytes(Paths.get(DbManage.getDbAdress()));
+            }
+        } catch (Exception e) {
+            throw new RemoteException("Erro ao obter cópia da base de dados", e);
+        }
+
     }
 
     @Override
