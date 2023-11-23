@@ -13,7 +13,7 @@ import java.util.Random;
 
 
 public class DbManager {
-    private static final String dbAdress = "copiaDb.db";
+    private static final String dbAdress = "Base de Dados/copiaDb.db";
     private static final String dbUrl= "jdbc:sqlite:"+dbAdress;
     public static String getDbAdress() {
         return dbAdress;

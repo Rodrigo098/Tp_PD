@@ -1,7 +1,5 @@
 package pt.isec.pd.trabalhoPratico.model;
 
-import pt.isec.pd.trabalhoPratico.ObservableInterface;
-
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 

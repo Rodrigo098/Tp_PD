@@ -1,6 +1,6 @@
 package pt.isec.pd.trabalhoPratico.model.classesPrograma;
 
-import pt.isec.pd.trabalhoPratico.ObservableInterface;
+import pt.isec.pd.trabalhoPratico.model.ObservableInterface;
 import pt.isec.pd.trabalhoPratico.dataAccess.BDResposta;
 import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
 import pt.isec.pd.trabalhoPratico.model.RemoteInterface;
@@ -31,7 +31,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     private MulticastSocket multicastSocketBackup;
     private final Timer temporizador;
     private final HeartBeatTask heartBeatTask;
-    List<ObservableInterface> observers;
+    List<ObservableInterface> observers=new ArrayList<>();
     private DbManage dbManager;
     private DatagramPacket heartBeatPacket;
     private int timerCount;
@@ -43,11 +43,11 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     private ServerSocket socketServidor;
     List<Socket> clients = new ArrayList<>();
     private Boolean pararServidor = false;
-    private List<RemoteInterface> backupServersRegistados = new ArrayList<>();
+
 
     public ProgServidor(int portoClientes) throws RemoteException {
         this.portoClientes = portoClientes;
-        observers = new ArrayList<>();
+        //observers = new ArrayList<>();
         temporizador = new Timer();
         heartBeatTask = new HeartBeatTask();
     }
@@ -72,7 +72,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 heartbeatgroup = InetAddress.getByName(Heartbeatip);
                 multicastSocketBackup = new MulticastSocket(portobackup);
                 multicastSocketBackup.joinGroup(heartbeatgroup);
-                rmi = new ProgServidor(portoClientes); //???
+                rmi = this ;//???
                 String myIpIdress=InetAddress.getLocalHost().getHostAddress();
                 Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
 
@@ -131,10 +131,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     ////////////////////////////////// OBSERVABLE /////////////////////////////
     @Override
     public byte[] getCopiaDb() throws RemoteException {
-        for (ObservableInterface obv:observers
-        ) {
-            obv.avisaobservables();// acho que seria algo assim que usariamos para atualizar os observables, depois chamavamos esta funcao nos outros metodos
-        }
+
         try {
             //Para evitar que sejam feitas alterações enquanto a cópia é feita
             synchronized (this){
@@ -148,24 +145,25 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
 
     @Override
     public void registaBackupServers(String backupServerURL) throws RemoteException {
-        try {
-            RemoteInterface backupServers = (RemoteInterface) Naming.lookup(backupServerURL);
-            backupServersRegistados.add(backupServers);
-            System.out.println("Servidor de backup registrado para callbacks: " + backupServerURL);
-        } catch (Exception e) {
-            throw new RemoteException("Erro ao registar servidor de backup", e);
-        }
+
     }
 
     @Override
-    public synchronized void addObservable(ObservableInterface obv) {
+    public void addObservable(ObservableInterface obv) throws RemoteException {
+        synchronized (observers){
       if(!observers.contains(obv))
           observers.add(obv);
+          System.out.println("Observable adicionado");
+        }
+
     }
 
     @Override
-    public synchronized void RemoveObservable(ObservableInterface obv) {
+    public  void RemoveObservable(ObservableInterface obv) throws RemoteException {
+        synchronized (observers){
         observers.remove(obv);
+            System.out.println("TOu a remover");
+        }
     }
 
     ////////////////////////////////// THREAD HEART BEAT /////////////////////////////
@@ -204,6 +202,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             heartBeatTask.cancel();
             envioDeAvisoDeAtualizacao("fimServidor");
             try {
+
                 socketServidor.close();
                 socketMulticastClientes.close();
                 clients.clear();
@@ -243,6 +242,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                     Object interacao = in.readObject();
 
                     if (interacao instanceof Geral loginRegisto) {
+
                         switch (loginRegisto.getTipo()) {
                             case LOGIN -> {
                                 Msg_Login aux = (Msg_Login) interacao;
@@ -258,6 +258,13 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                     logado = true;
                                     //System.out.println(resposta[0]);
                                     isadmin = resposta.conteudo();
+                                    synchronized (observers){
+                                        System.out.println(observers.isEmpty());
+                                        for (ObservableInterface obv:observers) {
+                                            System.out.println("Faz isto");
+                                            obv.avisaObservables();
+                                        }
+                                    }
                                     out.writeObject(new Msg_String(ipMuticastString, resposta.conteudo() ? Message_types.ADMINISTRADOR : Message_types.UTILIZADOR));
                                 }
                                 System.out.println("<SERVIDOR> [OPERACAO DE LOGIN] -> " + resposta.mensagem());
@@ -271,6 +278,15 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                 if (resposta.resultado()) {
                                     out.writeObject(new Msg_String(ipMuticastString, Message_types.UTILIZADOR));
                                     logado = true;
+                                    synchronized (observers){
+                                    System.out.println(observers.isEmpty());
+                                    for (ObservableInterface obv:observers) {
+                                        System.out.println("Faz isto");
+                                        obv.avisaObservables();
+                                    }
+                                    }
+
+
                                 } else {
                                     out.writeObject(new Geral(resposta.conteudo() ? Message_types.INVALIDO : Message_types.ERRO));
                                 }

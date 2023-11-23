@@ -1,3 +1,4 @@
+import pt.isec.pd.trabalhoPratico.model.ObservableInterface;
 import pt.isec.pd.trabalhoPratico.model.dataAccess.DbManager;
 import pt.isec.pd.trabalhoPratico.model.recordDados.DadosRmi;
 import pt.isec.pd.trabalhoPratico.model.RemoteInterface;
@@ -8,10 +9,12 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class ServidorBackup {
+public class ServidorBackup extends UnicastRemoteObject implements ObservableInterface {
     private String registration;
     private boolean conected;
     private RemoteInterface rmi;
@@ -20,11 +23,16 @@ public class ServidorBackup {
     private final String Heartbeatip="230.44.44.44";
     private InetAddress group;
     private Timer timeoutTimer = new Timer();
+    private static String diretoria;
+    private static ObservableInterface obs;
 
     private DbManager dbManager = new DbManager();
 
+    protected ServidorBackup() throws RemoteException {
+    }
 
-    public static void main(String[] args) {
+
+    public static void main(String[] args)  {
 
 
         // Verifica se o número de argumentos é válido
@@ -33,7 +41,7 @@ public class ServidorBackup {
             System.exit(1);
         }
 
-        String diretoria = args[0];
+        diretoria = args[0];
 
         // Verifica se o caminho existe
         File caminho = new File(diretoria);
@@ -42,34 +50,31 @@ public class ServidorBackup {
             System.err.println("[Erro] O caminho especificado nao corresponde a uma diretoria valida");
             System.exit(1);
         }
-
+/*
         // Verifica se a diretoria está vazia
         if (caminho.list().length > 0) {
             System.err.println("A diretoria nao esta vazia. A encerrar o servidor backup...");
             System.exit(1);
         }
-
-        ServidorBackup servidorBackup = new ServidorBackup();
-        Heartbeat heartbeatThread = servidorBackup.new Heartbeat();
-
-        heartbeatThread.start();
-
+*/
         try {
+            ServidorBackup servidorBackup = new ServidorBackup();
+            Heartbeat heartbeatThread = servidorBackup.new Heartbeat();
+            heartbeatThread.start();
             heartbeatThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
         }
 
     }
 
-    public static void receiveDb() {
+    public void receiveDb() {
         try {
-            String serviceURL = "rmi://" + "localhost"+ "/" + "servidor";
-            RemoteInterface rmi = (RemoteInterface) Naming.lookup(serviceURL);
-
             byte[] copiaDb = rmi.getCopiaDb();
-            salvarCopiaDb(copiaDb, "copiaDb.db");
 
+            salvarCopiaDb(copiaDb, diretoria +File.separator+ "copiaDb.db");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -85,6 +90,10 @@ public class ServidorBackup {
         }
     }
 
+    @Override
+    public void avisaObservables() {
+        System.out.println("Recebeu notificacao");
+    }
 
 
     class TimeoutTask extends TimerTask {
@@ -112,34 +121,34 @@ public class ServidorBackup {
                    ObjectInputStream oin = new ObjectInputStream(bye);
                    DadosRmi dados = (DadosRmi) oin.readObject();
 
-                   if (!conected) {
-                       registration = "rmi://" + dados.Registo() + "/" + dados.nome_servico();
+
+                   if (!conected)
+                   {
+                       registration = "rmi://" +"localhost"+ "/" + dados.nome_servico();
                        rmi = (RemoteInterface) Naming.lookup(registration);
                        conected = true;
+
                        System.out.println("Servidor de backup conectado ao servidor principal");
+
 
                        receiveDb(); //recebe a copia da base de dados do servidor principal
 
-
-                       // Compara a versão da base de dados recebida com a versão local
-                       if (dados.versao() != dbManager.getVersaoDb()) {
-                           System.out.println("Versão da base de dados diferente. A encerrar o servidor backup...");
-                           System.exit(0);
-                       }
-
-
-                       // Regista o servidor de backup para callbacks (rever isso ???)
-                       String backupIpAddress = InetAddress.getLocalHost().getHostAddress();
-                       String backupServiceURL = "rmi://" + backupIpAddress + "/" + dados.nome_servico();
-
-                       rmi.registaBackupServers(backupServiceURL);
-
-                       // Reinicia o timer após receber um heartbeat
-                       timeoutTimer.cancel();
-                       timeoutTimer = new Timer();
-                       timeoutTimer.schedule(timeoutTask, 30000);
+                      obs=new ServidorBackup();
+                       rmi.addObservable(obs);
 
                    }
+                   // Compara a versão da base de dados recebida com a versão local
+                   if (dados.versao() != dbManager.getVersaoDb()) {
+                       System.out.println("Versao da base de dados diferente. A encerrar o servidor backup...");
+                       System.exit(0);
+                   }
+                   // Reinicia o timer após receber um heartbeat
+
+                   timeoutTimer.cancel();
+                   timeoutTimer = new Timer();
+                   timeoutTask=new TimeoutTask();
+                   timeoutTimer.schedule(timeoutTask, 30000);
+
                }
 
            } catch (IOException e) {
