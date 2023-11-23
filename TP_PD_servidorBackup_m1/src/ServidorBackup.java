@@ -1,7 +1,9 @@
 import pt.isec.pd.trabalhoPratico.model.ObservableInterface;
+import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 import pt.isec.pd.trabalhoPratico.model.dataAccess.DbManager;
 import pt.isec.pd.trabalhoPratico.model.recordDados.DadosRmi;
 import pt.isec.pd.trabalhoPratico.model.RemoteInterface;
+import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 
 import java.io.*;
 import java.net.DatagramPacket;
@@ -91,8 +93,54 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
     }
 
     @Override
-    public void avisaObservables() {
+    public void avisaObservables(Geral Msg,int versao,String email) {
         System.out.println("Recebeu notificacao");
+        DbManager.setVersao(versao);
+        System.out.println(versao);
+        switch (Msg.getTipo()){
+            case REGISTO ->{
+                Mgs_RegistarEditar_Conta mg=(Mgs_RegistarEditar_Conta) Msg;
+                Utilizador aux=new Utilizador(mg.getNome(),mg.getEmail(), mg.getNum_estudante());
+                DbManager.RegistoNovoUser(aux,mg.getPassword());
+            }
+            case EDITAR_REGISTO -> {
+                Mgs_RegistarEditar_Conta mg=(Mgs_RegistarEditar_Conta) Msg;
+                Utilizador aux=new Utilizador(mg.getNome(),mg.getEmail(), mg.getNum_estudante());
+                DbManager.edita_registo(aux,mg.getPassword());
+            }
+            case SUBMICAO_COD -> {
+                Msg_String_Int mg=(Msg_String_Int) Msg;
+                DbManager.submitcod(mg.getNumero(),mg.getConteudo(),email);
+            }
+            case CRIA_EVENTO -> {
+                Msg_Cria_Evento mg=(Msg_Cria_Evento) Msg;
+                DbManager.Cria_evento(mg);
+            }
+            case EDIT_EVENTO -> {
+                Msg_Edita_Evento mg=(Msg_Edita_Evento) Msg;
+                DbManager.Edita_evento(mg);
+            }
+            case ELIMINAR_EVENTO -> {
+                Msg_String mg=(Msg_String) Msg;
+                DbManager.Elimina_evento(mg.getConteudo());
+            }
+            case GERAR_COD -> {
+                System.out.println("Por fazer");
+            }
+            case INSERE_PRES -> {
+                Msg_EliminaInsere_Presencas mg=(Msg_EliminaInsere_Presencas) Msg;
+                DbManager.InserePresencas(mg.getNome_evento(),mg.getLista());
+            }
+            case ELIMINA_PRES -> {
+                Msg_EliminaInsere_Presencas mg=(Msg_EliminaInsere_Presencas) Msg;
+                DbManager.EliminaPresencas(mg.getNome_evento(),mg.getLista());
+            }
+
+        }
+
+
+
+
     }
 
 
@@ -138,11 +186,15 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
 
                    }
                    // Compara a versão da base de dados recebida com a versão local
-                   if (dados.versao() != dbManager.getVersaoDb()) {
+
+
+                   if (dados.versao() != dbManager.getVersaoDb() && dados.tipo()!=1) {
+
+                       System.out.println("Dados "+dados.versao()+" Manager:"+dbManager.getVersaoDb());
                        System.out.println("Versao da base de dados diferente. A encerrar o servidor backup...");
                        System.exit(0);
                    }
-                   // Reinicia o timer após receber um heartbeat
+                  // Reinicia o timer após receber um heartbeat
 
                    timeoutTimer.cancel();
                    timeoutTimer = new Timer();
