@@ -7,6 +7,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
 
+import static java.lang.System.exit;
+
 public class MainServidor {
     public static void main(String[] args) throws ParseException {
   /*      if(args.length != 4){
@@ -47,18 +49,19 @@ public class MainServidor {
         }
 */
 
-        DbManage dbManage = new DbManage();
+        DbManage dbManager = new DbManage();
         ProgServidor prog ;//Integer.parseInt(args[0]));
 
         try {
             prog = new ProgServidor(6001);
-            dbManage.addVersaoListener(event -> prog.envioDeAvisoDeAtualizacao("atualizacao"));
-            prog.setDbManager(dbManage);
+            dbManager.addVersaoListener(event -> prog.envioDeAvisoDeAtualizacao("atualizacao"));
+            prog.setDbManager(dbManager);
             prog.servico();
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
-
+        System.out.println("<SERVIDOR> Servidor fim!");
+        exit(0);
      //  DbManage.Registonovouser(new Utilizador("Joao","eu@tu.isec","9876"),"12345");
     //  DbManage.autentica_user("eu","12345");
          //DbManage.edita_registo(new Utilizador("Joao","eu@tu.isec","9876"),"123");

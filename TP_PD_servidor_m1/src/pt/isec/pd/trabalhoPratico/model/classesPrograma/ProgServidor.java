@@ -1,6 +1,7 @@
 package pt.isec.pd.trabalhoPratico.model.classesPrograma;
 
 import pt.isec.pd.trabalhoPratico.ObservableInterface;
+import pt.isec.pd.trabalhoPratico.dataAccess.BDResposta;
 import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
 import pt.isec.pd.trabalhoPratico.model.RemoteInterface;
 import pt.isec.pd.trabalhoPratico.model.Utils.Utils;
@@ -26,8 +27,12 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     private final String Heartbeatip="230.44.44.44";
     private RemoteInterface rmi;
     private MulticastSocket multicastSocketBackup;
+    private final Timer temporizador;
+    private final HeartBeatTask heartBeatTask;
     List<ObservableInterface> observers;
     private DbManage dbManager;
+    private DatagramPacket heartBeatPacket;
+    private int timerCount;
     
     // CLIENTES (e ip heartbeat)
     private InetAddress grupoMulticast, heartbeatgroup;
@@ -40,7 +45,8 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     public ProgServidor(int portoClientes) throws RemoteException {
         this.portoClientes = portoClientes;
         observers = new ArrayList<>();
-
+        temporizador = new Timer();
+        heartBeatTask = new HeartBeatTask();
     }
 
     public void setDbManager(DbManage dbManager) {
@@ -59,7 +65,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 this.grupoMulticast = InetAddress.getByName(ipMuticastString);
 
                 LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
-                System.out.println("Registry lancado");
+                System.out.println("<SERVIDOR> Registry lancado");
                 heartbeatgroup = InetAddress.getByName(Heartbeatip);
                 multicastSocketBackup = new MulticastSocket(portobackup);
                 multicastSocketBackup.joinGroup(heartbeatgroup);
@@ -67,17 +73,25 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 String myIpIdress=InetAddress.getLocalHost().getHostAddress();
                 Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
 
-                new Thread(new ThreadHeartbeat()).start();
+                DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao());// nao tenho a certeza se seria este o IP
+
+                ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
+                ObjectOutputStream objout = new ObjectOutputStream(help);
+                objout.writeObject(data);
+
+                heartBeatPacket = new DatagramPacket(help.toByteArray(),help.toByteArray().length,heartbeatgroup,portobackup);
+
+                temporizador.schedule(heartBeatTask,0,1000);
+                //new Thread(new ThreadHeartbeat()).start();
             } catch (SocketException | UnknownHostException e) {
-                throw new RuntimeException("Nao foi possivel criar o socket para multicast, erro [" + e + "]");
+                throw new RuntimeException("<SERVIDOR> Nao foi possivel criar o socket para multicast, erro [" + e + "]");
             }catch (RemoteException e){
-                System.out.println("Registy ja em execucao");
+                System.out.println("<SERVIDOR> Registy ja em execucao");
             }
 
             while(!pararServidor){
-                Socket cli = socketServidor.accept();// aceita clientes
-                //cli.setSoTimeout(10000);
-                clients.add(cli);// adiciona cliente conectado a lista de clientes
+                Socket cli = socketServidor.accept();
+                clients.add(cli);
                 new Thread(new ThreadCliente(cli)).start();
             }
         } catch (IOException e) {
@@ -99,9 +113,12 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
             ObjectOutputStream objout = new ObjectOutputStream(help);
             objout.writeObject(data);
-            DatagramPacket backupPacket = new DatagramPacket(help.toByteArray(),help.toByteArray().length,heartbeatgroup,portobackup);
-            multicastSocketBackup.send(backupPacket);
-
+            synchronized (heartBeatPacket){
+                heartBeatPacket = new DatagramPacket(help.toByteArray(),help.toByteArray().length,heartbeatgroup,portobackup);;
+            }
+            synchronized (multicastSocketBackup){
+                multicastSocketBackup.send(heartBeatPacket);
+            }
             System.out.println("Aviso de atualizacao enviado aos clientes...");
         } catch (IOException e) {
             throw new RuntimeException("Nao foi possivel informar da atualizacao ao clientes...");
@@ -128,41 +145,21 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     }
 
     ////////////////////////////////// THREAD HEART BEAT /////////////////////////////
-    class ThreadHeartbeat extends Thread{
-
+    class HeartBeatTask extends TimerTask {
         @Override
         public void run() {
-
-          try
-          {
-             DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao());// nao tenho a certeza se seria este o IP
-
-             ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
-             ObjectOutputStream objout = new ObjectOutputStream(help);
-             objout.writeObject(data);
-
-             DatagramPacket packet = new DatagramPacket(help.toByteArray(),help.toByteArray().length,heartbeatgroup,portobackup);
-                 while (!pararServidor){
-                     Timer temporizador=new Timer();
-                     TimerTask timerTask=new TimerTask() {
-                         int timer;
-                         @Override
-                         public void run() {
-                            timer++;
-                            if(timer == 10) {
-                                timer = 0;
-                                try {
-                                    multicastSocketBackup.send(packet);}
-                                catch (IOException e) {
-                                    System.out.println(e.getMessage());}
-                            }
-                         }
-                     };
-                     temporizador.schedule(timerTask,0,1000);
-             }
-          } catch (IOException e) {
-              throw new RuntimeException(e);
-          }
+            timerCount++;
+            if(timerCount == 10) {
+                timerCount = 0;
+                try {
+                    synchronized (multicastSocketBackup) {
+                        multicastSocketBackup.send(heartBeatPacket);
+                    }
+                }
+                catch (IOException e) {
+                    System.out.println(e.getMessage());}
+                System.out.println("[\t<SERVIDOR> Heartbeat enviado]");
+            }
         }
     }
 
@@ -178,15 +175,17 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 //if(inserido.equals("atua"))
                   //  envioDeAvisoDeAtualizacao("atualizacao");
             }while (!inserido.equals("sair"));
+            pararServidor = true;
+            temporizador.cancel();
+            heartBeatTask.cancel();
             envioDeAvisoDeAtualizacao("fimServidor");
             try {
                 socketServidor.close();
                 socketMulticastClientes.close();
                 clients.clear();
             } catch (IOException e) {
-                throw new RuntimeException("erro a fechar sockets");
+                throw new RuntimeException("<SERVIDOR> Erro a fechar sockets");
             }
-            pararServidor = true;
         }
     }
     ////////////////////////////////// THREAD CLIENTE /////////////////////////////
@@ -224,33 +223,34 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                             case LOGIN -> {
                                 Msg_Login aux = (Msg_Login) interacao;
                                 email = aux.getEmail();
-                                System.out.println(email);
+                                //System.out.println(email);
 
-                                Boolean[] resposta = dbManager.autentica_user(email, aux.getPassword());
+                                BDResposta resposta = dbManager.autentica_user(email, aux.getPassword());
 
-                                if (!resposta[0])
-                                    out.writeObject(new Geral(Message_types.INVALIDO));
+                                if (!resposta.resultado()) {
+                                    out.writeObject(new Geral(resposta.mensagem().contains("Password") ? Message_types.WRONG_PASS : resposta.conteudo() ? Message_types.INVALIDO : Message_types.ERRO));
+                                }
                                 else {
                                     logado = true;
                                     //System.out.println(resposta[0]);
-                                    if (resposta[1]) {
-                                        isadmin = true;
-                                        out.writeObject(new Msg_String(ipMuticastString, Message_types.ADMINISTRADOR));
-                                    } else
-                                        out.writeObject(new Msg_String(ipMuticastString, Message_types.UTILIZADOR));
+                                    isadmin = resposta.conteudo();
+                                    out.writeObject(new Msg_String(ipMuticastString, resposta.conteudo() ? Message_types.ADMINISTRADOR : Message_types.UTILIZADOR));
                                 }
+                                System.out.println("<SERVIDOR> [OPERACAO DE LOGIN] -> " + resposta.mensagem());
                             }
                             case REGISTO -> {
                                 Mgs_RegistarEditar_Conta aux = (Mgs_RegistarEditar_Conta) interacao;
                                 email = aux.getEmail();
                                 Utilizador user = new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
 
-                                if (dbManager.RegistoNovoUser(user, aux.getPassword())) {
+                                BDResposta resposta = dbManager.autentica_user(email, aux.getPassword());
+                                if (resposta.resultado()) {
                                     out.writeObject(new Msg_String(ipMuticastString, Message_types.UTILIZADOR));
                                     logado = true;
                                 } else {
-                                    out.writeObject(new Geral(Message_types.ERRO));
+                                    out.writeObject(new Geral(resposta.conteudo() ? Message_types.INVALIDO : Message_types.ERRO));
                                 }
+                                System.out.println("<SERVIDOR> [OPERACAO DE REGISTO] -> " + resposta.mensagem());
                             }
                             case FECHOU_APP -> {
                                 stopthreadCliente = true;
@@ -465,39 +465,10 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                     client.close();
                 } catch (IOException ignored) {
                 }
-                //if(timerask!=null)timerask.cancel();
                 clients.remove(client);
                 System.out.println("Cliente: "+ email +"terminado");
             }
         }
-        /*
-        class Timerask extends TimerTask{
-            private int contador;
-            private final ObjectInputStream oin;
-
-            public Timerask(ObjectInputStream oin) {
-                this.oin=oin;
-            }
-
-            @Override
-            public void run() {
-                System.out.println("Fez "+contador);
-                contador++;
-
-                if(contador==60){
-                    stopthread=true;
-                    try {
-
-                        oin.close();
-
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-
-                    }
-                    this.cancel();
-                }
-            }
-        }*/
     }
     public synchronized void sendfile(OutputStream out, File file){
         byte []fileChunk = new byte[ProgServidor.MAX_SIZE];

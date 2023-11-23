@@ -156,7 +156,7 @@ public class DbManage {
         return versao;
     }
 
-    public boolean RegistoNovoUser(Utilizador user, String password){
+    public BDResposta RegistoNovoUser(Utilizador user, String password){
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
             Statement statement = connection.createStatement())
@@ -165,31 +165,25 @@ public class DbManage {
                     + user.email() + "','" + user.nome() + "','" + user.numIdentificacao() + "','" + password +"','" + "cliente" +"')";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
 
             if(statement.executeUpdate(createEntryQuery)<1){
-                System.out.println("Insercao de novo utilizador falhou");
-                return false;
+                return new BDResposta(false, "<BD>Falha na inserção de novo utilizador", true);
             }
             else{
-                System.out.println("Insercao de novo utilizador com sucesso");
                 setVersao();
-                return true;
+                return new BDResposta(true, "<BD>Insercao de novo utilizador com sucesso", false);
             }
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            return false;
+            return new BDResposta(false, "<BD>Erro no acesso a base de dados", false);
         }
-
-
     }
-    public Boolean[] autentica_user(String user, String password){
 
-        // processar adnistrador
-        Boolean[]res={false,false};//o primeiro é se a o user ta certo e a segunda é se é Admin ou não
+    public BDResposta autentica_user(String user, String password){
+
         try(Connection connection = DriverManager.getConnection(dbUrl);
             Statement statement = connection.createStatement())
         {
             String verificaEstudanteQuery = "SELECT * FROM Utilizador WHERE email = ?";
             PreparedStatement alunoStatement = connection.prepareStatement(verificaEstudanteQuery);
-           alunoStatement.setString(1, user);
+            alunoStatement.setString(1, user);
             ResultSet rs=alunoStatement.executeQuery();
 
             if(rs.isBeforeFirst())
@@ -197,19 +191,20 @@ public class DbManage {
                 System.out.println(rs.getString("email"));
                 System.out.println(rs.getString("palavra_passe"));
 
-                if( rs.getString("palavra_passe").equals(password))
-                    res[0]=true;
-                if(rs.getString("tipo_utilizador").equals("admin"))
-                    res[1]=true;
-                return res;// devolve true se a password for a mesma
+                if(rs.getString("palavra_passe").equals(password)) {
+                    if(rs.getString("tipo_utilizador").equals("admin"))
+                        return new BDResposta(true, "<BD>Entrou um administrador", true);
+                    else
+                        return new BDResposta(true, "<BD>Entrou um cliente", false);
+                }
+                return new BDResposta(false, "<BD>Password errada", false);
             }
-            else{ System.out.println("Não encontrou nenhum utilizador");
-                return res;
+            else{
+                return new BDResposta(false, "<BD>Não encontrou nenhum utilizador", true);
             }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
+        } catch (SQLException ignored) {
+            return new BDResposta(false, "<BD>Erro no acesso a Base de Dados", false);
         }
-        return res;
     }
     public boolean edita_registo( Utilizador user, String pasword ){
         try(Connection connection = DriverManager.getConnection(dbUrl);

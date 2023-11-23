@@ -184,9 +184,12 @@ public class ProgramaCliente {
 
                 if (validacao instanceof Geral g) {
                     switch (g.getTipo()) {
+                        case WRONG_PASS -> {
+                            return "Password incorreta :(";
+                        }
                         case INVALIDO -> { return "Não está registado na app :(";}
                         case ERRO -> { return "Ocorreu um erro na BD.";}
-                        case VALIDO -> {
+                        default -> {
                             try {
                                 new Thread(new AtualizacaoAsync(portoServidor, ((Msg_String) g).getConteudo())).start();
                                 gereMudancasPLC.setEstadoNaAplicacao(g.getTipo() == Message_types.UTILIZADOR ? EstadoNaAplicacao.UTILIZADOR : EstadoNaAplicacao.ADMINISTRADOR);
@@ -203,8 +206,6 @@ public class ProgramaCliente {
             } catch (IOException | ClassNotFoundException e) {
                 gereMudancasPLC.setErros();
                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.FIM);
-                //setErro();
-                //setLogado("FIM");
             }
             return "Tente novamente...";
         }
@@ -325,7 +326,7 @@ public class ProgramaCliente {
                 switch(g.getTipo()) {
                     case ERRO -> { return new ParResposta(false, "Ocorreu um erro na BD.");}
                     case INVALIDO -> { return new ParResposta(false, "O seu registo é inválido");}
-                    case VALIDO -> {
+                    default -> {
                         if(validacao instanceof Msg_String info) {
                             try {
                                 new Thread(new AtualizacaoAsync(portoServidor, info.getConteudo())).start();
