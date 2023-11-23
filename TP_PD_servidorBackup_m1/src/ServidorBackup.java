@@ -26,7 +26,7 @@ public class ServidorBackup {
 
     public static void main(String[] args) {
 
-/*
+
         // Verifica se o número de argumentos é válido
         if (args.length != 1) {
             System.err.println("Sintaxe: ServidorBackup <caminho_da_diretoria>");
@@ -45,11 +45,9 @@ public class ServidorBackup {
 
         // Verifica se a diretoria está vazia
         if (caminho.list().length > 0) {
-            System.err.println("A diretorio não esta vazia. A encerrar o servidor backup...");
+            System.err.println("A diretoria nao esta vazia. A encerrar o servidor backup...");
             System.exit(1);
         }
-
-*/
 
         ServidorBackup servidorBackup = new ServidorBackup();
         Heartbeat heartbeatThread = servidorBackup.new Heartbeat();
@@ -81,7 +79,7 @@ public class ServidorBackup {
     private static void salvarCopiaDb(byte[] copiaDb, String nomeFicheiro) {
         try (FileOutputStream fos = new FileOutputStream(nomeFicheiro)) {
             fos.write(copiaDb);
-            System.out.println("Cópia da base de dados salva localmente: " + nomeFicheiro);
+            System.out.println("Copia da base de dados salva localmente: " + nomeFicheiro);
         } catch (IOException e) {
             e.printStackTrace();
         }
