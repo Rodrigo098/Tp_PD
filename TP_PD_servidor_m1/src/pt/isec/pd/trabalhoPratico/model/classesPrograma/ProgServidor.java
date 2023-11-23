@@ -43,6 +43,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     private ServerSocket socketServidor;
     List<Socket> clients = new ArrayList<>();
     private Boolean pararServidor = false;
+    private List<RemoteInterface> backupServersRegistados = new ArrayList<>();
 
     public ProgServidor(int portoClientes) throws RemoteException {
         this.portoClientes = portoClientes;
@@ -75,7 +76,6 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 String myIpIdress=InetAddress.getLocalHost().getHostAddress();
                 Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
 
-                //getCopiaDb(); //vai  a copia da db
 
                 DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao());// nao tenho a certeza se seria este o IP
 
@@ -90,7 +90,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             } catch (SocketException | UnknownHostException e) {
                 throw new RuntimeException("<SERVIDOR> Nao foi possivel criar o socket para multicast, erro [" + e + "]");
             }catch (RemoteException e){
-                System.out.println("<SERVIDOR> Registy ja em execucao");
+                System.out.println("<SERVIDOR> Registry ja em execucao");
             }
 
             while(!pararServidor){
@@ -144,6 +144,17 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             throw new RemoteException("Erro ao obter cópia da base de dados", e);
         }
 
+    }
+
+    @Override
+    public void registaBackupServers(String backupServerURL) throws RemoteException {
+        try {
+            RemoteInterface backupServers = (RemoteInterface) Naming.lookup(backupServerURL);
+            backupServersRegistados.add(backupServers);
+            System.out.println("Servidor de backup registrado para callbacks: " + backupServerURL);
+        } catch (Exception e) {
+            throw new RemoteException("Erro ao registar servidor de backup", e);
+        }
     }
 
     @Override
