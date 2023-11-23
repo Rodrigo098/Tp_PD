@@ -93,7 +93,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
     }
 
     @Override
-    public void avisaObservables(Geral Msg,int versao,String email) {
+    public void avisaObservables(Geral Msg,int versao) {
         System.out.println("Recebeu notificacao");
         DbManager.setVersao(versao);
         System.out.println(versao);
@@ -109,8 +109,8 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                 DbManager.edita_registo(aux,mg.getPassword());
             }
             case SUBMICAO_COD -> {
-                Msg_String_Int mg=(Msg_String_Int) Msg;
-                DbManager.submitcod(mg.getNumero(),mg.getConteudo(),email);
+                Msg_Sub_Cod mg=(Msg_Sub_Cod) Msg;
+                DbManager.submitcod(mg.getNumero(),mg.getConteudo(),mg.getEmail());
             }
             case CRIA_EVENTO -> {
                 Msg_Cria_Evento mg=(Msg_Cria_Evento) Msg;

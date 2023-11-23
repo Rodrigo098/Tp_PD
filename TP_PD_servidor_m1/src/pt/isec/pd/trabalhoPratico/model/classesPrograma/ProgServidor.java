@@ -227,7 +227,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
         boolean flagStop, isadmin, logado, stopthreadCliente;
         Socket client;
         //Timerask timerask;
-        String email;
+        public String email;
 
         List <Evento> eventosPresencasUser = new ArrayList<>();
         List <Evento> eventosPresencasAdmin = new ArrayList<>();
@@ -239,6 +239,8 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             isadmin = false;
             stopthreadCliente = false;
         }
+
+
 
         @Override
         public void run() {
@@ -317,7 +319,8 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                 Msg_String_Int aux = (Msg_String_Int) message;
                                                 if (!dbManager.submitcod(aux.getNumero(), aux.getConteudo(), email)) {
                                                     out.writeObject(new Geral(Message_types.INVALIDO));
-                                                    enviatodosobv(aux);
+                                                    Msg_Sub_Cod help=new Msg_Sub_Cod(aux.getTipo(),email,aux.getConteudo(), aux.getNumero());
+                                                    enviatodosobv(help);
                                                 } else {
                                                     out.writeObject(new Geral(Message_types.VALIDO));
                                                 }
@@ -504,20 +507,20 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
         }
 
 
-        private synchronized void enviatodosobv(Geral msg){
-            Lastupdate=msg;
-            for (ObservableInterface obv:observers) {
-                try {
-                    System.out.println(dbManager.getVersao());
-                    obv.avisaObservables(Lastupdate, dbManager.getVersao(),email);
-                } catch (RemoteException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
 
     }
+    public synchronized void enviatodosobv(Geral msg){
+        Lastupdate=msg;
+        for (ObservableInterface obv:observers) {
+            try {
+                System.out.println(dbManager.getVersao());
+                obv.avisaObservables(Lastupdate, dbManager.getVersao());
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     public synchronized void sendfile(OutputStream out, File file){
         byte []fileChunk = new byte[ProgServidor.MAX_SIZE];
         try (FileInputStream filereader=new FileInputStream(file)){

@@ -149,6 +149,7 @@ public class DbManage {
            if( statement.executeUpdate()<1)
                System.out.println("Erro a atualizar a versao");
            else{
+
                versaoSuporte.firePropertyChange("versao", null, null);
                System.out.println("Versao atualizada com sucesso");}
 
