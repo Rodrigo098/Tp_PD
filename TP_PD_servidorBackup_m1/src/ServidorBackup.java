@@ -172,7 +172,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
 
                    if (!conected)
                    {
-                       registration = "rmi://" +InetAddress.getLocalHost().getHostAddress()+ "/" + dados.nome_servico();
+                       registration = "rmi://" +dados.Registo()+ "/" + dados.nome_servico();
                        rmi = (RemoteInterface) Naming.lookup(registration);
                        conected = true;
 
