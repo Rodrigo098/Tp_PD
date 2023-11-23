@@ -267,7 +267,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                 email = aux.getEmail();
                                 Utilizador user = new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
 
-                                BDResposta resposta = dbManager.autentica_user(email, aux.getPassword());
+                                BDResposta resposta = dbManager.RegistoNovoUser(user, aux.getPassword());
                                 if (resposta.resultado()) {
                                     out.writeObject(new Msg_String(ipMuticastString, Message_types.UTILIZADOR));
                                     logado = true;
@@ -276,6 +276,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                 }
                                 System.out.println("<SERVIDOR> [OPERACAO DE REGISTO] -> " + resposta.mensagem());
                             }
+                            case LOGOUT -> logado=false;
                             case FECHOU_APP -> {
                                 stopthreadCliente = true;
                             }

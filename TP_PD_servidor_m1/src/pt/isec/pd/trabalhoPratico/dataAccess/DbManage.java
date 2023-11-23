@@ -151,6 +151,8 @@ public class DbManage {
            else{
                versaoSuporte.firePropertyChange("versao", null, null);
                System.out.println("Versao atualizada com sucesso");}
+
+           statement.close();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -176,14 +178,14 @@ public class DbManage {
                 return new BDResposta(true, "<BD>Insercao de novo utilizador com sucesso", false);
             }
         } catch (SQLException e) {
+            e.printStackTrace();
             return new BDResposta(false, "<BD>Erro no acesso a base de dados", false);
         }
     }
 
     public BDResposta autentica_user(String user, String password){
 
-        try(Connection connection = DriverManager.getConnection(dbUrl);
-            Statement statement = connection.createStatement())
+        try(Connection connection = DriverManager.getConnection(dbUrl))
         {
             String verificaEstudanteQuery = "SELECT * FROM Utilizador WHERE email = ?";
             PreparedStatement alunoStatement = connection.prepareStatement(verificaEstudanteQuery);

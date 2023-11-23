@@ -331,6 +331,7 @@ public class ProgramaCliente {
                             try {
                                 new Thread(new AtualizacaoAsync(portoServidor, info.getConteudo())).start();
                                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.UTILIZADOR);
+                                fezLogin=true;
                                 return new ParResposta(true, "Registou-se com sucesso!");
                             } catch (Exception e) {
                                 gereMudancasPLC.setErros();
