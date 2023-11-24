@@ -179,7 +179,6 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 timerCount = 0;
                 try {
                     synchronized (multicastSocketBackup) {
-
                         multicastSocketBackup.send(heartBeatPacket);
                     }
                 }

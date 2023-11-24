@@ -324,8 +324,8 @@ public class DbManage {
     }
 
     public List<Evento> ConsultaPresencas_User_Admin(String email_utilizador){
-        List<Evento> eventos_assistidos=new ArrayList<>();
-        try(Connection connection=DriverManager.getConnection(dbUrl)){
+        List<Evento> eventos_assistidos = new ArrayList<>();
+        try(Connection connection = DriverManager.getConnection(dbUrl)){
             String GetQuery = "SELECT * FROM EVENTO INNER JOIN ASSISTE ON EVENTO.nome_evento=ASSISTE.nome_evento where ASSISTE.email= ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(GetQuery);
             preparedStatement.setString(1, email_utilizador);

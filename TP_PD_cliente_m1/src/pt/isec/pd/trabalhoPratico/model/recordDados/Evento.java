@@ -4,12 +4,12 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 
-public record Evento( String nomeEvento, String local, LocalDate data, int horaInicio, int horaFim) implements Serializable {
+public record Evento( String nomeEvento, String local, String data, String horaInicio, String horaFim) implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     @Override
     public String toString() {
-        return nomeEvento + "; " + local + "; " + data.toString() + "; " + horaInicio;
+        return nomeEvento + "; " + local + "; " + data + "; " + horaInicio;
     }
 }
 

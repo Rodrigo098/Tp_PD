@@ -26,13 +26,13 @@ public class Msg_Edita_Evento extends Geral{
     public String getLocal() {
         return evento.local();
     }
-    public LocalDate getData() {
+    public String getData() {
         return evento.data();
     }
-    public int getHoreInicio() {
+    public String getHoreInicio() {
         return evento.horaInicio();
     }
-    public int getHoraFim() {
+    public String getHoraFim() {
         return evento.horaFim();
     }
 }

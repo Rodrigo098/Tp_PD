@@ -4,12 +4,12 @@ import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 
-import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 
@@ -171,6 +171,9 @@ public class ProgramaCliente {
     }
 
     public String login(String email, String password) {
+        gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.ADMINISTRADOR);
+        return "Estabeleceu ligação!!";
+        /*
         if(!fezLogin) {
             if (password == null || password.isBlank() || verificaFormato(email))
                 return "Tem que preencher os dados corretamente!!";
@@ -209,11 +212,13 @@ public class ProgramaCliente {
             }
             return "Tente novamente...";
         }
-        return "Já fez login!";
+        return "Já fez login!";*/
     }
 
     public void logout(String fonte) {
-        Geral logout = new Geral(fonte.equals("WND") ? Message_types.FECHOU_APP : Message_types.LOGOUT);
+        gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.SAIR);
+
+        /*Geral logout = new Geral(fonte.equals("WND") ? Message_types.FECHOU_APP : Message_types.LOGOUT);
         try {
             oout.writeObject(logout);
             oout.flush();
@@ -221,15 +226,56 @@ public class ProgramaCliente {
             fezLogin = false;
         } catch (IOException e) {
             gereMudancasPLC.setErros();
-        }
+        }*/
     }
 
-    public Evento[] obterListaConsultaEventos(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim) {
-        if(fezLogin) {
-            //return new Evento[]{new Evento("ola", "HelloMate", LocalDate.now(), 11, 12)};
-            if(nome != null && !nome.isBlank() && local != null && !local.isBlank() && limData1 != null && limData2 != null && horaInicio >= horaFim) {
-                Msg_ConsultaComFiltros consultaEventos = new Msg_ConsultaComFiltros(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
+    public boolean validaHorario(String horaInicio, String horaFim) {
+        if(horaInicio != null && !horaInicio.isBlank() && horaFim != null && !horaFim.isBlank()) {
+            LocalTime ini, fim;
+            try {
+                ini = LocalTime.parse(horaInicio, DateTimeFormatter.ofPattern("HH:mm"));
+                fim = LocalTime.parse(horaFim, DateTimeFormatter.ofPattern("HH:mm"));
+            } catch (Exception e) {
+                return false;
+            }
+            return !ini.isAfter(fim);
+        }
+        return true;
+    }
+    public boolean validaDatas(String dataInicio, String dataFim) {
+        if(dataInicio != null && !dataInicio.isBlank() && dataFim != null && !dataFim.isBlank()) {
+            LocalDate ini, fim;
+            try {
+                ini = LocalDate.parse(dataInicio, DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+                fim = LocalDate.parse(dataFim, DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+            } catch (Exception e) {
+                return false;
+            }
+            return !ini.isAfter(fim);
+        }
+        return true;
+    }
 
+    public Evento[] obterListaConsultaEventos(Message_types tipo, String nome, String local, String limData1, String limData2, String horaInicio, String horaFim) {
+        if(fezLogin) {
+            String dataLim1, dataLim2;
+            //return new Evento[]{new Evento("ola", "HelloMate", LocalDate.now(), 11, 12)};
+            if(!validaDatas(limData1, limData2)) {
+                return null;
+            }
+            else {
+                 dataLim1 = limData1 == null || limData1.isBlank()? null : limData1.toString();
+                 dataLim2 = limData2 == null || limData2.isBlank()? null : limData2.toString();
+            }
+
+            if(!validaHorario(horaInicio, horaFim))
+                return null;
+            else {
+                horaInicio = horaInicio == null || horaInicio.isBlank()? null : horaInicio;
+                horaFim = horaFim == null || horaFim.isBlank()? null : horaFim;
+            }
+
+            Msg_ConsultaComFiltros consultaEventos = new Msg_ConsultaComFiltros(tipo, nome, local, dataLim1, dataLim2, horaInicio, horaFim);
                 try {
                     oout.writeObject(consultaEventos);
                     oout.flush();
@@ -239,12 +285,11 @@ public class ProgramaCliente {
                     if (lista instanceof Geral g && g.getTipo() == Message_types.ERRO)
                         return null;//ver os pares personalizados "Ocorreu um erro na BD.";
                     else if (lista instanceof Msg_ListaEventos l && l.getTipo() == Message_types.VALIDO)
-                            return l.getLista();
+                        return l.getLista();
                 } catch (IOException | ClassNotFoundException e) {
                     gereMudancasPLC.setErros();
                 }
-            }
-            return new Evento[]{};
+            return null;//new Evento[]{};
         }
         return null;
     }
@@ -413,17 +458,27 @@ public class ProgramaCliente {
 
 
     /*---------------------------------- ADMINISTRADOR: --------------------------------------*/
-    public String criar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim) {
+    public String criar_Evento(String nome, String local, String data, String horaInicio, String horaFim) {
         if(fezLogin) {
-            if (nome == null || nome.isBlank() || local == null || local.isBlank() || data == null || horaInicio >= horaFim)
-                return "Dados de input inválidos :(";
+            if (nome == null || nome.isBlank() || local == null || local.isBlank() || data == null || data.isBlank() ||
+                    horaInicio == null || horaInicio.isBlank() || horaFim == null || horaFim.isBlank())
+                return "Dados devem ser todos preenchidos.";
 
-            LocalDate dataAtual = LocalDate.now();
-            LocalTime horaAtual = LocalTime.now();
+            LocalDate dataAtual = LocalDate.now(), dataEvento;
+            LocalTime horaAtual = LocalTime.now(), HoraInicio, HoraFim;
 
-            if (data.isBefore(dataAtual) || horaInicio < horaAtual.getHour())
-                return "A data não pode estar no passadooo!";
-
+            try {
+                dataEvento = LocalDate.parse(data, DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+                HoraInicio = LocalTime.parse(horaInicio, DateTimeFormatter.ofPattern("HH:mm"));
+                HoraFim = LocalTime.parse(horaFim, DateTimeFormatter.ofPattern("HH:mm"));
+                if (dataEvento.isBefore(dataAtual) || HoraInicio.isBefore(horaAtual))
+                    return "Não pode marcar no passado!";
+                if(HoraInicio.isAfter(HoraFim))
+                    return "A hora de início não pode ser depois da hora de fim!";
+            } catch (Exception e) {
+                return "Verifique o formato da hora/data!";
+            }
+/*
             Msg_Cria_Evento evento = new Msg_Cria_Evento(new Evento(nome, local, data, horaInicio, horaFim));
 
             try {
@@ -440,23 +495,35 @@ public class ProgramaCliente {
             } catch (IOException | ClassNotFoundException ignored) {
                 gereMudancasPLC.setErros();
             }
-            return "Erro...";
+            return "Erro...";*/
         }
         return "Deve fazer login para usufruir da app!";
     }
 
-    public String editar_Evento(String eventoNomeAntigo, String novoNome, String local, LocalDate data, int horaInicio, int horaFim) {
+    public String editar_Evento(String eventoNomeAntigo, String novoNome, String local, String data, String horaInicio, String horaFim) {
         if(fezLogin) {
-            LocalDate dataAtual = LocalDate.now();
-            LocalTime horaAtual = LocalTime.now();
+            if (eventoNomeAntigo == null || eventoNomeAntigo.isBlank() || novoNome == null || novoNome.isBlank()
+                || local == null || local.isBlank() || data == null || data.isBlank()
+                || horaInicio == null || horaInicio.isBlank() || horaFim == null || horaFim.isBlank())
+                return "Dados devem ser todos preenchidos.";
 
-            if (eventoNomeAntigo == null || eventoNomeAntigo.isBlank() || novoNome == null || novoNome.isBlank() ||
-                    local == null || local.isBlank() || data == null || data.isBefore(dataAtual) ||
-                    horaInicio < horaAtual.getHour() || horaInicio >= horaFim)
-                return "Dados inválidos para criação de evento!";
+            LocalDate dataAtual = LocalDate.now(), dataEvento;
+            LocalTime horaAtual = LocalTime.now(), HoraInicio, HoraFim;
+
+            try {
+                dataEvento = LocalDate.parse(data, DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+                HoraInicio = LocalTime.parse(horaInicio, DateTimeFormatter.ofPattern("HH:mm"));
+                HoraFim = LocalTime.parse(horaFim, DateTimeFormatter.ofPattern("HH:mm"));
+                if (dataEvento.isBefore(dataAtual) || HoraInicio.isBefore(horaAtual))
+                    return "Não pode mudar para o passado!";
+                if(HoraInicio.isAfter(HoraFim))
+                    return "A hora de início não pode ser depois da hora de fim!";
+            } catch (Exception e) {
+                return "Verifique o formato da hora/data!";
+            }
 
             Msg_Edita_Evento evento = new Msg_Edita_Evento(new Evento(eventoNomeAntigo, local, data, horaInicio, horaFim), novoNome);
-
+/*
             try {
                 oout.writeObject(evento);
                 oout.flush();
@@ -471,7 +538,7 @@ public class ProgramaCliente {
             } catch (IOException | ClassNotFoundException ignored) {
                 gereMudancasPLC.setErros();
             }
-            return "Evento não editado!";
+            return "Evento não editado!";*/
         }
         return "Deve fazer login para usufruir da app!";
     }

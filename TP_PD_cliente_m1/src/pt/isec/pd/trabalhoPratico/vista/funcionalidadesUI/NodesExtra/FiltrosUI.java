@@ -11,9 +11,7 @@ import java.util.Objects;
 public class FiltrosUI extends HBox {
     private HBox filtrosData;
     public Button procurar, verFiltros;
-    private TextField nomeEvento, local;
-    private DatePicker limData1, limData2;
-    private Spinner<Integer> horaInicio, horaFim;
+    private TextField nomeEvento, local, horaInicio, horaFim, limData1, limData2;
     public FiltrosUI() {
         createViews();
         registerHandlers();
@@ -28,16 +26,26 @@ public class FiltrosUI extends HBox {
         procurar.setMinSize(30, 30);
         nomeEvento = new TextField();
         nomeEvento.setPromptText("evento");
+        nomeEvento.setStyle("-fx-text-size: 10px;");
+
         local = new TextField();
         local.setPromptText("local");
-        limData1 = new DatePicker();
-        limData2 = new DatePicker();
-        horaInicio = new Spinner<>(0, 24, 9);
-        horaFim = new Spinner<>(0, 24, 10);
+
+        limData1 = new TextField();
+        limData1.setPromptText("AAAA/MM/DD");
+
+        limData2 = new TextField();
+        limData2.setPromptText("AAAA/MM/DD");
+
+        horaInicio = new TextField();
+        horaInicio.setPromptText("HH:MM");
+        horaFim = new TextField();
+        horaFim.setPromptText("HH:MM");
 
         VBox vBox1 = new VBox(new Text("Evento&Local:"), nomeEvento, local);
-        VBox vBox2 = new VBox(new Text("Data:"), limData1, limData2);
-        VBox vBox3 = new VBox(new Text("Horas:"), horaInicio, horaFim);
+        VBox vBox2 = new VBox(new Text("Data (de-até):"), limData1, limData2);
+        VBox vBox3 = new VBox(new Text("Horas(de-até):"), horaInicio, horaFim);
+        vBox3.setMaxWidth(70);
 
         filtrosData = new HBox(vBox1, vBox2, vBox3, procurar);
         filtrosData.setPadding(new Insets(0, 0, 0, 10));
@@ -45,6 +53,7 @@ public class FiltrosUI extends HBox {
         filtrosData.setManaged(false);
         filtrosData.setVisible(false);
 
+        filtrosData.getStyleClass().add("filtros");
         this.setPadding(new Insets(10, 0, 5, 0));
         this.getChildren().addAll(verFiltros, filtrosData);
         this.setMaxWidth(400);
@@ -55,17 +64,18 @@ public class FiltrosUI extends HBox {
             filtrosData.setManaged(!filtrosData.isManaged());
             filtrosData.setVisible(!filtrosData.isVisible());
             verFiltros.setText(Objects.equals(verFiltros.getText(), "-") ? "+" : "-");
+            limData1.setText(null); limData2.setText(null); nomeEvento.setText(null); local.setText(null); horaInicio.setText(null); horaFim.setText(null);
         });
     }
 
     private void update(){
     }
 
-    public LocalDate getLimData1() {
-        return limData1.getValue();
+    public String getLimData1() {
+        return limData1.getText();
     }
-    public LocalDate getLimData2() {
-        return limData2.getValue();
+    public String getLimData2() {
+        return limData2.getText();
     }
     public String getNomeEvento() {
         return nomeEvento.getText();
@@ -73,10 +83,10 @@ public class FiltrosUI extends HBox {
     public String getLocal() {
         return local.getText();
     }
-    public int getHoraInicio() {
-        return horaInicio.getValue();
+    public String getHoraInicio() {
+        return horaInicio.getText();
     }
-    public int getHoraFim() {
-        return horaFim.getValue();
+    public String getHoraFim() {
+        return horaFim.getText();
     }
 }
