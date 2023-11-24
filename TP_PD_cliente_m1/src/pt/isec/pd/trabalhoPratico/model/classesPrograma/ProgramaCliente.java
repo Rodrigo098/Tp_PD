@@ -33,15 +33,15 @@ public class ProgramaCliente {
     private ObjectOutputStream oout;
     private ObjectInputStream oin;
     private InetAddress ipServidor;
+    private static String email;
 
 //-------------------- ATUALIZACAO ASSINCRONA -----------------
     static class AtualizacaoAsync implements Runnable {
         public AtualizacaoAsync(int porto, InetAddress ip) {
             try {
-                System.out.println("threadAtualizacao");
                 socketAtualizacao = new Socket(ip, porto);
                 PrintStream out = new PrintStream(socketAtualizacao.getOutputStream(), true);
-                out.println(new String("socketAtualizacao"));
+                out.println("socketAtualizacao " + email);
             } catch (IOException e) {
                 gereMudancasPLC.setErros();
             }
@@ -79,7 +79,6 @@ public class ProgramaCliente {
                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.EXCEDEU_TEMPO);
                 termina();
             }
-            System.out.println(contagem);
         }
     }
 
@@ -130,7 +129,6 @@ public class ProgramaCliente {
             case ADMINISTRADOR, UTILIZADOR -> {
                 tarefa.cancel();
                 contagem = 0;
-                System.out.println("cancelou a tarefa");
             }
         }
     }
@@ -195,6 +193,7 @@ public class ProgramaCliente {
                         case ERRO -> { return "Ocorreu um erro na BD.";}
                         default -> {
                             try {
+                                this.email = dadosLogin.getEmail();
                                 new Thread(new AtualizacaoAsync(portoServidor, ipServidor)).start();
                                 gereMudancasPLC.setEstadoNaAplicacao(g.getTipo() == Message_types.UTILIZADOR ? EstadoNaAplicacao.UTILIZADOR : EstadoNaAplicacao.ADMINISTRADOR);
                                 fezLogin = true;
@@ -219,7 +218,6 @@ public class ProgramaCliente {
     public void logout(String fonte) {
         Geral logout = new Geral(fonte.equals("WND") ? Message_types.FECHOU_APP : Message_types.LOGOUT);
         try {
-            System.out.println("Vai enviar logout");
             oout.writeObject(logout);
             oout.flush();
             gereMudancasPLC.setEstadoNaAplicacao(fonte.equals("WND") ? EstadoNaAplicacao.SAIR : EstadoNaAplicacao.ENTRADA);
@@ -373,6 +371,7 @@ public class ProgramaCliente {
                     default -> {
                         if(validacao instanceof Msg_String info) {
                             try {
+                                this.email = email;
                                 new Thread(new AtualizacaoAsync(portoServidor, ipServidor)).start();
                                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.UTILIZADOR);
                                 fezLogin = true;
