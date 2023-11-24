@@ -171,9 +171,6 @@ public class ProgramaCliente {
     }
 
     public String login(String email, String password) {
-        gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.ADMINISTRADOR);
-        return "Estabeleceu ligação!!";
-        /*
         if(!fezLogin) {
             if (password == null || password.isBlank() || verificaFormato(email))
                 return "Tem que preencher os dados corretamente!!";
@@ -212,13 +209,11 @@ public class ProgramaCliente {
             }
             return "Tente novamente...";
         }
-        return "Já fez login!";*/
+        return "Já fez login!";
     }
 
     public void logout(String fonte) {
-        gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.SAIR);
-
-        /*Geral logout = new Geral(fonte.equals("WND") ? Message_types.FECHOU_APP : Message_types.LOGOUT);
+        Geral logout = new Geral(fonte.equals("WND") ? Message_types.FECHOU_APP : Message_types.LOGOUT);
         try {
             oout.writeObject(logout);
             oout.flush();
@@ -226,7 +221,7 @@ public class ProgramaCliente {
             fezLogin = false;
         } catch (IOException e) {
             gereMudancasPLC.setErros();
-        }*/
+        }
     }
 
     public boolean validaHorario(String horaInicio, String horaFim) {
@@ -258,14 +253,13 @@ public class ProgramaCliente {
 
     public Evento[] obterListaConsultaEventos(Message_types tipo, String nome, String local, String limData1, String limData2, String horaInicio, String horaFim) {
         if(fezLogin) {
-            String dataLim1, dataLim2;
             //return new Evento[]{new Evento("ola", "HelloMate", LocalDate.now(), 11, 12)};
             if(!validaDatas(limData1, limData2)) {
                 return null;
             }
             else {
-                 dataLim1 = limData1 == null || limData1.isBlank()? null : limData1.toString();
-                 dataLim2 = limData2 == null || limData2.isBlank()? null : limData2.toString();
+                limData1 = limData1 == null || limData1.isBlank()? null : limData1.toString();
+                limData2 = limData2 == null || limData2.isBlank()? null : limData2.toString();
             }
 
             if(!validaHorario(horaInicio, horaFim))
@@ -275,7 +269,7 @@ public class ProgramaCliente {
                 horaFim = horaFim == null || horaFim.isBlank()? null : horaFim;
             }
 
-            Msg_ConsultaComFiltros consultaEventos = new Msg_ConsultaComFiltros(tipo, nome, local, dataLim1, dataLim2, horaInicio, horaFim);
+            Msg_ConsultaComFiltros consultaEventos = new Msg_ConsultaComFiltros(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
                 try {
                     oout.writeObject(consultaEventos);
                     oout.flush();
@@ -478,7 +472,7 @@ public class ProgramaCliente {
             } catch (Exception e) {
                 return "Verifique o formato da hora/data!";
             }
-/*
+
             Msg_Cria_Evento evento = new Msg_Cria_Evento(new Evento(nome, local, data, horaInicio, horaFim));
 
             try {
@@ -495,7 +489,7 @@ public class ProgramaCliente {
             } catch (IOException | ClassNotFoundException ignored) {
                 gereMudancasPLC.setErros();
             }
-            return "Erro...";*/
+            return "Erro...";
         }
         return "Deve fazer login para usufruir da app!";
     }
@@ -523,7 +517,7 @@ public class ProgramaCliente {
             }
 
             Msg_Edita_Evento evento = new Msg_Edita_Evento(new Evento(eventoNomeAntigo, local, data, horaInicio, horaFim), novoNome);
-/*
+
             try {
                 oout.writeObject(evento);
                 oout.flush();
@@ -538,7 +532,7 @@ public class ProgramaCliente {
             } catch (IOException | ClassNotFoundException ignored) {
                 gereMudancasPLC.setErros();
             }
-            return "Evento não editado!";*/
+            return "Evento não editado!";
         }
         return "Deve fazer login para usufruir da app!";
     }
