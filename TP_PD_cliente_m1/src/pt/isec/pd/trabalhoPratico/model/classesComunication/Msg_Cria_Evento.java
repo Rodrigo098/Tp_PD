@@ -2,8 +2,6 @@ package pt.isec.pd.trabalhoPratico.model.classesComunication;
 
 import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
 
-import java.time.LocalDate;
-
 public class Msg_Cria_Evento extends Geral{
     private Evento evento;
 

@@ -1,7 +1,5 @@
 package pt.isec.pd.trabalhoPratico.model.classesComunication;
 
-import java.time.LocalDate;
-
 public class Msg_ConsultaComFiltros extends Geral{
     private String nome, local, limData1, limData2, horaInicio, horaFim;
 
@@ -39,4 +37,3 @@ public class Msg_ConsultaComFiltros extends Geral{
         return horaFim;
     }
 }
-

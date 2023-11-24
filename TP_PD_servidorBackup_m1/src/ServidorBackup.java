@@ -93,7 +93,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
     }
 
     @Override
-    public void avisaObservables(Geral Msg,int versao) {
+    public void avisaObservables(Geral Msg, int versao) {
         System.out.println("Recebeu notificacao");
         DbManager.setVersao(versao);
         System.out.println(versao);
@@ -137,10 +137,6 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
             }
 
         }
-
-
-
-
     }
 
 

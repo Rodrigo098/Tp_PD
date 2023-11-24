@@ -386,11 +386,11 @@ public class DbManage {
                 FiltroEventosUser += " AND data_realizacao = '" + dataString + "'";
             }*/
 
-            if (filtros.getHoraInicio() != 0) {
+            if (filtros.getHoraInicio() != null) {
                 FiltroEventosUser += " AND hora_inicio = '" + filtros.getHoraInicio() + "'";
             }
 
-            if (filtros.getHoraFim() != 0) {
+            if (filtros.getHoraFim() != null) {
                 FiltroEventosUser += " AND hora_fim = '" + filtros.getHoraFim() + "'";
             }
 
@@ -564,11 +564,11 @@ public class DbManage {
                 filtroEvento += " AND data_realizacao = '" + dataString + "'";
             }*/
 
-            if (evento.getHoraInicio() != 0) {
+            if (evento.getHoraInicio() != null) {
                 filtroEvento += " AND hora_inicio = '" + evento.getHoraInicio() + "'";
             }
 
-            if (evento.getHoraFim() != 0) {
+            if (evento.getHoraFim() != null) {
                 filtroEvento += " AND hora_fim = '" + evento.getHoraFim() + "'";
             }
 
