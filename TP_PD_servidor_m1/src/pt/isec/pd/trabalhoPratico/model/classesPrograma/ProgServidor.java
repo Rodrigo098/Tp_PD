@@ -35,32 +35,23 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     private DbManage dbManager;
     private DatagramPacket heartBeatPacket;
     private int timerCount;
+    private InetAddress heartbeatgroup;
     
-    // CLIENTES (e ip heartbeat)
-    private InetAddress grupoMulticast, heartbeatgroup;
-    private DatagramSocket socketMulticastClientes;
+    // CLIENTES
     private final int portoClientes;
     private ServerSocket socketServidor;
     private Geral  Lastupdate;
     private Map<Socket, PrintStream> clientesAtualizacao;
+    private Map<String, Socket> paresSockets;
     private Boolean pararServidor = false;
 
 
     public ProgServidor(int portoClientes) throws RemoteException {
         this.portoClientes = portoClientes;
         clientesAtualizacao = new HashMap<>();
+        paresSockets = new HashMap<>();
         temporizador = new Timer();
         heartBeatTask = new HeartBeatTask();
-    }
-    class teste extends Thread{
-        @Override
-        public void run() {
-            try {
-                multicastSocketBackup.receive(heartBeatPacket);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
     }
 
     public void setDbManager(DbManage dbManager) {
@@ -76,22 +67,22 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             try {
                 System.setProperty("java.rmi.server.hostname", "192.168.56.1");
                 LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
-                System.out.println("<SERVIDOR> Registry lancado");
+                System.out.println("\n<SERVIDOR> Registry lancado");
                 heartbeatgroup = InetAddress.getByName(Heartbeatip);
                 multicastSocketBackup = new MulticastSocket(portobackup);
 
-                NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("10.65.148.91"));// replace with your network interface
+                NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("192.168.56.1"));// replace with your network interface
 
                multicastSocketBackup.joinGroup(new InetSocketAddress(heartbeatgroup, portobackup),networkInterface);
                // multicastSocketBackup.joinGroup(heartbeatgroup);
-                System.out.println(heartbeatgroup.getHostAddress());
+               // System.out.println(heartbeatgroup.getHostAddress());
                // multicastSocketBackup.setInterface(heartbeatgroup);
                 rmi = this ;//???
-                String myIpIdress=InetAddress.getLocalHost().getHostAddress();
+                String myIpIdress = "192.168.43.48";//InetAddress.getLocalHost().getHostAddress();
                 Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
 
 
-                DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao());// nao tenho a certeza se seria este o IP
+                DadosRmi data = new DadosRmi(myIpIdress, SERVICE_NAME,dbManager.getVersao());// nao tenho a certeza se seria este o IP
 
                 ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
                 ObjectOutputStream objout = new ObjectOutputStream(help);
@@ -103,9 +94,9 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 temporizador.schedule(heartBeatTask,0,1000);
                 //new Thread(new ThreadHeartbeat()).start();
             } catch (SocketException | UnknownHostException e) {
-                throw new RuntimeException("<SERVIDOR> Nao foi possivel criar o socket para multicast, erro [" + e + "]");
+                throw new RuntimeException("\n<SERVIDOR> Nao foi possivel criar o socket para multicast, erro [" + e + "]");
             }catch (RemoteException e){
-                System.out.println("<SERVIDOR> Registry ja em execucao");
+                System.out.println("\n<SERVIDOR> Registry ja em execucao");
             }
 
             while(!pararServidor){
@@ -114,7 +105,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             }
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("<SERVIDOR> já não se aceitam mais clientes.");
+            System.out.println("\n<SERVIDOR> já não se aceitam mais clientes.");
         }
     }
 
@@ -167,7 +158,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
         synchronized (observers){
       if(!observers.contains(obv)){
           observers.add(obv);
-          System.out.println("Observable adicionado");
+          System.out.println("\n<SERVIDOR> Observable adicionado");
       }
         }
 
@@ -177,7 +168,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     public  void RemoveObservable(ObservableInterface obv) throws RemoteException {
         synchronized (observers){
         observers.remove(obv);
-            System.out.println("Observable Removido");
+            System.out.println("\n<SERVIDOR> Observable Removido");
         }
     }
 
@@ -208,7 +199,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             String inserido;
             do{
                 Scanner linhaComandos = new Scanner(System.in);
-                System.out.println("<SERVIDOR> Escreva \"sair\" para terminar o servidor");
+                System.out.println("\n<SERVIDOR> Escreva \"sair\" para terminar o servidor");
                 inserido = linhaComandos.nextLine();
                 if(inserido.equals("atua"))
                   envioDeAvisoDeAtualizacao("atualizacao");
@@ -218,12 +209,10 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             heartBeatTask.cancel();
             envioDeAvisoDeAtualizacao("fimServidor");
             try {
-
                 socketServidor.close();
-                socketMulticastClientes.close();
                 clientesAtualizacao.clear();
             } catch (IOException e) {
-                throw new RuntimeException("<SERVIDOR> Erro a fechar sockets");
+                throw new RuntimeException("\n<SERVIDOR> Erro a fechar sockets");
             }
         }
     }
@@ -233,7 +222,6 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     class ThreadCliente extends Thread {
         boolean flagStop, isadmin, logado, stopthreadCliente;
         Socket client;
-        //Timerask timerask;
         public String email;
 
         List <Evento> eventosPresencasUser = new ArrayList<>();
@@ -252,12 +240,13 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             try {
                 BufferedReader inTipo = new BufferedReader(new InputStreamReader(client.getInputStream()));
                 String tipoSocket = inTipo.readLine();
-                if (tipoSocket.equals("socketAtualizacao")) {
-                    System.out.println("<SERVIDOR> Socket do programa cliente [" + clientesAtualizacao.size() + "] para atualização conectado.");
+                if (tipoSocket.contains("socketAtualizacao")) {
                     clientesAtualizacao.put(client, new PrintStream(client.getOutputStream()));
+                    paresSockets.put(tipoSocket.split(" ")[1], client);
+                    System.out.println("\n<SERVIDOR> Socket do cliente [" + tipoSocket.split(" ")[1] +"] para atualização conectado.");
                 }
                 else if (tipoSocket.equals("socketPedidos")) {
-                    System.out.println("<SERVIDOR> Socket do programa cliente [" + clientesAtualizacao.size() + "] para pedidos conectado.");
+                    System.out.println("\n<SERVIDOR> Socket de um programa cliente para pedidos conectado.");
                     try (ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
                          ObjectInputStream in = new ObjectInputStream(client.getInputStream())
                     ) {
@@ -272,20 +261,17 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                     case LOGIN -> {
                                         Msg_Login aux = (Msg_Login) interacao;
                                         email = aux.getEmail();
-                                        //System.out.println(email);
-
                                         BDResposta resposta = dbManager.autentica_user(email, aux.getPassword());
 
                                         if (!resposta.resultado()) {
                                             out.writeObject(new Geral(resposta.mensagem().contains("Password") ? Message_types.WRONG_PASS : resposta.conteudo() ? Message_types.INVALIDO : Message_types.ERRO));
                                         } else {
                                             logado = true;
-                                            //System.out.println(resposta[0]);
                                             isadmin = resposta.conteudo();
 
                                             out.writeObject(new Msg_String(ipMuticastString, resposta.conteudo() ? Message_types.ADMINISTRADOR : Message_types.UTILIZADOR));
                                         }
-                                        System.out.println("<SERVIDOR> [OPERACAO DE LOGIN] -> " + resposta.mensagem());
+                                        System.out.println("\n<SERVIDOR> [OPERACAO DE LOGIN] -> " + resposta.mensagem());
                                     }
                                     case REGISTO -> {
                                         Mgs_RegistarEditar_Conta aux = (Mgs_RegistarEditar_Conta) interacao;
@@ -300,10 +286,10 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                         } else {
                                             out.writeObject(new Geral(resposta.conteudo() ? Message_types.INVALIDO : Message_types.ERRO));
                                         }
-                                        System.out.println("<SERVIDOR> [OPERACAO DE REGISTO] -> " + resposta.mensagem());
+                                        System.out.println("\n<SERVIDOR> [OPERACAO DE REGISTO] -> " + resposta.mensagem());
                                     }
                                     case FECHOU_APP -> {
-                                        System.out.println("<SERVIDOR> [CLIENTE SAIU DA APP] -> " + email);
+                                        System.out.println("\n<SERVIDOR> [CLIENTE SAIU DA APP] -> " + email);
                                         stopthreadCliente = true;
                                         logado = false;
                                     }
@@ -361,12 +347,15 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                         sendfile(out, file);
                                                     }
                                                     case LOGOUT -> {
-                                                        clientesAtualizacao.remove(client);
-                                                        System.out.println("<SERVIDOR> [OPERACAO DE LOGOUT] -> " + email);
+                                                        clientesAtualizacao.remove(paresSockets.get(email));
+                                                        paresSockets.remove(email);
+                                                        System.out.println("\n<SERVIDOR> [OPERACAO DE LOGOUT] -> " + email);
                                                         logado = false;
                                                     }
                                                     case FECHOU_APP -> {
-                                                        System.out.println("<SERVIDOR> [CLIENTE SAIU DA APP] -> " + email);
+                                                        clientesAtualizacao.remove(paresSockets.get(email));
+                                                        paresSockets.remove(email);
+                                                        System.out.println("\n<SERVIDOR> [CLIENTE SAIU DA APP] -> " + email);
                                                         stopthreadCliente = true;
                                                         logado = false;
                                                     }
@@ -489,11 +478,15 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                             out.writeObject(new Geral(Message_types.ERRO));
                                                     }
                                                     case LOGOUT -> {
-                                                        System.out.println("<SERVIDOR> [OPERACAO DE LOGOUT] -> " + email);
+                                                        clientesAtualizacao.remove(paresSockets.get(email));
+                                                        paresSockets.remove(email);
+                                                        System.out.println("\n<SERVIDOR> [OPERACAO DE LOGOUT] -> " + email);
                                                         logado = false;
                                                     }
                                                     case FECHOU_APP -> {
-                                                        System.out.println("<SERVIDOR> [CLIENTE SAIU DA APP] -> " + email);
+                                                        clientesAtualizacao.remove(paresSockets.get(email));
+                                                        paresSockets.remove(email);
+                                                        System.out.println("\n<SERVIDOR> [CLIENTE SAIU DA APP] -> " + email);
                                                         stopthreadCliente = true;
                                                         logado = false;
                                                     }
@@ -508,14 +501,14 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                 out.writeObject(new Geral(Message_types.INVALIDO));
                         }
                     } catch (IOException | ClassNotFoundException e) {
-                        throw new RuntimeException("<SERVIDOR> Ocorreu um erro na thread que atenderia um cliente :(");
+                        throw new RuntimeException("\n<SERVIDOR> Ocorreu um erro na thread que atenderia um cliente :(");
                     } finally {
                         try {
                             client.close();
                         } catch (IOException ignored) {
                         }
                         clientesAtualizacao.remove(client);
-                        System.out.println("Cliente: " + email + "terminado");
+                        System.out.println("\n<SERVIDOR> Cliente [" + email + "] terminado.");
                     }
                 }
             } catch (IOException e) {
