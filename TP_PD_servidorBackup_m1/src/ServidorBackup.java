@@ -153,18 +153,22 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                group=InetAddress.getByName(Heartbeatip);
              //  NetworkInterface networkInterface = NetworkInterface.getByName("wlan0");
              //  multicastSocket.joinGroup(new InetSocketAddress(group, portobackup),networkInterface);
-               multicastSocket.joinGroup(group);
+               NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("10.65.129.175"));// replace with your network interface
+
+               multicastSocket.joinGroup(new InetSocketAddress(group, portobackup),networkInterface);
+              // multicastSocket.joinGroup(group);
+              // System.out.println(multicastSocket.getInetAddress().getAddress();
 
                DatagramPacket packet=new DatagramPacket(new byte[2024],2024);// aqui tenho de por um valor diferente i guess
-               System.out.println(multicastSocket.getNetworkInterface());
 
 
+               multicastSocket.receive(packet);
+
+               ByteArrayInputStream bye = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
+               ObjectInputStream oin = new ObjectInputStream(bye);
+               DadosRmi dados = (DadosRmi) oin.readObject();
                while (true) {
-                   multicastSocket.receive(packet);
 
-                   ByteArrayInputStream bye = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
-                   ObjectInputStream oin = new ObjectInputStream(bye);
-                   DadosRmi dados = (DadosRmi) oin.readObject();
 
 
                    if (!conected)
