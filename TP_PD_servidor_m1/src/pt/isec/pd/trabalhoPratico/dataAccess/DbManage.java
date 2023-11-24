@@ -335,11 +335,13 @@ public class DbManage {
                     String nomeEvento = rs.getString("nome_evento");
                     String localEvento = rs.getString("local");
                     String dataRealizacao = rs.getString("data_realizacao");
-                    int horaInicioEvento = rs.getInt("hora_inicio");
-                    int horaFimEvento = rs.getInt("hora_fim");
-                    LocalDate date=LocalDate.parse(dataRealizacao);
+                    String horaInicioEvento = rs.getString("hora_inicio");
+                    String horaFimEvento = rs.getString("hora_fim");
+                    //int horaInicioEvento = rs.getInt("hora_inicio");
+                    //int horaFimEvento = rs.getInt("hora_fim");
+                    //LocalDate date=LocalDate.parse(dataRealizacao);
 
-                    Evento evento = new Evento( nomeEvento,localEvento, date, horaInicioEvento, horaFimEvento );
+                    Evento evento = new Evento( nomeEvento,localEvento, dataRealizacao, horaInicioEvento, horaFimEvento );
                     eventos_assistidos.add(evento);
                 }
                 return eventos_assistidos;
@@ -399,11 +401,13 @@ public class DbManage {
                 String nomeEvento = rs.getString("nome_evento");
                 String localEvento = rs.getString("local");
                 String dataRealizacao = rs.getString("data_realizacao");
-                int horaInicioEvento = rs.getInt("hora_inicio");
-                int horaFimEvento = rs.getInt("hora_fim");
-                LocalDate date=LocalDate.parse(dataRealizacao);
+                String horaInicioEvento = rs.getString("hora_inicio");
+                String horaFimEvento = rs.getString("hora_fim");
+                //int horaInicioEvento = rs.getInt("hora_inicio");
+                //int horaFimEvento = rs.getInt("hora_fim");
+                //LocalDate date=LocalDate.parse(dataRealizacao);
 
-                Evento evento = new Evento( nomeEvento,localEvento, date, horaInicioEvento, horaFimEvento );
+                Evento evento = new Evento( nomeEvento,localEvento, dataRealizacao, horaInicioEvento, horaFimEvento );
                 eventosAssistidos.add(evento);
             }
         } catch (SQLException e) {
@@ -574,9 +578,12 @@ public class DbManage {
                 //Para extrair a data e hora do sqlLite tem que ser com .getstring e também é o que temos na classe evento
                 String nome = resultSet.getString("nome_evento");
                 String local = resultSet.getString("local");
-                LocalDate data_realizacao = resultSet.getDate("data_realizacao").toLocalDate();
-                int horaInicio =  resultSet.getInt("hora_inicio");
-                int horaFim = resultSet.getInt("hora_fim");
+                String data_realizacao = resultSet.getString("data_realizacao");
+                String horaInicio = resultSet.getString("hora_inicio");
+                String horaFim = resultSet.getString("hora_fim");
+                //LocalDate data_realizacao = resultSet.getDate("data_realizacao").toLocalDate();
+                //int horaInicio =  resultSet.getInt("hora_inicio");
+                //int horaFim = resultSet.getInt("hora_fim");
 
                 Evento evento_result = new Evento(nome,local, data_realizacao, horaInicio, horaFim);
                 eventos.add(evento_result);
