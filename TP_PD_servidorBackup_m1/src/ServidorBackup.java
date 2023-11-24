@@ -6,9 +6,7 @@ import pt.isec.pd.trabalhoPratico.model.RemoteInterface;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 
 import java.io.*;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
+import java.net.*;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -157,14 +155,17 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         public void run() {
            try(MulticastSocket multicastSocket=new MulticastSocket(portobackup)){
                group=InetAddress.getByName(Heartbeatip);
+             //  NetworkInterface networkInterface = NetworkInterface.getByName("wlan0");
+             //  multicastSocket.joinGroup(new InetSocketAddress(group, portobackup),networkInterface);
                multicastSocket.joinGroup(group);
 
                DatagramPacket packet=new DatagramPacket(new byte[2024],2024);// aqui tenho de por um valor diferente i guess
-
+               System.out.println(multicastSocket.getNetworkInterface());
 
 
                while (true) {
                    multicastSocket.receive(packet);
+
                    ByteArrayInputStream bye = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
                    ObjectInputStream oin = new ObjectInputStream(bye);
                    DadosRmi dados = (DadosRmi) oin.readObject();

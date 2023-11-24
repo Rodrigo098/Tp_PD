@@ -52,6 +52,16 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
         temporizador = new Timer();
         heartBeatTask = new HeartBeatTask();
     }
+    class teste extends Thread{
+        @Override
+        public void run() {
+            try {
+                multicastSocketBackup.receive(heartBeatPacket);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     public void setDbManager(DbManage dbManager) {
         this.dbManager = dbManager;
@@ -65,14 +75,20 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             socketServidor = new ServerSocket(portoClientes);
             try {
                 // multicast clientes
+                 System.setProperty("java.rmi.server.hostname", "10.65.129.175");
                 socketMulticastClientes = new DatagramSocket();
                 this.grupoMulticast = InetAddress.getByName(ipMuticastString);
-
                 LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
                 System.out.println("<SERVIDOR> Registry lancado");
                 heartbeatgroup = InetAddress.getByName(Heartbeatip);
                 multicastSocketBackup = new MulticastSocket(portobackup);
-                multicastSocketBackup.joinGroup(heartbeatgroup);
+
+               NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("10.65.129.175"));// replace with your network interface
+
+              multicastSocketBackup.joinGroup(new InetSocketAddress(heartbeatgroup, portobackup),networkInterface);
+               // multicastSocketBackup.joinGroup(heartbeatgroup);
+                System.out.println(heartbeatgroup.getHostAddress());
+             //   multicastSocketBackup.setInterface(heartbeatgroup);
                 rmi = this ;//???
                 String myIpIdress=InetAddress.getLocalHost().getHostAddress();
                 Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
@@ -83,6 +99,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
                 ObjectOutputStream objout = new ObjectOutputStream(help);
                 objout.writeObject(data);
+
 
                 heartBeatPacket = new DatagramPacket(help.toByteArray(),help.toByteArray().length,heartbeatgroup,portobackup);
 
@@ -100,6 +117,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 new Thread(new ThreadCliente(cli)).start();
             }
         } catch (IOException e) {
+            e.printStackTrace();
             System.out.println("<SERVIDOR> já não se aceitam mais clientes.");
         }
     }
@@ -178,9 +196,10 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             if(timerCount == 10) {
                 timerCount = 0;
                 try {
+                    System.out.println(multicastSocketBackup.getLocalPort());
                     synchronized (multicastSocketBackup) {
-
                         multicastSocketBackup.send(heartBeatPacket);
+
                     }
                 }
                 catch (IOException e) {
