@@ -42,13 +42,13 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     private final int portoClientes;
     private ServerSocket socketServidor;
     private Geral  Lastupdate;
-    List<Socket> clients = new ArrayList<>();
+    private Map<Socket, PrintStream> clientesAtualizacao;
     private Boolean pararServidor = false;
 
 
     public ProgServidor(int portoClientes) throws RemoteException {
         this.portoClientes = portoClientes;
-        //observers = new ArrayList<>();
+        clientesAtualizacao = new HashMap<>();
         temporizador = new Timer();
         heartBeatTask = new HeartBeatTask();
     }
@@ -74,21 +74,18 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
         {
             socketServidor = new ServerSocket(portoClientes);
             try {
-                // multicast clientes
-                 System.setProperty("java.rmi.server.hostname", "10.65.129.175");
-                socketMulticastClientes = new DatagramSocket();
-                this.grupoMulticast = InetAddress.getByName(ipMuticastString);
+                System.setProperty("java.rmi.server.hostname", "192.168.56.1");
                 LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
                 System.out.println("<SERVIDOR> Registry lancado");
                 heartbeatgroup = InetAddress.getByName(Heartbeatip);
                 multicastSocketBackup = new MulticastSocket(portobackup);
 
-               NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("10.65.129.175"));// replace with your network interface
+                NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("10.65.148.91"));// replace with your network interface
 
-              multicastSocketBackup.joinGroup(new InetSocketAddress(heartbeatgroup, portobackup),networkInterface);
+               multicastSocketBackup.joinGroup(new InetSocketAddress(heartbeatgroup, portobackup),networkInterface);
                // multicastSocketBackup.joinGroup(heartbeatgroup);
                 System.out.println(heartbeatgroup.getHostAddress());
-             //   multicastSocketBackup.setInterface(heartbeatgroup);
+               // multicastSocketBackup.setInterface(heartbeatgroup);
                 rmi = this ;//???
                 String myIpIdress=InetAddress.getLocalHost().getHostAddress();
                 Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
@@ -113,7 +110,6 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
 
             while(!pararServidor){
                 Socket cli = socketServidor.accept();
-                clients.add(cli);
                 new Thread(new ThreadCliente(cli)).start();
             }
         } catch (IOException e) {
@@ -125,16 +121,16 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     ////////////////////////////// ATUALIZAÇÃO ASSÍNCRONA /////////////////////////////
     public synchronized void envioDeAvisoDeAtualizacao(String msgAtaulizacao) {
 
-        try {
-            //aviso de atualizacao aos clientes
-            byte[] msg = msgAtaulizacao.getBytes();
-            DatagramPacket atualizacaoPacket = new DatagramPacket(msg, msg.length, grupoMulticast, portoClientes);
-            socketMulticastClientes.send(atualizacaoPacket);
-
+        //aviso de atualizacao aos clientes
+        for(PrintStream out : clientesAtualizacao.values()) {
+            out.println(msgAtaulizacao);
+            out.flush();
+            System.out.println("Aviso de atualizacao enviado aos clientes...");
+        }
+/*        try {
             //aviso de atualizacao aos backups
             byte[] help= getDados();
             synchronized (heartBeatPacket){
-
                 heartBeatPacket = new DatagramPacket(help,help.length,heartbeatgroup,portobackup);
             }
             synchronized (multicastSocketBackup){
@@ -144,7 +140,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             System.out.println("Aviso de atualizacao enviado aos clientes...");
         } catch (IOException e) {
             throw new RuntimeException("Nao foi possivel informar da atualizacao ao clientes...");
-        }
+        }*/
     }
     ////////////////////////////////// OBSERVABLE /////////////////////////////
     @Override
@@ -185,9 +181,6 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
         }
     }
 
-
-
-
     ////////////////////////////////// THREAD HEART BEAT /////////////////////////////
     class HeartBeatTask extends TimerTask {
         @Override
@@ -199,12 +192,11 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                     System.out.println(multicastSocketBackup.getLocalPort());
                     synchronized (multicastSocketBackup) {
                         multicastSocketBackup.send(heartBeatPacket);
-
                     }
                 }
                 catch (IOException e) {
                     System.out.println(e.getMessage());}
-                System.out.println("[\t<SERVIDOR> Heartbeat enviado]");
+                System.out.println("[<SERVIDOR> Heartbeat enviado]");
             }
         }
     }
@@ -218,8 +210,8 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 Scanner linhaComandos = new Scanner(System.in);
                 System.out.println("<SERVIDOR> Escreva \"sair\" para terminar o servidor");
                 inserido = linhaComandos.nextLine();
-                //if(inserido.equals("atua"))
-                  //  envioDeAvisoDeAtualizacao("atualizacao");
+                if(inserido.equals("atua"))
+                  envioDeAvisoDeAtualizacao("atualizacao");
             }while (!inserido.equals("sair"));
             pararServidor = true;
             temporizador.cancel();
@@ -229,7 +221,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
 
                 socketServidor.close();
                 socketMulticastClientes.close();
-                clients.clear();
+                clientesAtualizacao.clear();
             } catch (IOException e) {
                 throw new RuntimeException("<SERVIDOR> Erro a fechar sockets");
             }
@@ -255,270 +247,281 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             stopthreadCliente = false;
         }
 
-
-
         @Override
         public void run() {
-            try(ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream(client.getInputStream())
-            ) {
+            try {
+                BufferedReader inTipo = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                String tipoSocket = inTipo.readLine();
+                if (tipoSocket.equals("socketAtualizacao")) {
+                    System.out.println("<SERVIDOR> Socket do programa cliente [" + clientesAtualizacao.size() + "] para atualização conectado.");
+                    clientesAtualizacao.put(client, new PrintStream(client.getOutputStream()));
+                }
+                else if (tipoSocket.equals("socketPedidos")) {
+                    System.out.println("<SERVIDOR> Socket do programa cliente [" + clientesAtualizacao.size() + "] para pedidos conectado.");
+                    try (ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
+                         ObjectInputStream in = new ObjectInputStream(client.getInputStream())
+                    ) {
+                        // ciclo 1 - enquanto a app do cliente estiver ligada
+                        while (!pararServidor && !stopthreadCliente) {
 
-                // ciclo 1 - enquanto a app do cliente estiver ligada
-                while(!pararServidor && !stopthreadCliente) {
+                            // primeira interação com o cliente
+                            Object interacao = in.readObject();
 
-                    // primeira interação com o cliente
-                    Object interacao = in.readObject();
+                            if (interacao instanceof Geral loginRegisto) {
+                                switch (loginRegisto.getTipo()) {
+                                    case LOGIN -> {
+                                        Msg_Login aux = (Msg_Login) interacao;
+                                        email = aux.getEmail();
+                                        //System.out.println(email);
 
-                    if (interacao instanceof Geral loginRegisto) {
-                        switch (loginRegisto.getTipo()) {
-                            case LOGIN -> {
-                                Msg_Login aux = (Msg_Login) interacao;
-                                email = aux.getEmail();
-                                //System.out.println(email);
+                                        BDResposta resposta = dbManager.autentica_user(email, aux.getPassword());
 
-                                BDResposta resposta = dbManager.autentica_user(email, aux.getPassword());
+                                        if (!resposta.resultado()) {
+                                            out.writeObject(new Geral(resposta.mensagem().contains("Password") ? Message_types.WRONG_PASS : resposta.conteudo() ? Message_types.INVALIDO : Message_types.ERRO));
+                                        } else {
+                                            logado = true;
+                                            //System.out.println(resposta[0]);
+                                            isadmin = resposta.conteudo();
 
-                                if (!resposta.resultado()) {
-                                    out.writeObject(new Geral(resposta.mensagem().contains("Password") ? Message_types.WRONG_PASS : resposta.conteudo() ? Message_types.INVALIDO : Message_types.ERRO));
-                                }
-                                else {
-                                    logado = true;
-                                    //System.out.println(resposta[0]);
-                                    isadmin = resposta.conteudo();
-
-                                    out.writeObject(new Msg_String(ipMuticastString, resposta.conteudo() ? Message_types.ADMINISTRADOR : Message_types.UTILIZADOR));
-                                }
-                                System.out.println("<SERVIDOR> [OPERACAO DE LOGIN] -> " + resposta.mensagem());
-                            }
-                            case REGISTO -> {
-                                Mgs_RegistarEditar_Conta aux = (Mgs_RegistarEditar_Conta) interacao;
-                                email = aux.getEmail();
-                                Utilizador user = new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
-                                Lastupdate=aux;
-                                BDResposta resposta = dbManager.RegistoNovoUser(user, aux.getPassword());
-                                if (resposta.resultado()) {
-                                    out.writeObject(new Msg_String(ipMuticastString, Message_types.UTILIZADOR));
-                                    logado = true;
-
-                                } else {
-                                    out.writeObject(new Geral(resposta.conteudo() ? Message_types.INVALIDO : Message_types.ERRO));
-                                }
-                                System.out.println("<SERVIDOR> [OPERACAO DE REGISTO] -> " + resposta.mensagem());
-                            }
-                            case LOGOUT -> logado=false;
-                            case FECHOU_APP -> stopthreadCliente = true;
-
-                            default -> out.writeObject(new Geral(Message_types.FAZER_LOGIN));
-
-                        }
-                        //Pedidos para clientes do tipo UTILIZADOR
-                        if(logado) {
-                            if (!isadmin) {
-                                while (logado) {
-                                    Object message = in.readObject();
-                                    if(message instanceof Geral geral) {
-                                        switch (geral.getTipo()) {
-                                            case EDITAR_REGISTO -> {
-                                                Mgs_RegistarEditar_Conta aux = (Mgs_RegistarEditar_Conta) message;
-                                                Utilizador user = new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
-                                                Lastupdate=aux;
-                                                if (dbManager.edita_registo(user, aux.getPassword())) {
-                                                    out.writeObject(new Geral(Message_types.VALIDO));
-
-                                                } else
-                                                    out.writeObject(new Geral(Message_types.ERRO));
-                                            }
-                                            case SUBMICAO_COD -> {
-                                                //vai à BD verificar -> têm de fazer, por enquanto está inválido
-                                                Msg_String_Int aux = (Msg_String_Int) message;
-                                                Lastupdate=new Msg_Sub_Cod(aux.getTipo(),email,aux.getConteudo(), aux.getNumero());
-                                                if (!dbManager.submitcod(aux.getNumero(), aux.getConteudo(), email)) {
-                                                    out.writeObject(new Geral(Message_types.INVALIDO));
-                                                } else {
-                                                    out.writeObject(new Geral(Message_types.VALIDO));
-                                                }
-                                            }
-                                            case CONSULTA_PRES_UTILIZADOR -> {
-                                                Msg_ConsultaComFiltros aux = (Msg_ConsultaComFiltros) message;
-
-                                                List<Evento> eventosAssistidos = dbManager.ConsultaPresencas_user(email, aux);
-                                                if (eventosAssistidos.isEmpty())
-                                                    out.writeObject(new Geral(Message_types.ERRO));
-                                                else {
-                                                    eventosAssistidos.clear();
-                                                    eventosPresencasUser.addAll(eventosAssistidos); //vou utilizar o eventos presenças user para fazer o ficheiro csv do utilizador
-                                                    Evento[] res = eventosAssistidos.toArray(new Evento[0]);
-                                                    out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));
-                                                }
-                                            }
-                                            case CSV_UTILIZADOR -> {
-                                                File file = new File("minhasPresencas.csv");
-                                                if (!file.exists()) {
-                                                    if (!file.createNewFile())
-                                                        out.writeObject(new Geral(Message_types.ERRO));
-                                                }
-
-                                                Utils.presencasUtilizadorCSV(eventosPresencasUser, file);
-                                                sendfile(out, file);
-                                            }
-                                            case LOGOUT -> logado = false;
-
-                                            case FECHOU_APP -> {
-                                                logado = false;
-                                                stopthreadCliente = true;
-                                            }
-                                            default -> out.writeObject(new Geral(Message_types.INVALIDO));
+                                            out.writeObject(new Msg_String(ipMuticastString, resposta.conteudo() ? Message_types.ADMINISTRADOR : Message_types.UTILIZADOR));
                                         }
+                                        System.out.println("<SERVIDOR> [OPERACAO DE LOGIN] -> " + resposta.mensagem());
                                     }
-                                    else
-                                        out.writeObject(new Geral(Message_types.INVALIDO));
-                                }
-                            } else {
-                                //Pedidos para clientes to tipo UTILIZADOR
-                                while (logado) {
-                                    Object message = in.readObject();
-                                    if(message instanceof Geral geral) {
-                                        switch (geral.getTipo()) {
-                                            case CRIA_EVENTO -> {
-                                                Msg_Cria_Evento evento = (Msg_Cria_Evento) message;
-                                                Lastupdate=evento;
-                                                if (dbManager.Cria_evento(evento)) {//.getNome(), evento.getLocal(), evento.getData(), evento.getHoreInicio(), evento.getHoraFim())){
-                                                    out.writeObject(new Geral(Message_types.VALIDO));
-                                                } else
-                                                    out.writeObject(new Geral(Message_types.ERRO));
-                                            }
-                                            case EDIT_EVENTO -> {
-                                                Msg_Edita_Evento evento = (Msg_Edita_Evento) message;
-                                                Lastupdate=evento;
-                                                if (dbManager.Edita_evento(evento)) {
-                                                    out.writeObject(new Geral(Message_types.VALIDO));
-                                                } else
-                                                    out.writeObject(new Geral(Message_types.ERRO));
-                                            }
-                                            case ELIMINAR_EVENTO -> {
-                                                Msg_String aux = (Msg_String) message;
-                                                Lastupdate=aux;
-                                                if (dbManager.Elimina_evento(aux.getConteudo())) {
-                                                    out.writeObject(new Geral(Message_types.VALIDO));
-                                                } else
-                                                    out.writeObject(new Geral(Message_types.ERRO));
-                                            }
-                                            case CONSULTA_EVENTOS -> {
-                                                Msg_ConsultaComFiltros aux = (Msg_ConsultaComFiltros) message;
+                                    case REGISTO -> {
+                                        Mgs_RegistarEditar_Conta aux = (Mgs_RegistarEditar_Conta) interacao;
+                                        email = aux.getEmail();
+                                        Utilizador user = new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
+                                        Lastupdate = aux;
+                                        BDResposta resposta = dbManager.RegistoNovoUser(user, aux.getPassword());
+                                        if (resposta.resultado()) {
+                                            out.writeObject(new Msg_String(ipMuticastString, Message_types.UTILIZADOR));
+                                            logado = true;
 
-                                                List<Evento> eventosConsultados = dbManager.Consulta_eventos(aux);
-                                                if (eventosConsultados.isEmpty())
-                                                    out.writeObject(new Geral(Message_types.ERRO));
-                                                else {
-                                                    eventosConsultados.clear();
-                                                    eventosPresencasUser.addAll(eventosConsultados); //vou utilizar o eventos presenças user para fazer o ficheiro csv do utilizador
-                                                    Evento[] res = eventosConsultados.toArray(new Evento[0]);
-                                                    out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));
-                                                }
-                                            }
-                                            case GERAR_COD -> {
-                                                Msg_String_Int aux = (Msg_String_Int) message;
-                                                int code = dbManager.GeraCodigoRegisto(aux.getConteudo(), aux.getNumero());
-                                                Lastupdate=aux;
-                                                if (code != 0){
-                                                    out.writeObject(new Msg_String(Integer.toString(code), Message_types.VALIDO));
-                                                }
-                                                else
-                                                    out.writeObject(new Geral(Message_types.ERRO));
-                                            }
-                                            case CONSULTA_PRES_EVENT -> {
-                                                Msg_String aux = (Msg_String) message;
-                                                utilizadoresEvento = dbManager.Presencas_evento(aux.getConteudo());
-                                                if (utilizadoresEvento != null) {
-                                                    Utilizador[] res = new Utilizador[utilizadoresEvento.size()];
-                                                    for (int i = 0; i < utilizadoresEvento.size(); i++) {
-                                                        res[i] = utilizadoresEvento.get(i);
+                                        } else {
+                                            out.writeObject(new Geral(resposta.conteudo() ? Message_types.INVALIDO : Message_types.ERRO));
+                                        }
+                                        System.out.println("<SERVIDOR> [OPERACAO DE REGISTO] -> " + resposta.mensagem());
+                                    }
+                                    case FECHOU_APP -> {
+                                        System.out.println("<SERVIDOR> [CLIENTE SAIU DA APP] -> " + email);
+                                        stopthreadCliente = true;
+                                        logado = false;
+                                    }
+                                    default -> out.writeObject(new Geral(Message_types.FAZER_LOGIN));
+
+                                }
+                                //Pedidos para clientes do tipo UTILIZADOR
+                                if (logado) {
+                                    if (!isadmin) {
+                                        while (logado) {
+                                            Object message = in.readObject();
+                                            if (message instanceof Geral geral) {
+                                                switch (geral.getTipo()) {
+                                                    case EDITAR_REGISTO -> {
+                                                        Mgs_RegistarEditar_Conta aux = (Mgs_RegistarEditar_Conta) message;
+                                                        Utilizador user = new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
+                                                        Lastupdate = aux;
+                                                        if (dbManager.edita_registo(user, aux.getPassword())) {
+                                                            out.writeObject(new Geral(Message_types.VALIDO));
+
+                                                        } else
+                                                            out.writeObject(new Geral(Message_types.ERRO));
                                                     }
-                                                    out.writeObject(new Msg_ListaRegistos(Message_types.VALIDO, res));
-                                                } else
-                                                    out.writeObject(new Geral(Message_types.ERRO));
-                                            }
-                                            case CSV_PRESENCAS_DO_EVENTO -> {
-                                                File file = new File("presencasEvento.csv");
-                                                if (!file.exists()) {
-                                                    if (!file.createNewFile())
-                                                        out.writeObject(new Geral(Message_types.ERRO));
+                                                    case SUBMICAO_COD -> {
+                                                        //vai à BD verificar -> têm de fazer, por enquanto está inválido
+                                                        Msg_String_Int aux = (Msg_String_Int) message;
+                                                        Lastupdate = new Msg_Sub_Cod(aux.getTipo(), email, aux.getConteudo(), aux.getNumero());
+                                                        if (!dbManager.submitcod(aux.getNumero(), aux.getConteudo(), email)) {
+                                                            out.writeObject(new Geral(Message_types.INVALIDO));
+                                                        } else {
+                                                            out.writeObject(new Geral(Message_types.VALIDO));
+                                                        }
+                                                    }
+                                                    case CONSULTA_PRES_UTILIZADOR -> {
+                                                        Msg_ConsultaComFiltros aux = (Msg_ConsultaComFiltros) message;
+
+                                                        List<Evento> eventosAssistidos = dbManager.ConsultaPresencas_user(email, aux);
+                                                        if (eventosAssistidos.isEmpty())
+                                                            out.writeObject(new Geral(Message_types.ERRO));
+                                                        else {
+                                                            eventosAssistidos.clear();
+                                                            eventosPresencasUser.addAll(eventosAssistidos); //vou utilizar o eventos presenças user para fazer o ficheiro csv do utilizador
+                                                            Evento[] res = eventosAssistidos.toArray(new Evento[0]);
+                                                            out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));
+                                                        }
+                                                    }
+                                                    case CSV_UTILIZADOR -> {
+                                                        File file = new File("minhasPresencas.csv");
+                                                        if (!file.exists()) {
+                                                            if (!file.createNewFile())
+                                                                out.writeObject(new Geral(Message_types.ERRO));
+                                                        }
+
+                                                        Utils.presencasUtilizadorCSV(eventosPresencasUser, file);
+                                                        sendfile(out, file);
+                                                    }
+                                                    case LOGOUT -> {
+                                                        clientesAtualizacao.remove(client);
+                                                        System.out.println("<SERVIDOR> [OPERACAO DE LOGOUT] -> " + email);
+                                                        logado = false;
+                                                    }
+                                                    case FECHOU_APP -> {
+                                                        System.out.println("<SERVIDOR> [CLIENTE SAIU DA APP] -> " + email);
+                                                        stopthreadCliente = true;
+                                                        logado = false;
+                                                    }
+                                                    default -> out.writeObject(new Geral(Message_types.INVALIDO));
                                                 }
-                                                Utils.eventosPresencasCSV(utilizadoresEvento, file);
-                                                sendfile(out, file);
-                                            }
-                                            case CONSULTA_PRES_UTILIZADOR -> {
+                                            } else
+                                                out.writeObject(new Geral(Message_types.INVALIDO));
+                                        }
+                                    } else {
+                                        //Pedidos para clientes to tipo UTILIZADOR
+                                        while (logado) {
+                                            Object message = in.readObject();
+                                            if (message instanceof Geral geral) {
+                                                switch (geral.getTipo()) {
+                                                    case CRIA_EVENTO -> {
+                                                        Msg_Cria_Evento evento = (Msg_Cria_Evento) message;
+                                                        Lastupdate = evento;
+                                                        if (dbManager.Cria_evento(evento)) {//.getNome(), evento.getLocal(), evento.getData(), evento.getHoreInicio(), evento.getHoraFim())){
+                                                            out.writeObject(new Geral(Message_types.VALIDO));
+                                                        } else
+                                                            out.writeObject(new Geral(Message_types.ERRO));
+                                                    }
+                                                    case EDIT_EVENTO -> {
+                                                        Msg_Edita_Evento evento = (Msg_Edita_Evento) message;
+                                                        Lastupdate = evento;
+                                                        if (dbManager.Edita_evento(evento)) {
+                                                            out.writeObject(new Geral(Message_types.VALIDO));
+                                                        } else
+                                                            out.writeObject(new Geral(Message_types.ERRO));
+                                                    }
+                                                    case ELIMINAR_EVENTO -> {
+                                                        Msg_String aux = (Msg_String) message;
+                                                        Lastupdate = aux;
+                                                        if (dbManager.Elimina_evento(aux.getConteudo())) {
+                                                            out.writeObject(new Geral(Message_types.VALIDO));
+                                                        } else
+                                                            out.writeObject(new Geral(Message_types.ERRO));
+                                                    }
+                                                    case CONSULTA_EVENTOS -> {
+                                                        Msg_ConsultaComFiltros aux = (Msg_ConsultaComFiltros) message;
 
-                                                Msg_String aux = (Msg_String) message;
-                                                eventosPresencasAdmin = dbManager.ConsultaPresencas_User_Admin(aux.getConteudo());
-                                                if (eventosPresencasAdmin != null) {
-                                                    Evento[] res = eventosPresencasAdmin.toArray(new Evento[0]);
-                                                    out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));
-                                                } else
-                                                    out.writeObject(new Geral(Message_types.ERRO));
-                                            }
+                                                        List<Evento> eventosConsultados = dbManager.Consulta_eventos(aux);
+                                                        if (eventosConsultados.isEmpty())
+                                                            out.writeObject(new Geral(Message_types.ERRO));
+                                                        else {
+                                                            eventosConsultados.clear();
+                                                            eventosPresencasUser.addAll(eventosConsultados); //vou utilizar o eventos presenças user para fazer o ficheiro csv do utilizador
+                                                            Evento[] res = eventosConsultados.toArray(new Evento[0]);
+                                                            out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));
+                                                        }
+                                                    }
+                                                    case GERAR_COD -> {
+                                                        Msg_String_Int aux = (Msg_String_Int) message;
+                                                        int code = dbManager.GeraCodigoRegisto(aux.getConteudo(), aux.getNumero());
+                                                        Lastupdate = aux;
+                                                        if (code != 0) {
+                                                            out.writeObject(new Msg_String(Integer.toString(code), Message_types.VALIDO));
+                                                        } else
+                                                            out.writeObject(new Geral(Message_types.ERRO));
+                                                    }
+                                                    case CONSULTA_PRES_EVENT -> {
+                                                        Msg_String aux = (Msg_String) message;
+                                                        utilizadoresEvento = dbManager.Presencas_evento(aux.getConteudo());
+                                                        if (utilizadoresEvento != null) {
+                                                            Utilizador[] res = new Utilizador[utilizadoresEvento.size()];
+                                                            for (int i = 0; i < utilizadoresEvento.size(); i++) {
+                                                                res[i] = utilizadoresEvento.get(i);
+                                                            }
+                                                            out.writeObject(new Msg_ListaRegistos(Message_types.VALIDO, res));
+                                                        } else
+                                                            out.writeObject(new Geral(Message_types.ERRO));
+                                                    }
+                                                    case CSV_PRESENCAS_DO_EVENTO -> {
+                                                        File file = new File("presencasEvento.csv");
+                                                        if (!file.exists()) {
+                                                            if (!file.createNewFile())
+                                                                out.writeObject(new Geral(Message_types.ERRO));
+                                                        }
+                                                        Utils.eventosPresencasCSV(utilizadoresEvento, file);
+                                                        sendfile(out, file);
+                                                    }
+                                                    case CONSULTA_PRES_UTILIZADOR -> {
 
-                                            case CSV_PRESENCAS_UTI_NUM_EVENTO -> {
-                                                //NÃO DEVIAM ESTAR A FAZER ISTO, VÃO BUSCAR OS DADOS E CRIAR O CSV DESTE LADO
-                                                File file = new File("Presencas.csv");// talvez o nome do ficheiro seja outro ,idk
-                                                if (!file.exists()) {
-                                                    if (!file.createNewFile())
-                                                        out.writeObject(new Geral(Message_types.ERRO));
+                                                        Msg_String aux = (Msg_String) message;
+                                                        eventosPresencasAdmin = dbManager.ConsultaPresencas_User_Admin(aux.getConteudo());
+                                                        if (eventosPresencasAdmin != null) {
+                                                            Evento[] res = eventosPresencasAdmin.toArray(new Evento[0]);
+                                                            out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));
+                                                        } else
+                                                            out.writeObject(new Geral(Message_types.ERRO));
+                                                    }
+
+                                                    case CSV_PRESENCAS_UTI_NUM_EVENTO -> {
+                                                        //NÃO DEVIAM ESTAR A FAZER ISTO, VÃO BUSCAR OS DADOS E CRIAR O CSV DESTE LADO
+                                                        File file = new File("Presencas.csv");// talvez o nome do ficheiro seja outro ,idk
+                                                        if (!file.exists()) {
+                                                            if (!file.createNewFile())
+                                                                out.writeObject(new Geral(Message_types.ERRO));
+                                                        }
+                                                        Utils.presencasUtilizadorCSV(eventosPresencasUser, file);// not sure se e esta a funcao
+                                                        // Aqui colocar a funcao que vamos chamar na db
+                                                        sendfile(out, file);
+                                                    }
+
+                                                    case ELIMINA_PRES -> {
+                                                        Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas) message;
+                                                        Lastupdate = aux;
+                                                        if (dbManager.EliminaPresencas(aux.getNome_evento(), aux.getLista())) {
+                                                            out.writeObject(new Geral(Message_types.VALIDO));
+                                                        } else
+                                                            out.writeObject(new Geral(Message_types.ERRO));
+                                                    }
+
+                                                    case INSERE_PRES -> {
+                                                        Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas) message;
+                                                        Lastupdate = aux;
+                                                        if (dbManager.InserePresencas(aux.getNome_evento(), aux.getLista())) {
+                                                            out.writeObject(new Geral(Message_types.VALIDO));
+                                                        } else
+                                                            out.writeObject(new Geral(Message_types.ERRO));
+                                                    }
+                                                    case LOGOUT -> {
+                                                        System.out.println("<SERVIDOR> [OPERACAO DE LOGOUT] -> " + email);
+                                                        logado = false;
+                                                    }
+                                                    case FECHOU_APP -> {
+                                                        System.out.println("<SERVIDOR> [CLIENTE SAIU DA APP] -> " + email);
+                                                        stopthreadCliente = true;
+                                                        logado = false;
+                                                    }
+                                                    default -> out.writeObject(new Geral(Message_types.INVALIDO));
                                                 }
-                                                Utils.presencasUtilizadorCSV(eventosPresencasUser, file);// not sure se e esta a funcao
-                                                // Aqui colocar a funcao que vamos chamar na db
-                                                sendfile(out, file);
-                                            }
-
-                                            case ELIMINA_PRES -> {
-                                                Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas) message;
-                                                Lastupdate=aux;
-                                                if (dbManager.EliminaPresencas(aux.getNome_evento(), aux.getLista())) {
-                                                    out.writeObject(new Geral(Message_types.VALIDO));
-                                                } else
-                                                    out.writeObject(new Geral(Message_types.ERRO));
-                                            }
-
-                                            case INSERE_PRES -> {
-                                                Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas) message;
-                                                Lastupdate=aux;
-                                                if (dbManager.InserePresencas(aux.getNome_evento(), aux.getLista())) {
-                                                    out.writeObject(new Geral(Message_types.VALIDO));
-                                                } else
-                                                    out.writeObject(new Geral(Message_types.ERRO));
-                                            }
-                                            case LOGOUT -> logado = false;
-
-                                            case FECHOU_APP -> {
-                                                logado = false;
-                                                stopthreadCliente = true;
-                                            }
-                                            default -> out.writeObject(new Geral(Message_types.INVALIDO));
+                                            } else
+                                                out.writeObject(new Geral(Message_types.INVALIDO));
                                         }
                                     }
-                                    else
-                                        out.writeObject(new Geral(Message_types.INVALIDO));
                                 }
-                            }
+                            } else
+                                out.writeObject(new Geral(Message_types.INVALIDO));
                         }
+                    } catch (IOException | ClassNotFoundException e) {
+                        throw new RuntimeException("<SERVIDOR> Ocorreu um erro na thread que atenderia um cliente :(");
+                    } finally {
+                        try {
+                            client.close();
+                        } catch (IOException ignored) {
+                        }
+                        clientesAtualizacao.remove(client);
+                        System.out.println("Cliente: " + email + "terminado");
                     }
-                    else
-                        out.writeObject(new Geral(Message_types.INVALIDO));
                 }
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException("<SERVIDOR> Ocorreu um erro na thread que atenderia um cliente :(");
-            } finally {
-                try {
-                    client.close();
-                } catch (IOException ignored) {
-                }
-                clients.remove(client);
-                System.out.println("Cliente: "+ email +"terminado");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
-
-
-
     }
     // funcoes uteis que são usadas pelo servidor
     public synchronized void enviatodosobv(Geral msg){
