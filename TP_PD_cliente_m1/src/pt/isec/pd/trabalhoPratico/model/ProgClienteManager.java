@@ -6,7 +6,6 @@ import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 import pt.isec.pd.trabalhoPratico.model.classesPrograma.*;
 
 import java.beans.PropertyChangeListener;
-import java.time.LocalDate;
 import java.util.List;
 
 public class ProgClienteManager {
@@ -89,20 +88,3 @@ public class ProgClienteManager {
         return programaCliente.consultaEventosDeUmUtilizador(utilizador);
     }
 }
-
-    /*
-    public void addLogadoListener(InvalidationListener listener) {
-        programaCliente.addLogadoListener(listener);
-    }
-    public void addAtualizacaoListener(InvalidationListener listener) {
-        programaCliente.addAtualizacaoListener(listener);
-    }
-    public void addErroListener(PropertyChangeListener listener) {
-        programaCliente.addErroListener(listener);
-    }*/
-    /*public int getAtualizacoes(){
-        return programaCliente.getAtualizacoes();
-    }
-    public void setLogado(String valor){
-        programaCliente.setLogado(valor);
-    }*/

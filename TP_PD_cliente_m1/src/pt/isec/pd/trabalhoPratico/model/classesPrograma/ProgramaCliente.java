@@ -22,55 +22,51 @@ public class ProgramaCliente {
     private TimerTask tarefa;
     private boolean terminou = false;
     private static boolean fezLogin = false;
+    private static Socket socketAtualizacao;
 
     // EVENTOS
     private static GereMudancasPLC gereMudancasPLC;
 
     // COMUNICAÇÃO
-    private Socket socket;
+    private Socket socketPedidos;
     private int portoServidor;
     private ObjectOutputStream oout;
     private ObjectInputStream oin;
+    private InetAddress ipServidor;
 
 //-------------------- ATUALIZACAO ASSINCRONA -----------------
     static class AtualizacaoAsync implements Runnable {
-        private MulticastSocket multicastSocket;
-        private InetAddress gClientes;
-        public AtualizacaoAsync(int porto, String multicastAddress) {
+        public AtualizacaoAsync(int porto, InetAddress ip) {
             try {
-                this.multicastSocket = new MulticastSocket(porto);
-                gClientes = InetAddress.getByName(multicastAddress);
-                multicastSocket.joinGroup(gClientes);
+                System.out.println("threadAtualizacao");
+                socketAtualizacao = new Socket(ip, porto);
+                PrintStream out = new PrintStream(socketAtualizacao.getOutputStream(), true);
+                out.println(new String("socketAtualizacao"));
             } catch (IOException e) {
                 gereMudancasPLC.setErros();
-                gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.FIM);
             }
         }
         @Override
         public void run() {
             String msgConteudo;
-            while (fezLogin) {
-                DatagramPacket packet = new DatagramPacket(new byte[20], 20);
-                try {
-                    multicastSocket.receive(packet);
-                } catch (IOException e) {
-                    gereMudancasPLC.setErros();
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(socketAtualizacao.getInputStream()))){
+                while (fezLogin) {
+                    msgConteudo = in.readLine();
+                    if(msgConteudo != null) {
+                        if (msgConteudo.equals("fimServidor")) {
+                            System.out.println("<CLIENTE> Servidor terminou.");
+                            gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.FIM);
+                            break;
+                        } else if (msgConteudo.equals("atualizacao")) {
+                            gereMudancasPLC.setNovaAtualizacao();
+                            System.out.println("<CLIENTE> Nova atualizacao.");
+                        }
+                    }
                 }
-                msgConteudo = new String(packet.getData(), 0, packet.getLength());
-                if (msgConteudo.equals("fimServidor")) {
-                    gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.FIM);
-                    break;
-                }
-                else {
-                    gereMudancasPLC.setNovaAtualizacao();
-                }
+            } catch (IOException ex) {
+                System.out.println("<CLIENTE> Ligacao assíncrona terminou.");
+                gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.FIM);
             }
-            try {
-                multicastSocket.leaveGroup(gClientes);
-            } catch (IOException e) {
-                System.out.println("erro na thread para atualizacao assincrona");
-            }
-            multicastSocket.close();
         }
     }
 
@@ -101,17 +97,24 @@ public class ProgramaCliente {
     public void addPropertyChangeListener(String propriedade,  PropertyChangeListener novoListener) {
         gereMudancasPLC.addPropertyChangeListener(propriedade, novoListener);
     }
+    private void terminaRecursos() {
+        try {
+            oin.close();
+            oout.close();
+            if (socketPedidos != null)
+                socketPedidos.close();
+            if(socketAtualizacao != null)
+                socketAtualizacao.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     private void termina() {
         terminou = true;
         temporizador.cancel();
         tarefa.cancel();
         gereMudancasPLC.removePropertyChangeListener(gereMudancasPLC.PROP_ESTADO, evt -> verificacaoLigacao());
-        try {
-            if (socket != null)
-                socket.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        terminaRecursos();
     }
 
     private void verificacaoLigacao() {
@@ -150,13 +153,14 @@ public class ProgramaCliente {
         if (list.size() == 2) {
             try {
                 portoServidor = Integer.parseInt(list.get(1));
-                InetAddress ip = InetAddress.getByName(list.get(0));
-                socket = new Socket(ip, portoServidor);
-                if (socket.isConnected()) {
-                    oin = new ObjectInputStream(socket.getInputStream());
-                    oout = new ObjectOutputStream(socket.getOutputStream());
-                    return new ParResposta(true, "Conexão bem sucedida");
-                }
+                ipServidor = InetAddress.getByName(list.get(0));
+                socketPedidos = new Socket(ipServidor, portoServidor);
+                PrintStream out = new PrintStream(socketPedidos.getOutputStream(), true);
+                out.println(new String("socketPedidos"));
+                oin = new ObjectInputStream(socketPedidos.getInputStream());
+                oout = new ObjectOutputStream(socketPedidos.getOutputStream());
+
+                return new ParResposta(true, "Conexão bem sucedida");
             } catch (IllegalArgumentException e) {
                 pontoSituacao = new ParResposta(false, "Introduziu um porto inválido.");
             } catch (NullPointerException e) {
@@ -191,7 +195,7 @@ public class ProgramaCliente {
                         case ERRO -> { return "Ocorreu um erro na BD.";}
                         default -> {
                             try {
-                                new Thread(new AtualizacaoAsync(portoServidor, ((Msg_String) g).getConteudo())).start();
+                                new Thread(new AtualizacaoAsync(portoServidor, ipServidor)).start();
                                 gereMudancasPLC.setEstadoNaAplicacao(g.getTipo() == Message_types.UTILIZADOR ? EstadoNaAplicacao.UTILIZADOR : EstadoNaAplicacao.ADMINISTRADOR);
                                 fezLogin = true;
                                 return "Estabeleceu ligação!!";
@@ -215,6 +219,7 @@ public class ProgramaCliente {
     public void logout(String fonte) {
         Geral logout = new Geral(fonte.equals("WND") ? Message_types.FECHOU_APP : Message_types.LOGOUT);
         try {
+            System.out.println("Vai enviar logout");
             oout.writeObject(logout);
             oout.flush();
             gereMudancasPLC.setEstadoNaAplicacao(fonte.equals("WND") ? EstadoNaAplicacao.SAIR : EstadoNaAplicacao.ENTRADA);
@@ -323,7 +328,7 @@ public class ProgramaCliente {
                 oout.writeObject(csv);
                 oout.flush();
 
-                InputStream inStream = socket.getInputStream();
+                InputStream inStream = socketPedidos.getInputStream();
 
                 while ((nbytes = inStream.read(fileChunk)) > 0) {
                     localFileOutputStream.write(fileChunk, 0, nbytes);
@@ -368,9 +373,9 @@ public class ProgramaCliente {
                     default -> {
                         if(validacao instanceof Msg_String info) {
                             try {
-                                new Thread(new AtualizacaoAsync(portoServidor, info.getConteudo())).start();
+                                new Thread(new AtualizacaoAsync(portoServidor, ipServidor)).start();
                                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.UTILIZADOR);
-                                fezLogin=true;
+                                fezLogin = true;
                                 return new ParResposta(true, "Registou-se com sucesso!");
                             } catch (Exception e) {
                                 gereMudancasPLC.setErros();
