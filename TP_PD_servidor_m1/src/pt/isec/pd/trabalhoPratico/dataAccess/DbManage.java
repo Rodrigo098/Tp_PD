@@ -147,11 +147,11 @@ public class DbManage {
             statement.setInt(1,versao);
             statement.setInt(2,versao-1);
            if( statement.executeUpdate()<1)
-               System.out.println("Erro a atualizar a versao");
+               System.out.println("<BD> Erro na atualizacao da versao da BAse de Dados");
            else{
 
                versaoSuporte.firePropertyChange("versao", null, null);
-               System.out.println("Versao atualizada com sucesso");}
+               System.out.println("<BD> Versao de Base de Dados atualizada com sucesso");}
 
            statement.close();
         } catch (SQLException e) {
@@ -195,8 +195,8 @@ public class DbManage {
 
             if(rs.isBeforeFirst())
             {   rs.next();
-                System.out.println(rs.getString("email"));
-                System.out.println(rs.getString("palavra_passe"));
+                //System.out.println(rs.getString("email"));
+                //System.out.println(rs.getString("palavra_passe"));
 
                 if(rs.getString("palavra_passe").equals(password)) {
                     if(rs.getString("tipo_utilizador").equals("admin"))
@@ -226,7 +226,7 @@ public class DbManage {
 
             if(rs.isBeforeFirst())
             {   rs.next();
-                System.out.println(rs.getString("email"));
+                //System.out.println(rs.getString("email"));
                 String updateQuery = "UPDATE Utilizador SET nome=?, numero_estudante=?, palavra_passe=? WHERE email=?";
                 PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
                 preparedStatement.setString(1, user.nome());
@@ -238,7 +238,7 @@ public class DbManage {
                 return true;
             }
             else{
-               System.out.println("Nao foi encontrado nenhum utilizador com esse email");
+               System.out.println("<BD> Nao foi encontrado nenhum utilizador com email [" + user.email() + "]");
                 return false;
             }
         } catch (SQLException e) {
@@ -257,7 +257,7 @@ public class DbManage {
             int estudantesEncontrados = alunoStatement.executeQuery().getInt(1);
             if(estudantesEncontrados<1)
             {
-                System.out.println("Estudante inexistente");
+                System.out.println("<BD> Nenhum utilizador [" + emailuser + "] encontrado");
                 return false;
             }
 
@@ -267,7 +267,7 @@ public class DbManage {
             verstatemente.setString(2,emailuser);
             if(verstatemente.executeQuery().getInt(1)>=1){
 
-                System.out.println("[Erro] Aluno ja inscrito");
+                System.out.println("<DB> Tentativa multipla de registo no evento [" + nome_evento + "] por [" + emailuser + "]");
                 return false;
             }
 
@@ -281,11 +281,11 @@ public class DbManage {
             if(rs.isBeforeFirst())
             {   rs.next();
                 Date Data=new Date();
-                long datamili=Data.getTime();
+                long datamili=Data.getTime();/*
                 System.out.println("o data atual e "+datamili);
-                System.out.println(rs.getTimestamp("validade").getTime());
+                System.out.println(rs.getTimestamp("validade").getTime());*/
                 if(rs.getTimestamp("validade").getTime()<datamili){
-                    System.out.println("Fora de validade");
+                    System.out.println("<BD> Tentativa de registo no evento [" + nome_evento + "] fora de validade");
                     String EliminaCodigosAnterioresQuery = "UPDATE Codigo_Registo SET validade=0 WHERE nome_evento = ?";//
                     PreparedStatement expiraStatement = connection.prepareStatement(EliminaCodigosAnterioresQuery);
                     expiraStatement.setString(1, nome_evento); // Define o valor do nome_evento para o ? da query
@@ -298,22 +298,22 @@ public class DbManage {
                             + nome_evento+"','" +emailuser+"')";// qual o valor que é suposto colocar no idassiste??
 
                     if(statement.executeUpdate(createEntryQuery)<1){
-                        System.out.println("Entry insertion or update failed");
+                        System.out.println("<BD> Erro na insercao duma presenca no evento [" + nome_evento + "]");
                         return false;
                     }
                     else{
-                        System.out.println("Entry insertion succeeded");
+                        System.out.println("<BD> Nova presenca registada no evento [" + nome_evento + "]");
                         setVersao();
-                                return true;
+                        return true;
                     }
 
                 }else{
-                    System.out.println("Codigo invalido");
+                    System.out.println("<BD> Codigo invalido invalido para registo no evento [" + nome_evento + "]");
                     return false;
                 }
             }
             else{
-                System.out.println("Nenhum item corresponde a pesquisa");
+                System.out.println("<BD> Nenhum evento corresponde a submicao de codigo.");
                 return false;
             }
         } catch (SQLException e) {
@@ -337,9 +337,6 @@ public class DbManage {
                     String dataRealizacao = rs.getString("data_realizacao");
                     String horaInicioEvento = rs.getString("hora_inicio");
                     String horaFimEvento = rs.getString("hora_fim");
-                    //int horaInicioEvento = rs.getInt("hora_inicio");
-                    //int horaFimEvento = rs.getInt("hora_fim");
-                    //LocalDate date=LocalDate.parse(dataRealizacao);
 
                     Evento evento = new Evento( nomeEvento,localEvento, dataRealizacao, horaInicioEvento, horaFimEvento );
                     eventos_assistidos.add(evento);
@@ -347,7 +344,7 @@ public class DbManage {
                 return eventos_assistidos;
 
             }else{
-                System.out.println("Nenhum evento encontrado");
+                System.out.println("<BD> Nenhum evento encontrado");
                 return eventos_assistidos;
             }
 
@@ -427,7 +424,7 @@ public class DbManage {
             ResultSet rs = preparedStatement.executeQuery();
             if(!rs.isBeforeFirst())
             {
-                System.out.println("Nenhum evento encontrado");
+                System.out.println("<BD> Nenhum evento [" + nome_evento + "] encontrado");
                 return null;
             }
             while (rs.next()){
@@ -452,11 +449,11 @@ public class DbManage {
                     + evento.getNome() +"','" + evento.getLocal() +"','" + dataString +"','" + evento.getHoreInicio() +"','" + evento.getHoraFim() +"')";
 
             if(statement.executeUpdate(createEntryQuery)<1){
-                System.out.println("Erro na criacao do evento");
+                System.out.println("<BD> Erro na criacao do evento [" + evento.getNome() +"]");
                 return false;
             }
             else{
-                System.out.println("Evento criado com sucesso");
+                System.out.println("<BD> Evento [" + evento +"] criado com sucesso");
                 setVersao();
             }
         } catch (SQLException e) {
@@ -495,10 +492,10 @@ public class DbManage {
                         + "'";
 
                 if (statement.executeUpdate(updateEventQuery) < 1) {
-                    System.out.println("Erro na edição do evento");
+                    System.out.println("<BD> Erro na edição do evento [" + evento.getNome() + "]");
                     return false;
                 } else {
-                    System.out.println("Evento editado com sucesso");
+                    System.out.println("<BD> Evento [" + evento + "] editado com sucesso");
                     setVersao();
                     }
             }
@@ -519,17 +516,17 @@ public class DbManage {
             int presencas = resultSet.getInt(1);
 
             if (presencas > 0) {
-                System.out.println("Nao e possível eliminar o evento, pois o mesmo contem presencas.");
+                System.out.println("<BD> Nao e possível eliminar o evento [" + nome_evento + "], pois o mesmo contem presencas.");
                 return false;
             } else {
                 // Se não houver presenças, elimina o evento
                 String deleteEventQuery = "DELETE FROM Evento WHERE nome_evento = '" + nome_evento + "'";
 
                 if (statement.executeUpdate(deleteEventQuery) < 1) {
-                    System.out.println("Erro na eliminacao do evento");
+                    System.out.println("<BD> Erro na eliminacao do evento [" + nome_evento + "]");
                     return false; // erro na eliminação do evento
                 } else {
-                    System.out.println("Evento eliminado com sucesso");
+                    System.out.println("<BD> Evento ["+ nome_evento +"] eliminado com sucesso");
                     setVersao();
                     }
             }
@@ -581,9 +578,6 @@ public class DbManage {
                 String data_realizacao = resultSet.getString("data_realizacao");
                 String horaInicio = resultSet.getString("hora_inicio");
                 String horaFim = resultSet.getString("hora_fim");
-                //LocalDate data_realizacao = resultSet.getDate("data_realizacao").toLocalDate();
-                //int horaInicio =  resultSet.getInt("hora_inicio");
-                //int horaFim = resultSet.getInt("hora_fim");
 
                 Evento evento_result = new Evento(nome,local, data_realizacao, horaInicio, horaFim);
                 eventos.add(evento_result);
@@ -626,14 +620,12 @@ public class DbManage {
                     int rowsAffected = presencaStatement.executeUpdate();
 
                     if (rowsAffected == 1) {
-                        System.out.println("A presenca do estudante " + emailEstudante + " no evento " + nomeEvento + " foi registada com sucesso");
+                        System.out.println("<BD> A presenca do estudante " + emailEstudante + " no evento " + nomeEvento + " foi registada com sucesso");
                     } else {
-                        System.out.println("Erro ao registar a presença do estudante " + emailEstudante + ".");
-                        //return false;
+                        System.out.println("<BD> Erro ao registar a presença do estudante " + emailEstudante + ".");
                     }
                 } else {
-                    System.out.println("Evento e/ou aluno nao existem.");
-                    //return false;
+                    System.out.println("<BD> Evento e/ou aluno nao existem.");
                 }
             }
             setVersao();
@@ -657,9 +649,9 @@ public class DbManage {
                 int rowsAffected = eliminaPresencaStatement.executeUpdate();
 
                 if (rowsAffected == 1) {
-                    System.out.println("A Presença do estudante " + emailEstudante +" do evento " + nomeEvento + " foi eliminada com sucesso.");
+                    System.out.println("<BD> A Presença do estudante " + emailEstudante +" do evento " + nomeEvento + " foi eliminada com sucesso.");
                     } else {
-                    System.out.println("Nao foi encontrada a presenca do estudante " + emailEstudante + " no evento " + nomeEvento + ".");
+                    System.out.println("<BD> Nao foi encontrada a presenca do estudante " + emailEstudante + " no evento " + nomeEvento + ".");
                 }
             }
             setVersao();
@@ -701,10 +693,10 @@ public class DbManage {
                 //Estou a obter a data e hora atual para comparar se o evento se encontra a decorrer
                 Date dataAtual = new Date();
                 long dataAtualMillis = dataAtual.getTime();
-
+/*
                 System.out.println(dataAtualMillis);
                 System.out.println(dataInicioMillis);
-                System.out.println(dataFimMillis);
+                System.out.println(dataFimMillis);*/
 
                 //Se estiver dentro do intervalo de tempo, então o evento se encontra a decorrer
                 if (dataAtualMillis >= dataInicioMillis && dataAtualMillis <= dataFimMillis) {
@@ -730,15 +722,15 @@ public class DbManage {
                     insereStatement.setString(2, evento);
                     insereStatement.setTimestamp(3, horarioValidade); //Estou a salvar em TimeStamp porque é melhor para verificar a validade do codigo
                     insereStatement.executeUpdate();
-                    System.out.println("Inseriu o codigo na database");
+                    System.out.println("<BD> Novo codigo para o evento [" + evento + "]");
                     setVersao();
                         return codigo;
                 } else {
-                    System.out.println("O evento não esta a decorrer no momento");
+                    System.out.println("<BD> O evento [" + evento +"] não esta a decorrer no momento");
                     return 0;
                 }
             } else {
-                System.out.println("O Evento nao foi encontrado");
+                System.out.println("<BD> O Evento [" + evento + "] nao foi encontrado");
                 return 0;
             }
         } catch (SQLException | ParseException e) {
