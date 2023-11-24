@@ -347,14 +347,10 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                         sendfile(out, file);
                                                     }
                                                     case LOGOUT -> {
-                                                        clientesAtualizacao.remove(paresSockets.get(email));
-                                                        paresSockets.remove(email);
                                                         System.out.println("\n<SERVIDOR> [OPERACAO DE LOGOUT] -> " + email);
                                                         logado = false;
                                                     }
                                                     case FECHOU_APP -> {
-                                                        clientesAtualizacao.remove(paresSockets.get(email));
-                                                        paresSockets.remove(email);
                                                         System.out.println("\n<SERVIDOR> [CLIENTE SAIU DA APP] -> " + email);
                                                         stopthreadCliente = true;
                                                         logado = false;
@@ -478,14 +474,10 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                             out.writeObject(new Geral(Message_types.ERRO));
                                                     }
                                                     case LOGOUT -> {
-                                                        clientesAtualizacao.remove(paresSockets.get(email));
-                                                        paresSockets.remove(email);
                                                         System.out.println("\n<SERVIDOR> [OPERACAO DE LOGOUT] -> " + email);
                                                         logado = false;
                                                     }
                                                     case FECHOU_APP -> {
-                                                        clientesAtualizacao.remove(paresSockets.get(email));
-                                                        paresSockets.remove(email);
                                                         System.out.println("\n<SERVIDOR> [CLIENTE SAIU DA APP] -> " + email);
                                                         stopthreadCliente = true;
                                                         logado = false;
@@ -496,12 +488,16 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                 out.writeObject(new Geral(Message_types.INVALIDO));
                                         }
                                     }
+                                    clientesAtualizacao.remove(paresSockets.get(email));
+                                    paresSockets.remove(email);
                                 }
                             } else
                                 out.writeObject(new Geral(Message_types.INVALIDO));
                         }
                     } catch (IOException | ClassNotFoundException e) {
-                        throw new RuntimeException("\n<SERVIDOR> Ocorreu um erro na thread que atenderia um cliente :(");
+                        clientesAtualizacao.remove(paresSockets.get(email));
+                        paresSockets.remove(email);
+                        System.out.println("\n<SERVIDOR> Ocorreu um erro na thread que atenderia um cliente :(");
                     } finally {
                         try {
                             client.close();
