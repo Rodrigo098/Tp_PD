@@ -45,7 +45,7 @@ public class ProgClienteManager {
         programaCliente.logout(fonte);
     }
 
-    public Evento[] obterListaConsulta(Message_types tipo, String nome, String local, LocalDate limData1, LocalDate limData2, int horaInicio, int horaFim){
+    public Evento[] obterListaConsulta(Message_types tipo, String nome, String local, String limData1, String limData2, String horaInicio, String horaFim){
         return programaCliente.obterListaConsultaEventos(tipo, nome, local, limData1, limData2, horaInicio, horaFim);
     }
 
@@ -65,10 +65,10 @@ public class ProgClienteManager {
     }
 
     //ADMINISTRADOR:
-    public String criar_Evento(String nome, String local, LocalDate data, int horaInicio, int horaFim){
+    public String criar_Evento(String nome, String local, String data, String horaInicio, String horaFim){
         return programaCliente.criar_Evento(nome, local, data, horaInicio, horaFim);
     }
-    public String editar_Evento(String evento, String novoNome, String local, LocalDate data, int horaInicio, int horaFim){
+    public String editar_Evento(String evento, String novoNome, String local, String data, String horaInicio, String horaFim){
         return programaCliente.editar_Evento(evento, novoNome,local, data, horaInicio, horaFim);
     }
     public String eliminarEvento(String nomeEvento) {

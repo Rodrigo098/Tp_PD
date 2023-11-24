@@ -1,5 +1,6 @@
 package pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.Administrador;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -47,7 +48,7 @@ public class ListarEventosUI extends BorderPane {
         });
         filtros.procurar.setOnAction( e -> extrairListaEventos());
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
-        //progClienteManager.addAtualizacaoListener(observable -> Platform.runLater(this::extrairListaEventos));
+        progClienteManager.addAtualizacaoListener(observable -> Platform.runLater(this::extrairListaEventos));
     }
 
     private void update() {
@@ -57,8 +58,11 @@ public class ListarEventosUI extends BorderPane {
 
     private void extrairListaEventos() {
         listaEventos.getItems().clear();
-        for (Evento evento : progClienteManager.obterListaConsulta(Message_types.CONSULTA_EVENTOS, filtros.getNomeEvento(), filtros.getLocal(), filtros.getLimData1(), filtros.getLimData2(), filtros.getHoraInicio(), filtros.getHoraFim())) {
-            listaEventos.getItems().add(evento);
+        Evento [] lista = progClienteManager.obterListaConsulta(Message_types.CONSULTA_EVENTOS, filtros.getNomeEvento(), filtros.getLocal(), filtros.getLimData1(), filtros.getLimData2(), filtros.getHoraInicio(), filtros.getHoraFim());
+        if(lista != null) {
+            for (Evento evento : lista) {
+                listaEventos.getItems().add(evento);
+            }
         }
     }
 }

@@ -5,15 +5,9 @@ import pt.isec.pd.trabalhoPratico.model.classesComunication.Msg_Cria_Evento;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Msg_Edita_Evento;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 
-import java.io.File;
 import java.sql.*;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.Random;
 
 
 public class DbManager {

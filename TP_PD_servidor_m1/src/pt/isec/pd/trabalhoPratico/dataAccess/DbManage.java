@@ -324,8 +324,8 @@ public class DbManage {
     }
 
     public List<Evento> ConsultaPresencas_User_Admin(String email_utilizador){
-        List<Evento> eventos_assistidos=new ArrayList<>();
-        try(Connection connection=DriverManager.getConnection(dbUrl)){
+        List<Evento> eventos_assistidos = new ArrayList<>();
+        try(Connection connection = DriverManager.getConnection(dbUrl)){
             String GetQuery = "SELECT * FROM EVENTO INNER JOIN ASSISTE ON EVENTO.nome_evento=ASSISTE.nome_evento where ASSISTE.email= ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(GetQuery);
             preparedStatement.setString(1, email_utilizador);
@@ -335,11 +335,13 @@ public class DbManage {
                     String nomeEvento = rs.getString("nome_evento");
                     String localEvento = rs.getString("local");
                     String dataRealizacao = rs.getString("data_realizacao");
-                    int horaInicioEvento = rs.getInt("hora_inicio");
-                    int horaFimEvento = rs.getInt("hora_fim");
-                    LocalDate date=LocalDate.parse(dataRealizacao);
+                    String horaInicioEvento = rs.getString("hora_inicio");
+                    String horaFimEvento = rs.getString("hora_fim");
+                    //int horaInicioEvento = rs.getInt("hora_inicio");
+                    //int horaFimEvento = rs.getInt("hora_fim");
+                    //LocalDate date=LocalDate.parse(dataRealizacao);
 
-                    Evento evento = new Evento( nomeEvento,localEvento, date, horaInicioEvento, horaFimEvento );
+                    Evento evento = new Evento( nomeEvento,localEvento, dataRealizacao, horaInicioEvento, horaFimEvento );
                     eventos_assistidos.add(evento);
                 }
                 return eventos_assistidos;
@@ -384,11 +386,11 @@ public class DbManage {
                 FiltroEventosUser += " AND data_realizacao = '" + dataString + "'";
             }*/
 
-            if (filtros.getHoraInicio() != 0) {
+            if (filtros.getHoraInicio() != null) {
                 FiltroEventosUser += " AND hora_inicio = '" + filtros.getHoraInicio() + "'";
             }
 
-            if (filtros.getHoraFim() != 0) {
+            if (filtros.getHoraFim() != null) {
                 FiltroEventosUser += " AND hora_fim = '" + filtros.getHoraFim() + "'";
             }
 
@@ -399,11 +401,13 @@ public class DbManage {
                 String nomeEvento = rs.getString("nome_evento");
                 String localEvento = rs.getString("local");
                 String dataRealizacao = rs.getString("data_realizacao");
-                int horaInicioEvento = rs.getInt("hora_inicio");
-                int horaFimEvento = rs.getInt("hora_fim");
-                LocalDate date=LocalDate.parse(dataRealizacao);
+                String horaInicioEvento = rs.getString("hora_inicio");
+                String horaFimEvento = rs.getString("hora_fim");
+                //int horaInicioEvento = rs.getInt("hora_inicio");
+                //int horaFimEvento = rs.getInt("hora_fim");
+                //LocalDate date=LocalDate.parse(dataRealizacao);
 
-                Evento evento = new Evento( nomeEvento,localEvento, date, horaInicioEvento, horaFimEvento );
+                Evento evento = new Evento( nomeEvento,localEvento, dataRealizacao, horaInicioEvento, horaFimEvento );
                 eventosAssistidos.add(evento);
             }
         } catch (SQLException e) {
@@ -560,11 +564,11 @@ public class DbManage {
                 filtroEvento += " AND data_realizacao = '" + dataString + "'";
             }*/
 
-            if (evento.getHoraInicio() != 0) {
+            if (evento.getHoraInicio() != null) {
                 filtroEvento += " AND hora_inicio = '" + evento.getHoraInicio() + "'";
             }
 
-            if (evento.getHoraFim() != 0) {
+            if (evento.getHoraFim() != null) {
                 filtroEvento += " AND hora_fim = '" + evento.getHoraFim() + "'";
             }
 
@@ -574,9 +578,12 @@ public class DbManage {
                 //Para extrair a data e hora do sqlLite tem que ser com .getstring e também é o que temos na classe evento
                 String nome = resultSet.getString("nome_evento");
                 String local = resultSet.getString("local");
-                LocalDate data_realizacao = resultSet.getDate("data_realizacao").toLocalDate();
-                int horaInicio =  resultSet.getInt("hora_inicio");
-                int horaFim = resultSet.getInt("hora_fim");
+                String data_realizacao = resultSet.getString("data_realizacao");
+                String horaInicio = resultSet.getString("hora_inicio");
+                String horaFim = resultSet.getString("hora_fim");
+                //LocalDate data_realizacao = resultSet.getDate("data_realizacao").toLocalDate();
+                //int horaInicio =  resultSet.getInt("hora_inicio");
+                //int horaFim = resultSet.getInt("hora_fim");
 
                 Evento evento_result = new Evento(nome,local, data_realizacao, horaInicio, horaFim);
                 eventos.add(evento_result);
