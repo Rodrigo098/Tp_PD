@@ -34,6 +34,7 @@ public class ProgramaCliente {
     private ObjectInputStream oin;
     private InetAddress ipServidor;
     private static String email;
+    private static String oMeuID;
 
 //-------------------- ATUALIZACAO ASSINCRONA -----------------
     static class AtualizacaoAsync implements Runnable {
@@ -41,7 +42,7 @@ public class ProgramaCliente {
             try {
                 socketAtualizacao = new Socket(ip, porto);
                 PrintStream out = new PrintStream(socketAtualizacao.getOutputStream(), true);
-                out.println("socketAtualizacao " + email);
+                out.println("socketAtualizacao " + oMeuID + " " + email);
             } catch (IOException e) {
                 gereMudancasPLC.setErros();
             }
@@ -86,7 +87,13 @@ public class ProgramaCliente {
     public ProgramaCliente() {
         gereMudancasPLC = new GereMudancasPLC();
         gereMudancasPLC.addPropertyChangeListener(gereMudancasPLC.PROP_ESTADO, est -> verificacaoLigacao());
-        gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.ENTRADA);
+        try {
+            oMeuID = InetAddress.getLocalHost().getHostAddress() + ProcessHandle.current().pid();
+            gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.ENTRADA);
+        }catch (UnknownHostException e) {
+            System.out.println("<PROGRAMA CLIENTE> Excecao a obter Local Host.");
+            terminou = true;
+        }
     }
 
 
@@ -102,12 +109,13 @@ public class ProgramaCliente {
             if (oout != null)
                 oout.close();
         } catch (IOException e) {
-            System.out.println("<CLIENTE> Excecao IO a terminar.");
+            System.out.println("<PROGRAMA CLIENTE> Excecao IO a terminar.");
         }
         terminou = true;
         temporizador.cancel();
         tarefa.cancel();
         gereMudancasPLC.removePropertyChangeListener(gereMudancasPLC.PROP_ESTADO, evt -> verificacaoLigacao());
+        System.out.println("<CLIENTE> Programa cliente terminado");
     }
 
     private void verificacaoLigacao() {
@@ -116,9 +124,15 @@ public class ProgramaCliente {
                 tarefa = new VerificaLigacao();
                 temporizador.schedule(tarefa, 0, 1000);
             }
-            case SAIR, FIM -> termina();
+            case SAIR ->
+                termina();
+            case FIM -> {
+                System.out.println("<PROGRAMA CLIENTE> Ocorreu uma excecao - a terminar programa.");
+                termina();
+            }
             case EXCEDEU_TEMPO -> {
                 logout("TMP");
+                System.out.println("<INFO> Excedeu tempo para registo.");
                 termina();
             }
             case ADMINISTRADOR, UTILIZADOR -> {
@@ -149,11 +163,9 @@ public class ProgramaCliente {
                 ipServidor = InetAddress.getByName(list.get(0));
                 socketPedidos = new Socket(ipServidor, portoServidor);
                 PrintStream out = new PrintStream(socketPedidos.getOutputStream(), true);
-                out.println(new String("socketPedidos"));
+                out.println("socketPedidos " + oMeuID);
                 oin = new ObjectInputStream(socketPedidos.getInputStream());
                 oout = new ObjectOutputStream(socketPedidos.getOutputStream());
-
-                new Thread(new AtualizacaoAsync(portoServidor, ipServidor)).start();
 
                 return new ParResposta(true, "Conexão bem sucedida");
             } catch (IllegalArgumentException e) {
@@ -193,6 +205,8 @@ public class ProgramaCliente {
                                 this.email = dadosLogin.getEmail();
                                 gereMudancasPLC.setEstadoNaAplicacao(g.getTipo() == Message_types.UTILIZADOR ? EstadoNaAplicacao.UTILIZADOR : EstadoNaAplicacao.ADMINISTRADOR);
                                 fezLogin = true;
+                                new Thread(new AtualizacaoAsync(portoServidor, ipServidor)).start();
+                                System.out.println("<CLIENTE> Esta atualmente logado com a conta [" + email + "]");
                                 return "Estabeleceu ligação!!";
                             } catch (Exception e) {
                                 gereMudancasPLC.setErros();
@@ -219,6 +233,8 @@ public class ProgramaCliente {
             if(!fonte.equals("TMP"))
                 gereMudancasPLC.setEstadoNaAplicacao(fonte.equals("WND") ? EstadoNaAplicacao.SAIR : EstadoNaAplicacao.ENTRADA);
             fezLogin = false;
+            if(!fonte.equals("TMP") && !fonte.equals("WND"))
+                System.out.println("<CLIENTE> Fez Logout da conta [" + email + "]");
         } catch (IOException e) {
             gereMudancasPLC.setErros();
         }
@@ -371,6 +387,7 @@ public class ProgramaCliente {
                                 this.email = email;
                                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.UTILIZADOR);
                                 fezLogin = true;
+                                new Thread(new AtualizacaoAsync(portoServidor, ipServidor)).start();
                                 return new ParResposta(true, "Registou-se com sucesso!");
                             } catch (Exception e) {
                                 gereMudancasPLC.setErros();
