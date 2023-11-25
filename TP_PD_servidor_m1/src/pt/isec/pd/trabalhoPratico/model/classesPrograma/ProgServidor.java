@@ -44,6 +44,9 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     private Boolean pararServidor = false;
     private final GereRecursosClientes gereRecursosClientes;
     private final List<ThreadCliente> threadsClientes;
+    private NetworkInterface networkInterface;
+
+    private static HeartBeatTask teste;
 
 
     public ProgServidor(int portoClientes) throws RemoteException {
@@ -69,14 +72,16 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 heartbeatgroup = InetAddress.getByName(Heartbeatip);
                 multicastSocketBackup = new MulticastSocket(portobackup);
 
-                NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("192.168.56.1"));// replace with your network interface
-
-                multicastSocketBackup.joinGroup(new InetSocketAddress(heartbeatgroup, portobackup),networkInterface);
+           networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("172.27.121.117"));// replace with your network interface
+                multicastSocketBackup.setNetworkInterface(networkInterface);
+             //   multicastSocketBackup.joinGroup(new InetSocketAddress(heartbeatgroup, portobackup),networkInterface);
+                enviaHeartBeat();
                 rmi = this ;//???
+                teste=new HeartBeatTask();
                 //String myIpIdress = "192.168.43.48";//InetAddress.getLocalHost().getHostAddress();
                 //Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
 
-                temporizador.schedule(new HeartBeatTask(),0,1000);
+                temporizador.schedule(teste,0,1000);
             } catch (SocketException | UnknownHostException e) {
                 throw new RuntimeException("\n<SERVIDOR> Nao foi possivel criar o socket para multicast, erro [" + e + "]");
             }catch (RemoteException e){
@@ -180,8 +185,9 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 oout.writeObject(new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME, dbManager.getVersao()));
                 oout.flush();
                 heartBeat = new DatagramPacket(bout.toByteArray(), bout.size(), heartbeatgroup, portobackup);
-
+                System.out.println( multicastSocketBackup.getNetworkInterface());
                 multicastSocketBackup.send(heartBeat);
+
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
