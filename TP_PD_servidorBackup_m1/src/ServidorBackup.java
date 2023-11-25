@@ -64,10 +64,10 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         {   multicastSocket = new MulticastSocket(portobackup);
             multicastSocket.setSoTimeout(30000);
             group = InetAddress.getByName(Heartbeatip);
-           NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("172.27.121.117"));// replace with your network interface
+           NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("192.168.0.142"));// replace with your network interface
             multicastSocket.joinGroup(new InetSocketAddress(group,portobackup),networkInterface);
             DatagramPacket heartBeat;
-/*
+
             heartBeat = new DatagramPacket(new byte[2024],2024);
             multicastSocket.receive(heartBeat);
 
@@ -75,7 +75,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                 // PRIMEIRO HEATBEAT PARA REGISTO
                 Object object = oin.readObject();
                 if (object instanceof DadosRmi dados) {
-                    registration = "rmi://" + dados.Registo() + "/" + dados.nome_servico();
+                    registration = "rmi://" + "192.168.0.142" + "/" + dados.nome_servico();
                     rmi = (RemoteInterface) Naming.lookup(registration);
                     //conected = true;
 
@@ -86,9 +86,11 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                     obs = new ServidorBackup();
                     rmi.addObservable(obs);
                 }
-            }*/
+            } catch (NotBoundException e) {
+                throw new RuntimeException(e);
+            }
 
-                //CICLO HEARTBEAT
+            //CICLO HEARTBEAT
                 do {
                     heartBeat = new DatagramPacket(new byte[2024], 2024);
                     multicastSocket.receive(heartBeat);
