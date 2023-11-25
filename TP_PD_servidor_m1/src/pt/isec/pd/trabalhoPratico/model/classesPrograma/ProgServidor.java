@@ -66,20 +66,21 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
         {
             socketServidor = new ServerSocket(portoClientes);
             try {
-            /*    System.setProperty("java.rmi.server.hostname", "192.168.56.1");
+
                 LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
-                System.out.println("\n<SERVIDOR> Registry lancado");*/
+                System.out.println("\n<SERVIDOR> Registry lancado");
+                //System.setProperty("java.rmi.server.hostname", "172.27.57.236");
                 heartbeatgroup = InetAddress.getByName(Heartbeatip);
                 multicastSocketBackup = new MulticastSocket(portobackup);
 
-           networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("172.27.121.117"));// replace with your network interface
+                networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("192.168.0.142"));// replace with your network interface
                 multicastSocketBackup.setNetworkInterface(networkInterface);
-             //   multicastSocketBackup.joinGroup(new InetSocketAddress(heartbeatgroup, portobackup),networkInterface);
+              //multicastSocketBackup.joinGroup(new InetSocketAddress(heartbeatgroup, portobackup),networkInterface);
                 enviaHeartBeat();
                 rmi = this ;//???
                 teste=new HeartBeatTask();
                 //String myIpIdress = "192.168.43.48";//InetAddress.getLocalHost().getHostAddress();
-                //Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
+                Naming.rebind("rmi://"+"192.168.0.142"+"/"+SERVICE_NAME,rmi);
 
                 temporizador.schedule(teste,0,1000);
             } catch (SocketException | UnknownHostException e) {
@@ -182,7 +183,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             try (ByteArrayOutputStream bout = new ByteArrayOutputStream();
                 ObjectOutputStream oout = new ObjectOutputStream(bout))
             {
-                oout.writeObject(new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME, dbManager.getVersao()));
+                oout.writeObject(new DadosRmi("172.27.57.236", SERVICE_NAME, dbManager.getVersao()));
                 oout.flush();
                 heartBeat = new DatagramPacket(bout.toByteArray(), bout.size(), heartbeatgroup, portobackup);
                 System.out.println( multicastSocketBackup.getNetworkInterface());
