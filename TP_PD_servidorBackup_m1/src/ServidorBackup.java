@@ -1,8 +1,8 @@
 import pt.isec.pd.trabalhoPratico.model.ObservableInterface;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 import pt.isec.pd.trabalhoPratico.model.dataAccess.DbManager;
-import pt.isec.pd.trabalhoPratico.model.recordDados.DadosRmi;
 import pt.isec.pd.trabalhoPratico.model.RemoteInterface;
+import pt.isec.pd.trabalhoPratico.model.recordDados.DadosRmi;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 
 import java.io.*;
@@ -13,7 +13,6 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 import java.util.Timer;
-import java.util.TimerTask;
 
 public class ServidorBackup extends UnicastRemoteObject implements ObservableInterface {
     private static String registration;
@@ -61,63 +60,70 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         ThreadLeLinhaComandos linhaComandos = new ServidorBackup().new ThreadLeLinhaComandos();
         linhaComandos.start();
 
-        try(MulticastSocket mSocket = new MulticastSocket(portobackup)){
-            multicastSocket = mSocket;
+        try
+        {   multicastSocket = new MulticastSocket(portobackup);
             multicastSocket.setSoTimeout(30000);
             group = InetAddress.getByName(Heartbeatip);
             multicastSocket.joinGroup(group);
+            DatagramPacket heartBeat;
+/*
+            heartBeat = new DatagramPacket(new byte[2024],2024);
+            multicastSocket.receive(heartBeat);
 
-            DatagramPacket packet = new DatagramPacket(new byte[2024],2024);// aqui tenho de por um valor diferente i guess
+            try(ObjectInputStream oin = new ObjectInputStream(new ByteArrayInputStream(heartBeat.getData()))) {
+                // PRIMEIRO HEATBEAT PARA REGISTO
+                Object object = oin.readObject();
+                if (object instanceof DadosRmi dados) {
+                    registration = "rmi://" + dados.Registo() + "/" + dados.nome_servico();
+                    rmi = (RemoteInterface) Naming.lookup(registration);
+                    //conected = true;
 
-            multicastSocket.receive(packet);
-            ByteArrayInputStream bye = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
-            ObjectInputStream oin = new ObjectInputStream(bye);
-            DadosRmi dados = (DadosRmi) oin.readObject();
+                    System.out.println("Servidor de backup conectado ao servidor principal");
 
-            registration = "rmi://" + dados.Registo()+ "/" + dados.nome_servico();
-            rmi = (RemoteInterface) Naming.lookup(registration);
-            //conected = true;
+                    receiveDb(); //recebe a copia da base de dados do servidor principal
 
-            System.out.println("Servidor de backup conectado ao servidor principal");
-
-            receiveDb(); //recebe a copia da base de dados do servidor principal
-
-            obs = new ServidorBackup();
-            rmi.addObservable(obs);
-
-            while (!sair) {
-                recebeuHeartBeat = false;
-                DatagramPacket heartBeat = new DatagramPacket(new byte[2024],2024);// aqui tenho de por um valor diferente i guess
-                multicastSocket.receive(heartBeat);
-                bye = new ByteArrayInputStream(heartBeat.getData(), 0, heartBeat.getLength());
-                oin = new ObjectInputStream(bye);
-                dados = (DadosRmi) oin.readObject();
-
-                // Compara a versão da base de dados recebida com a versão local
-                if (dados.versao() != dbManager.getVersaoDb()) {
-                    System.out.println("Dados " + dados.versao() + " Manager:" + dbManager.getVersaoDb());
-                    System.out.println("Versao da base de dados diferente. A encerrar o servidor backup...");
-                    sair = true;
+                    obs = new ServidorBackup();
+                    rmi.addObservable(obs);
                 }
-            }
+            }*/
+
+                //CICLO HEARTBEAT
+                do {
+                    heartBeat = new DatagramPacket(new byte[2024], 2024);
+                    multicastSocket.receive(heartBeat);
+                    try(ObjectInputStream oin = new ObjectInputStream(new ByteArrayInputStream(heartBeat.getData())))
+                    {
+                        Object o = oin.readObject();
+                        if (o instanceof DadosRmi dados) {
+                            recebeuHeartBeat = true;
+                            System.out.println("<SERVIDOR BACKUP> Recebeu HeartBeat");
+                            // Compara a versão da base de dados recebida com a versão local
+                            /*if (dados.versao() != dbManager.getVersaoDb()) {
+                                System.out.println("<INFO> Dados " + dados.versao() + " Manager:" + dbManager.getVersaoDb());
+                                System.out.println("<SERVIDOR BACKUP> Versao da base de dados diferente.");
+                                sair = true;
+                            }*/
+                        }
+                    }
+                } while (!sair);
         } catch (SocketTimeoutException e) {
             System.out.println("<SERVIDOR BACKUP> Nao foi detetado nenhum HearBeat nos ultimos 30 segundos.");
             sair = true;
         } catch (IOException e) {
             System.out.println("\n<SERVIDOR BACKUP> Erro ao criar socket multicast: " + e.getMessage());
-        } catch (NotBoundException | ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {//NotBoundException |
             System.out.println("<SERVIDOR BACKUP> Info: " + e.getMessage());
         }
+        System.out.println("<SERVIDOR BACKUP> Prima [enter] sair.");
+        sair = true;
         try {
-            linhaComandos.join();
             multicastSocket.leaveGroup(InetAddress.getByName(Heartbeatip));
             multicastSocket.close();
-        } catch (IOException e) {
-            System.out.println("\n<SERVIDOR BACKUP> Info: " + e.getMessage());
-        } catch (InterruptedException e) {
-            System.out.println("\n<SERVIDOR BACKUP> ---");
+            linhaComandos.join();
+        } catch (InterruptedException | RuntimeException | IOException e) {
+            System.out.println("<SERVIDOR BACKUP>");;
         }
-        System.out.println("\n##################################################");
+        System.out.println("\n-----------------------------------------------");
         System.out.println("<SERVIDOR BACKUP> A encerrar o servidor backup...");
         System.exit(0);
     }
@@ -197,8 +203,6 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                 System.out.println("<SERVIDOR BACKUP> Escreva \"sair\" para terminar.");
                 inserido = linhaComandos.nextLine();
             }while (!sair && !inserido.equals("sair"));
-                //if(inserido.equals("atua"))
-                //  envioDeAvisoDeAtualizacao("atualizacao");
             sair = true;
             multicastSocket.close();
         }
