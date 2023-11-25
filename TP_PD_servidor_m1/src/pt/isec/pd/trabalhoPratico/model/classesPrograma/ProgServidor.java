@@ -63,31 +63,20 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
         {
             socketServidor = new ServerSocket(portoClientes);
             try {
-                System.setProperty("java.rmi.server.hostname", "192.168.56.1");
+            /*    System.setProperty("java.rmi.server.hostname", "192.168.56.1");
                 LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
-                System.out.println("\n<SERVIDOR> Registry lancado");
+                System.out.println("\n<SERVIDOR> Registry lancado");*/
                 heartbeatgroup = InetAddress.getByName(Heartbeatip);
                 multicastSocketBackup = new MulticastSocket(portobackup);
 
                 NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("192.168.56.1"));// replace with your network interface
 
-               multicastSocketBackup.joinGroup(new InetSocketAddress(heartbeatgroup, portobackup),networkInterface);
-               // multicastSocketBackup.joinGroup(heartbeatgroup);
-               // System.out.println(heartbeatgroup.getHostAddress());
-               // multicastSocketBackup.setInterface(heartbeatgroup);
+                multicastSocketBackup.joinGroup(new InetSocketAddress(heartbeatgroup, portobackup),networkInterface);
                 rmi = this ;//???
-                String myIpIdress = "192.168.43.48";//InetAddress.getLocalHost().getHostAddress();
-                Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
+                //String myIpIdress = "192.168.43.48";//InetAddress.getLocalHost().getHostAddress();
+                //Naming.rebind("rmi://"+myIpIdress+"/"+SERVICE_NAME,rmi);
 
-
-                DadosRmi data = new DadosRmi(myIpIdress, SERVICE_NAME,dbManager.getVersao());// nao tenho a certeza se seria este o IP
-
-                ByteArrayOutputStream help = new ByteArrayOutputStream(); //for real "help"
-                ObjectOutputStream objout = new ObjectOutputStream(help);
-                objout.writeObject(data);
-
-                heartBeatPacket = new DatagramPacket(help.toByteArray(),help.toByteArray().length,heartbeatgroup,portobackup);
-                temporizador.schedule(heartBeatTask,0,1000);
+                temporizador.schedule(new HeartBeatTask(),0,1000);
             } catch (SocketException | UnknownHostException e) {
                 throw new RuntimeException("\n<SERVIDOR> Nao foi possivel criar o socket para multicast, erro [" + e + "]");
             }catch (RemoteException e){
@@ -131,27 +120,17 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     ////////////////////////////// ATUALIZAÇÃO ASSÍNCRONA /////////////////////////////
     public synchronized void envioDeAvisoDeAtualizacao(String msgAtaulizacao) {
 
-/*        try {
-            //aviso de atualizacao aos backups
-            byte[] help= getDados();
-            synchronized (heartBeatPacket){
-                heartBeatPacket = new DatagramPacket(help,help.length,heartbeatgroup,portobackup);
-            }
-            synchronized (multicastSocketBackup){
-                enviatodosobv(Lastupdate);
-                multicastSocketBackup.send(heartBeatPacket);
-            }
-            System.out.println("Aviso de atualizacao enviado aos clientes...");
-        } catch (IOException e) {
-            throw new RuntimeException("Nao foi possivel informar da atualizacao ao clientes...");
-        }*/
+        System.out.println("\n-------------------- ATUALIZACAO ----------------------");
+        //aviso de atualizacao aos backups
+        System.out.println("<SERVIDOR> HeartBeat de atualizacao enviado aos servidores backup");
+        enviaHeartBeat();
 
         //aviso de atualizacao aos clientes
-        System.out.println("\n------------------------------------------");
         System.out.println("<SERVIDOR> Aviso de atualizacao enviado a:");
         gereRecursosClientes.enviaAvisoAtualizacao(msgAtaulizacao);
-        System.out.println("\n------------------------------------------");
+        System.out.println("\n--------------------------------------------------------");
     }
+
     ////////////////////////////////// OBSERVABLE /////////////////////////////
     @Override
     public byte[] getCopiaDb() throws RemoteException {
@@ -191,21 +170,31 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
         }
     }
 
-    ////////////////////////////////// THREAD HEART BEAT /////////////////////////////
+    ////////////////////////////////// HEART BEAT /////////////////////////////
+    private synchronized void enviaHeartBeat() {
+        DatagramPacket heartBeat;
+
+            try (ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                ObjectOutputStream oout = new ObjectOutputStream(bout))
+            {
+                oout.writeObject(new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME, dbManager.getVersao()));
+                oout.flush();
+                heartBeat = new DatagramPacket(bout.toByteArray(), bout.size(), heartbeatgroup, portobackup);
+
+                multicastSocketBackup.send(heartBeat);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+
+    }
+
     class HeartBeatTask extends TimerTask {
         @Override
         public void run() {
             timerCount++;
-            if(timerCount == 10) {
+            if(timerCount == 10 && !pararServidor) {
                 timerCount = 0;
-                try {
-                    System.out.println(multicastSocketBackup.getLocalPort());
-                    synchronized (multicastSocketBackup) {
-                        multicastSocketBackup.send(heartBeatPacket);
-                    }
-                }
-                catch (IOException e) {
-                    System.out.println(e.getMessage());}
+                enviaHeartBeat();
                 System.out.println("[<SERVIDOR> Heartbeat enviado]");
             }
         }
@@ -229,13 +218,13 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             envioDeAvisoDeAtualizacao("fimServidor");
             try {
                 socketServidor.close();
+                multicastSocketBackup.close();
                 gereRecursosClientes.terminarLigacoes();
             } catch (IOException e) {
                 throw new RuntimeException("\n<SERVIDOR> Erro a fechar sockets");
             }
         }
     }
-
 
     ////////////////////////////////// THREAD CLIENTE /////////////////////////////
     class ThreadCliente extends Thread {
