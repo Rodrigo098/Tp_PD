@@ -101,11 +101,10 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                     String tipoSocket = inTipo.readLine();
 
                     if (tipoSocket.contains("socketAtualizacao")) {
-                        String ip = ((InetSocketAddress) cli.getRemoteSocketAddress()).getAddress().getHostAddress();
-                        gereRecursosClientes.setClienteDadosAtualizacao(ip, cli, new PrintStream(cli.getOutputStream()), tipoSocket.split(" ")[1]);
-                        System.out.println("\n<SERVIDOR> Socket do cliente [" + tipoSocket.split(" ")[1] + "] para atualização conectado.");
-                    } else if (tipoSocket.equals("socketPedidos")) {
-                        ThreadCliente novaTh = new ThreadCliente(gereRecursosClientes.novaLigacao(((InetSocketAddress) cli.getRemoteSocketAddress()).getAddress().getHostAddress(), cli));
+                        gereRecursosClientes.setClienteDadosAtualizacao(tipoSocket.split(" ")[1], cli, new PrintStream(cli.getOutputStream()), tipoSocket.split(" ")[2]);
+                        System.out.println("\n<SERVIDOR> Socket do cliente [" + tipoSocket.split(" ")[2] + "] para atualização conectado.");
+                    } else if (tipoSocket.contains("socketPedidos")) {
+                        ThreadCliente novaTh = new ThreadCliente(gereRecursosClientes.novaLigacao(tipoSocket.split(" ")[1], cli));
                         novaTh.start();
                         threadsClientes.add(novaTh);
                     }
@@ -116,12 +115,12 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
         } catch (IOException e) {
             System.out.println("\n<SERVIDOR> Excecao a criar socket para o Servidor.");
         }
+        System.out.println("\n<SERVIDOR> A terminar threads para atendimento de clientes.");
         if(!threadsClientes.isEmpty()){
             for(ThreadCliente t : threadsClientes){
                 String nomeCli = t.getCliente();
                 try {
                     t.join();
-                    System.out.println("\n<SERVIDOR> Thread para atendimento do cliente [" + nomeCli + "] terminada.");
                 } catch (InterruptedException e) {
                     System.out.println("\n<SERVIDOR> Excecao ao esperar que a thread do cliente [" + nomeCli + "] terminasse.");
                 }
@@ -241,14 +240,14 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     ////////////////////////////////// THREAD CLIENTE /////////////////////////////
     class ThreadCliente extends Thread {
         boolean isadmin, logado, stopthreadCliente;
-        String ipCliente, email;
+        String idCliente, email;
 
         List <Evento> eventosPresencasUser = new ArrayList<>();
         List <Evento> eventosPresencasAdmin = new ArrayList<>();
         List <Utilizador> utilizadoresEvento = new ArrayList<>();
 
-        public ThreadCliente(String ipCliente) {
-            this.ipCliente = ipCliente;
+        public ThreadCliente(String idCliente) {
+            this.idCliente = idCliente;
             isadmin = false;
             stopthreadCliente = false;
         }
@@ -257,8 +256,8 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
         }
         @Override
         public void run() {
-            try (ObjectOutputStream out = new ObjectOutputStream(gereRecursosClientes.getClienteSocketPedidos(ipCliente).getOutputStream());
-                 ObjectInputStream in = new ObjectInputStream(gereRecursosClientes.getClienteSocketPedidos(ipCliente).getInputStream())
+            try (ObjectOutputStream out = new ObjectOutputStream(gereRecursosClientes.getClienteSocketPedidos(idCliente).getOutputStream());
+                 ObjectInputStream in = new ObjectInputStream(gereRecursosClientes.getClienteSocketPedidos(idCliente).getInputStream())
                 ) {
                     // ciclo 1 - enquanto a app do cliente estiver ligada
                     while (!pararServidor && !stopthreadCliente) {
@@ -505,7 +504,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 } catch (IOException | ClassNotFoundException e) {
                     //System.out.println("\n<SERVIDOR> Ocorreu um erro na thread que atenderia um cliente :(");
                 } finally {
-                    gereRecursosClientes.removeLigacao(ipCliente);
+                    gereRecursosClientes.removeLigacao(idCliente);
                     System.out.println("\n<SERVIDOR> Cliente [" + email + "] terminado.");
                 }
         }

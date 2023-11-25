@@ -7,11 +7,11 @@ import java.util.ArrayList;
 class ParesComunicacaoCliente {
     private Socket socketAtualizacao, socketPedidos;
     private PrintStream psClienteAtualizacao;
-    private String cliente, ipCliente;
+    private String cliente, idCliente;
     private boolean logado = false;
 
-    protected ParesComunicacaoCliente(String ipCliente ,Socket cli) {
-        this.ipCliente = ipCliente;
+    protected ParesComunicacaoCliente(String idCliente ,Socket cli) {
+        this.idCliente = idCliente;
         this.socketPedidos = cli;
     }
     protected void setUserName(String cliente) {
@@ -32,8 +32,8 @@ class ParesComunicacaoCliente {
     protected String getCliente() {
         return cliente;
     }
-    protected String getSocketIP() {
-        return ipCliente;
+    protected String getSocketID() {
+        return idCliente;
     }
 
     public void removeDadosAtualizacao() {
@@ -68,35 +68,33 @@ public class GereRecursosClientes {
         paresComunicacaoClientes = new ArrayList<>();
         clientesLigados = 0;
     }
-    public String novaLigacao(String ipCliente, Socket cli) {
-        paresComunicacaoClientes.add(new ParesComunicacaoCliente(ipCliente, cli));
-        return ipCliente;
+    public String novaLigacao(String idCliente, Socket cli) {
+        paresComunicacaoClientes.add(new ParesComunicacaoCliente(idCliente, cli));
+        return idCliente;
     }
-    public Socket getClienteSocketPedidos(String ipCliente) {
+    public Socket getClienteSocketPedidos(String idCliente) {
         for (ParesComunicacaoCliente par : paresComunicacaoClientes) {
-            if (par.getSocketIP().equals(ipCliente)) {
+            if (par.getSocketID().equals(idCliente)) {
                 return par.getSocketPedidos();
             }
         }
         return null;
     }
-    public void setClienteDadosAtualizacao(String ipCliente, Socket socketAtualizacao, PrintStream psAtualizacao, String nomeCli) {
+    public void setClienteDadosAtualizacao(String idCliente, Socket socketAtualizacao, PrintStream psAtualizacao, String nomeCli) {
         for (ParesComunicacaoCliente par : paresComunicacaoClientes) {
-            if (par.getSocketIP().equals(ipCliente)) {
+            if (par.getSocketID().equals(idCliente)) {
                 clientesLigados++;
-                if(!par.isLogado()) {
                 //System.out.println("----------------> " + ipCliente);
                 par.setUserName(nomeCli);
                 par.setDadosAtualizacao(socketAtualizacao, psAtualizacao);
-                }
                 break;
             }
         }
     }
 
-    public void removeLigacao(String ipCliente) {
+    public void removeLigacao(String idCliente) {
         for (ParesComunicacaoCliente par : paresComunicacaoClientes) {
-            if (par.getSocketIP().equals(ipCliente)) {
+            if (par.getSocketID().equals(idCliente)) {
                 paresComunicacaoClientes.remove(par);
                 break;
             }
