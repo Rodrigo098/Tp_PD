@@ -41,14 +41,14 @@ public class MainClienteJFX extends Application {
             RootPane root = new RootPane(clienteManager);
             scene = new Scene(root, 700, 500);
             stage.setMaxHeight(600);
-            stage.setOnCloseRequest(e -> {
-                clienteManager.logout("WND");
-            });
         }
         else{
             SairApp root = new SairApp(conexao.mensagem(), "conexao");
             scene = new Scene( root,400, 400);
         }
+        stage.setOnCloseRequest(e -> {
+            clienteManager.logout("WND");
+        });
         //-----------------------------------
 
         scene.getStylesheets().add(css);

@@ -75,9 +75,8 @@ public class ProgramaCliente {
         @Override
         public void run() {
             contagem++;
-            if ((contagem == TEMPO_MAXIMO && !fezLogin) || terminou) {
+            if ((contagem == TEMPO_MAXIMO && !fezLogin) || terminou || gereMudancasPLC.getEstadoNaAplicacao() == EstadoNaAplicacao.FIM) {
                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.EXCEDEU_TEMPO);
-                termina();
             }
         }
     }
@@ -96,24 +95,19 @@ public class ProgramaCliente {
     public void addPropertyChangeListener(String propriedade,  PropertyChangeListener novoListener) {
         gereMudancasPLC.addPropertyChangeListener(propriedade, novoListener);
     }
-    private void terminaRecursos() {
-        try {
-            oin.close();
-            oout.close();
-            if (socketPedidos != null)
-                socketPedidos.close();
-            if(socketAtualizacao != null)
-                socketAtualizacao.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
     private void termina() {
+        try {
+            if (oin != null)
+                oin.close();
+            if (oout != null)
+                oout.close();
+        } catch (IOException e) {
+            System.out.println("<CLIENTE> Excecao IO a terminar.");
+        }
         terminou = true;
         temporizador.cancel();
         tarefa.cancel();
         gereMudancasPLC.removePropertyChangeListener(gereMudancasPLC.PROP_ESTADO, evt -> verificacaoLigacao());
-        terminaRecursos();
     }
 
     private void verificacaoLigacao() {
@@ -122,9 +116,10 @@ public class ProgramaCliente {
                 tarefa = new VerificaLigacao();
                 temporizador.schedule(tarefa, 0, 1000);
             }
-            case SAIR, FIM -> {
-                if (!terminou)
-                    termina();
+            case SAIR, FIM -> termina();
+            case EXCEDEU_TEMPO -> {
+                logout("TMP");
+                termina();
             }
             case ADMINISTRADOR, UTILIZADOR -> {
                 tarefa.cancel();
@@ -157,6 +152,8 @@ public class ProgramaCliente {
                 out.println(new String("socketPedidos"));
                 oin = new ObjectInputStream(socketPedidos.getInputStream());
                 oout = new ObjectOutputStream(socketPedidos.getOutputStream());
+
+                new Thread(new AtualizacaoAsync(portoServidor, ipServidor)).start();
 
                 return new ParResposta(true, "Conexão bem sucedida");
             } catch (IllegalArgumentException e) {
@@ -194,7 +191,6 @@ public class ProgramaCliente {
                         default -> {
                             try {
                                 this.email = dadosLogin.getEmail();
-                                new Thread(new AtualizacaoAsync(portoServidor, ipServidor)).start();
                                 gereMudancasPLC.setEstadoNaAplicacao(g.getTipo() == Message_types.UTILIZADOR ? EstadoNaAplicacao.UTILIZADOR : EstadoNaAplicacao.ADMINISTRADOR);
                                 fezLogin = true;
                                 return "Estabeleceu ligação!!";
@@ -216,11 +212,12 @@ public class ProgramaCliente {
     }
 
     public void logout(String fonte) {
-        Geral logout = new Geral(fonte.equals("WND") ? Message_types.FECHOU_APP : Message_types.LOGOUT);
+        Geral logout = new Geral(fonte.equals("WND") || fonte.equals("TMP")? Message_types.FECHOU_APP : Message_types.LOGOUT);
         try {
             oout.writeObject(logout);
             oout.flush();
-            gereMudancasPLC.setEstadoNaAplicacao(fonte.equals("WND") ? EstadoNaAplicacao.SAIR : EstadoNaAplicacao.ENTRADA);
+            if(!fonte.equals("TMP"))
+                gereMudancasPLC.setEstadoNaAplicacao(fonte.equals("WND") ? EstadoNaAplicacao.SAIR : EstadoNaAplicacao.ENTRADA);
             fezLogin = false;
         } catch (IOException e) {
             gereMudancasPLC.setErros();
@@ -372,7 +369,6 @@ public class ProgramaCliente {
                         if(validacao instanceof Msg_String info) {
                             try {
                                 this.email = email;
-                                new Thread(new AtualizacaoAsync(portoServidor, ipServidor)).start();
                                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.UTILIZADOR);
                                 fezLogin = true;
                                 return new ParResposta(true, "Registou-se com sucesso!");
