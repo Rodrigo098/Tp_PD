@@ -218,15 +218,11 @@ public class DbManage {
 
             Statement statement = connection.createStatement()){
 
-            //Somente para teste de ligação a base de dados
-            /*String createEntryQuery = "INSERT INTO Codigo_Registo (n_codigo_registo,nome_evento) VALUES ('"
-                    + codigo_registo+"','" + nome_evento+ "')";*/
             String GetQuery = "SELECT * FROM Utilizador where email='" + user.email() + "';";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
             ResultSet rs=statement.executeQuery(GetQuery);
 
             if(rs.isBeforeFirst())
             {   rs.next();
-                //System.out.println(rs.getString("email"));
                 String updateQuery = "UPDATE Utilizador SET nome=?, numero_estudante=?, palavra_passe=? WHERE email=?";
                 PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
                 preparedStatement.setString(1, user.nome());
@@ -281,11 +277,9 @@ public class DbManage {
             if(rs.isBeforeFirst())
             {   rs.next();
                 Date Data=new Date();
-                long datamili=Data.getTime();/*
-                System.out.println("o data atual e "+datamili);
-                System.out.println(rs.getTimestamp("validade").getTime());*/
+                long datamili=Data.getTime();
                 if(rs.getTimestamp("validade").getTime()<datamili){
-                    System.out.println("<BD> Tentativa de registo no evento [" + nome_evento + "] fora de validade");
+                    System.out.println("<BD> Tentativa de registo no evento [" + nome_evento + "] com codigo invalido por [" + emailuser + "]");
                     String EliminaCodigosAnterioresQuery = "UPDATE Codigo_Registo SET validade=0 WHERE nome_evento = ?";//
                     PreparedStatement expiraStatement = connection.prepareStatement(EliminaCodigosAnterioresQuery);
                     expiraStatement.setString(1, nome_evento); // Define o valor do nome_evento para o ? da query
@@ -298,22 +292,22 @@ public class DbManage {
                             + nome_evento+"','" +emailuser+"')";// qual o valor que é suposto colocar no idassiste??
 
                     if(statement.executeUpdate(createEntryQuery)<1){
-                        System.out.println("<BD> Erro na insercao duma presenca no evento [" + nome_evento + "]");
+                        System.out.println("<BD> Erro na insercao da presenca de [" + emailuser + "] no evento [" + nome_evento + "]");
                         return false;
                     }
                     else{
-                        System.out.println("<BD> Nova presenca registada no evento [" + nome_evento + "]");
+                        System.out.println("<BD> Nova presenca registada de [" + emailuser + "] no evento [" + nome_evento + "]");
                         setVersao();
                         return true;
                     }
 
                 }else{
-                    System.out.println("<BD> Codigo invalido invalido para registo no evento [" + nome_evento + "]");
+                    System.out.println("<BD> Codigo invalido para registo no evento [" + nome_evento + "] de [" + emailuser + "]");
                     return false;
                 }
             }
             else{
-                System.out.println("<BD> Nenhum evento corresponde a submicao de codigo.");
+                System.out.println("<BD> Nenhum evento corresponde a submicao de codigo por [" + emailuser + "]");
                 return false;
             }
         } catch (SQLException e) {
@@ -355,8 +349,7 @@ public class DbManage {
 
     }
 
-    //Alterei esta classe para retornar os eventos em que o utilizador tem presenças registadas
-    //E para conter já os filtros
+    //VERRRR
     public List <Evento> ConsultaPresencas_user(String email_utilizador, Msg_ConsultaComFiltros filtros){
         List<Evento> eventosAssistidos = new ArrayList<>();
 
@@ -368,27 +361,34 @@ public class DbManage {
 
             //ResultSet rs = statement.executeQuery(FiltroEventosUser);
 
+            // nome evento
             if (filtros.getNome() != null && !filtros.getNome().isEmpty()) {
                 FiltroEventosUser += "AND Evento.nome_evento LIKE '%" + filtros.getNome() + "%' ";
             }
 
+            // local
             if (filtros.getLocal() != null && !filtros.getLocal().isEmpty()) {
                 FiltroEventosUser += "AND Evento.local LIKE '%" + filtros.getLocal() + "%' ";
             }
 
-            //DATASSSSS LIM 1 E LIM 2
-            /*if (data != null) {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-                String dataString = dateFormat.format(data); //Alterei isso para termos a data nesse formato, facilita os testes mas sempre se pode alterar
-                FiltroEventosUser += " AND data_realizacao = '" + dataString + "'";
-            }*/
-
-            if (filtros.getHoraInicio() != null) {
-                FiltroEventosUser += " AND hora_inicio = '" + filtros.getHoraInicio() + "'";
+            // data
+            if (filtros.getLimData1() != null && filtros.getLimData2() != null) {
+                FiltroEventosUser += "AND date(Evento.data_realizacao) BETWEEN '" + filtros.getLimData1() + "' AND '" + filtros.getLimData2() + "' ";
             }
+            else if (filtros.getLimData1() != null)
+                FiltroEventosUser += "AND date(Evento.data_realizacao) > '" + filtros.getLimData1() + "' ";
+            else if (filtros.getLimData2() != null)
+                FiltroEventosUser += "AND date(Evento.data_realizacao) < '" + filtros.getLimData2() + "' ";
 
-            if (filtros.getHoraFim() != null) {
-                FiltroEventosUser += " AND hora_fim = '" + filtros.getHoraFim() + "'";
+            // hora
+            if (filtros.getHoraInicio() != null && filtros.getHoraFim() != null) {
+                FiltroEventosUser += " AND time(Evento.hora_inicio) BETWEEN '" + filtros.getHoraInicio() + "' AND '" + filtros.getHoraFim() + "' ";
+            }
+            else if (filtros.getHoraInicio() != null) {
+                FiltroEventosUser += " AND time(Evento.hora_inicio) > '" + filtros.getHoraInicio() + "' ";
+            }
+            else if (filtros.getHoraFim() != null) {
+                FiltroEventosUser += " AND time(Evento.hora_inicio) < '" + filtros.getHoraFim() + "' ";
             }
 
             ResultSet rs = statement.executeQuery(FiltroEventosUser);
@@ -400,9 +400,6 @@ public class DbManage {
                 String dataRealizacao = rs.getString("data_realizacao");
                 String horaInicioEvento = rs.getString("hora_inicio");
                 String horaFimEvento = rs.getString("hora_fim");
-                //int horaInicioEvento = rs.getInt("hora_inicio");
-                //int horaFimEvento = rs.getInt("hora_fim");
-                //LocalDate date=LocalDate.parse(dataRealizacao);
 
                 Evento evento = new Evento( nomeEvento,localEvento, dataRealizacao, horaInicioEvento, horaFimEvento );
                 eventosAssistidos.add(evento);
@@ -438,15 +435,12 @@ public class DbManage {
     }
 
 //----------------------------------------------------------------------------Novas funções para o Admin
-    public boolean Cria_evento(Msg_Cria_Evento evento){//String nome, String local, Date data, LocalTime horainicio, LocalTime horafim) {
+    public boolean Cria_evento(Msg_Cria_Evento evento){
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
             Statement statement = connection.createStatement()){
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-            String dataString = dateFormat.format(evento.getData()); //Alterei isso para termos a data nesse formato, facilita os testes
-
             String createEntryQuery = "INSERT INTO Evento (nome_evento,local,data_realizacao,hora_inicio,hora_fim) VALUES ('"
-                    + evento.getNome() +"','" + evento.getLocal() +"','" + dataString +"','" + evento.getHoreInicio() +"','" + evento.getHoraFim() +"')";
+                    + evento.getNome() +"','" + evento.getLocal() +"','" + evento.getData() +"','" + evento.getHoreInicio() +"','" + evento.getHoraFim() +"')";
 
             if(statement.executeUpdate(createEntryQuery)<1){
                 System.out.println("<BD> Erro na criacao do evento [" + evento.getNome() +"]");
@@ -472,18 +466,6 @@ public class DbManage {
             resultSet.next();
             int presencas = resultSet.getInt(1);
 
-            /*if (presencas > 0) {
-                // Se houver presenças registadas,apenas permite editar o nome e o local (??)
-                String updateEventQuery = "UPDATE Evento SET nome_evento = '" + evento.getNovoNome() + "', local = '" + evento.getLocal() + "' WHERE nome_evento = '" + evento.getNome() + "'";
-
-                if (statement.executeUpdate(updateEventQuery) < 1) {
-                    System.out.println("Erro na edição do evento");
-                    return false;
-                } else {
-                    System.out.println("Nome e local do evento editados com sucesso.");
-                    setVersao();
-                }
-            } else {*/
             if(presencas == 0){
                 // Se não houver presenças edita todos os campos
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
@@ -536,7 +518,8 @@ public class DbManage {
         return false;
     }
 
-    public List <Evento> Consulta_eventos(Msg_ConsultaComFiltros evento) {
+// VERRRRRR
+    public List <Evento> Consulta_eventos(Msg_ConsultaComFiltros filtros) {
         List<Evento> eventos = new ArrayList<>();
 
 
@@ -546,29 +529,33 @@ public class DbManage {
             String filtroEvento = "SELECT * FROM Evento WHERE 1=1"; // Começa com "1=1" para mostrar todos resultados
                                                                   // A medida que campos forem não null ele inclui na pesquisa
 
-            if (evento.getNome() != null && !evento.getNome().isEmpty()) {
-                filtroEvento += " AND nome_evento LIKE '%" + evento.getNome()  + "%'";
+            if (filtros.getNome() != null && !filtros.getNome().isEmpty()) {
+                filtroEvento += " AND nome_evento LIKE '%" + filtros.getNome()  + "%'";
             }
 
-            if (evento.getLocal() != null) {
-                filtroEvento += " AND local LIKE '%" + evento.getLocal() + "'";
+            if (filtros.getLocal() != null) {
+                filtroEvento += " AND local LIKE '%" + filtros.getLocal() + "'";
             }
 
-            //DATAAAAAAAS LIM1 E LIM2
-            /*if (evento.getData() != null) {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-                String dataString = dateFormat.format(evento.getData()); //Alterei isso para termos a data nesse formato, facilita os testes mas sempre se pode alterar
-                filtroEvento += " AND data_realizacao = '" + dataString + "'";
-            }*/
-
-            if (evento.getHoraInicio() != null) {
-                filtroEvento += " AND hora_inicio = '" + evento.getHoraInicio() + "'";
+            // data
+            if (filtros.getLimData1() != null && filtros.getLimData2() != null) {
+                filtroEvento += "AND date(Evento.data_realizacao) BETWEEN '" + filtros.getLimData1() + "' AND '" + filtros.getLimData2() + "' ";
             }
+            else if (filtros.getLimData1() != null)
+                filtroEvento += "AND date(Evento.data_realizacao) > '" + filtros.getLimData1() + "' ";
+            else if (filtros.getLimData2() != null)
+                filtroEvento += "AND date(Evento.data_realizacao) < '" + filtros.getLimData2() + "' ";
 
-            if (evento.getHoraFim() != null) {
-                filtroEvento += " AND hora_fim = '" + evento.getHoraFim() + "'";
+            // hora
+            if (filtros.getHoraInicio() != null && filtros.getHoraFim() != null) {
+                filtroEvento += " AND time(Evento.hora_inicio) BETWEEN '" + filtros.getHoraInicio() + "' AND '" + filtros.getHoraFim() + "' ";
             }
-
+            else if (filtros.getHoraInicio() != null) {
+                filtroEvento += " AND time(Evento.hora_inicio) > '" + filtros.getHoraInicio() + "' ";
+            }
+            else if (filtros.getHoraFim() != null) {
+                filtroEvento += " AND time(Evento.hora_inicio) < '" + filtros.getHoraFim() + "' ";
+            }
             ResultSet resultSet = statement.executeQuery(filtroEvento);
 
             while (resultSet.next()) {
@@ -602,32 +589,34 @@ public class DbManage {
             eventoStatement.setString(1, nomeEvento); //Para substituir o ? pelo nome do evento, ou seja indexar o nome do evento
             int eventosEncontrados = eventoStatement.executeQuery().getInt(1); //Para executar a consulta e devolver o resultado
 
-            for (String emailEstudante : emails) {
-                // Verificar se os estudantes da lista existem na db
-
+            if(eventosEncontrados == 1) {
+                for (String emailEstudante : emails) {
+                    // Verificar se os estudantes da lista existem na db
                     String verificaEstudanteQuery = "SELECT COUNT(*) FROM Utilizador WHERE email = ?";
                     PreparedStatement alunoStatement = connection.prepareStatement(verificaEstudanteQuery);
                     alunoStatement.setString(1, emailEstudante);
                     int estudantesEncontrados = alunoStatement.executeQuery().getInt(1);
 
-                if (eventosEncontrados == 1 && estudantesEncontrados == 1) {
-                    // Se o evento e o aluno existirem insere a presença
-                    String inserePresencaQuery = "INSERT INTO assiste (nome_evento, email) VALUES (?, ?)";
-                    PreparedStatement presencaStatement = connection.prepareStatement(inserePresencaQuery);
-                    presencaStatement.setString(1, nomeEvento);
-                    presencaStatement.setString(2, emailEstudante);
+                    if (estudantesEncontrados == 1) {
+                        // Se o evento e o aluno existirem insere a presença
+                        String inserePresencaQuery = "INSERT INTO assiste (nome_evento, email) VALUES (?, ?)";
+                        PreparedStatement presencaStatement = connection.prepareStatement(inserePresencaQuery);
+                        presencaStatement.setString(1, nomeEvento);
+                        presencaStatement.setString(2, emailEstudante);
 
-                    int rowsAffected = presencaStatement.executeUpdate();
+                        int rowsAffected = presencaStatement.executeUpdate();
 
-                    if (rowsAffected == 1) {
-                        System.out.println("<BD> A presenca do estudante " + emailEstudante + " no evento " + nomeEvento + " foi registada com sucesso");
+                        if (rowsAffected == 1) {
+                            System.out.println("<BD> A presenca do estudante " + emailEstudante + " no evento " + nomeEvento + " foi registada com sucesso");
+                        } else {
+                            System.out.println("<BD> Erro ao registar a presença do estudante " + emailEstudante + ".");
+                        }
                     } else {
-                        System.out.println("<BD> Erro ao registar a presença do estudante " + emailEstudante + ".");
+                        System.out.println("<BD> Utilizador [" + emailEstudante + "] nao existe.");
                     }
-                } else {
-                    System.out.println("<BD> Evento e/ou aluno nao existem.");
                 }
             }
+            else System.out.println("<BD> Evento [" + nomeEvento +"] nao existe.");
             setVersao();
             return true;
         } catch (SQLException e) {
@@ -636,10 +625,8 @@ public class DbManage {
         }
     }
 
-
     public boolean EliminaPresencas(String nomeEvento, String [] emails) {
         try (Connection connection = DriverManager.getConnection(dbUrl)) {
-
             for (String emailEstudante : emails) {
                 String eliminaPresencaQuery = "DELETE FROM assiste WHERE nome_evento = ? AND email = ?";
                 PreparedStatement eliminaPresencaStatement = connection.prepareStatement(eliminaPresencaQuery);
