@@ -64,7 +64,8 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         {   multicastSocket = new MulticastSocket(portobackup);
             multicastSocket.setSoTimeout(30000);
             group = InetAddress.getByName(Heartbeatip);
-            multicastSocket.joinGroup(group);
+           NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("172.27.121.117"));// replace with your network interface
+            multicastSocket.joinGroup(new InetSocketAddress(group,portobackup),networkInterface);
             DatagramPacket heartBeat;
 /*
             heartBeat = new DatagramPacket(new byte[2024],2024);
