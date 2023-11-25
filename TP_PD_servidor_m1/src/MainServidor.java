@@ -49,14 +49,10 @@ public class MainServidor {
         }
 */
 
-        DbManage dbManager = new DbManage();
         ProgServidor prog ;//Integer.parseInt(args[0]));
 
         try {
             prog = new ProgServidor(6001);
-
-            dbManager.addVersaoListener(event -> prog.envioDeAvisoDeAtualizacao("atualizacao"));
-            prog.setDbManager(dbManager);
             prog.servico();
         } catch (RemoteException e) {
             throw new RuntimeException(e);
