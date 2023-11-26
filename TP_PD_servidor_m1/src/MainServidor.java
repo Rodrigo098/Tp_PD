@@ -13,7 +13,6 @@ import java.rmi.registry.Registry;
 public class MainServidor {
     private static String SERVICE_NAME = "servidor";//por enquanto, este devia ser o arg[2]
     public static void main(String[] args) {
-        File localDirectory;// = new File(args[1].trim());
         // VALIDA ARGUMENTOS
   /*      if(args.length != 4){
             System.out.println("<SERVIDOR> Argumentos inválidos:\n" +
@@ -28,15 +27,15 @@ public class MainServidor {
             Integer.parseInt(args[0]);//verifica validade do porto inserido para conexao - cliente
             Integer.parseInt(args[2]);//verifica validade do porto inserido para registry
 
-            localDirectory = new File(args[1].trim());
+            File localDirectory = new File(args[1].trim());
             SERVICE_NAME = args[2];
 
             if(!localDirectory.exists()){
-                System.out.println("<SERVIDOR> A directoria " + localDirectory + " nao existe!");
+                System.out.println("<SERVIDOR> A directoria da base de dados " + localDirectory + " nao existe!");
                 return;
             }
             if(!localDirectory.isDirectory()){
-                System.out.println("<SERVIDOR> O caminho " + localDirectory + " nao se refere a uma directoria!");
+                System.out.println("<SERVIDOR> O caminho para a base de dados " + localDirectory + " nao se refere a uma directoria!");
                 return;
             }
             if(!localDirectory.canWrite()){
@@ -60,7 +59,7 @@ public class MainServidor {
         }*/
 
         try {
-            progServidor = new ProgServidor(6001, SERVICE_NAME, "ola");//args[1].trim()); //args!!
+            progServidor = new ProgServidor(6001, SERVICE_NAME);//args!!
             Naming.bind("rmi://localhost/" + SERVICE_NAME, progServidor);//"/" + SERVICE_NAME
         } catch (RemoteException e) {
             sair("\n<SERVIDOR> Excecao remota ao criar o servico");

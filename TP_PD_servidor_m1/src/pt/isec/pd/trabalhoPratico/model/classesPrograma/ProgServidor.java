@@ -42,7 +42,7 @@ public class ProgServidor implements RemoteInterface {
     private static HeartBeatTask teste;
 
 
-    public ProgServidor(int portoClientes, String service_name, String bdLocalDirectory) {
+    public ProgServidor(int portoClientes, String service_name) {
         this.portoClientes = portoClientes;
         this.service_name = service_name;
 
@@ -53,7 +53,7 @@ public class ProgServidor implements RemoteInterface {
         heartBeatTask = new HeartBeatTask();
         observers = new ArrayList<>();
 
-        dbManager = new DbManage(bdLocalDirectory);
+        dbManager = new DbManage();
         dbManager.addVersaoListener(event -> envioDeAvisoDeAtualizacao("atualizacao"));
     }
 

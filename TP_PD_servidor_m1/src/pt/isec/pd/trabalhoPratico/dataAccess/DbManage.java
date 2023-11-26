@@ -25,8 +25,7 @@ public class DbManage {
     private int versao;
     private PropertyChangeSupport versaoSuporte;
 
-    public DbManage(String dbAdress) {
-        //this.dbAdress = dbAdress;
+    public DbManage() {
         if(!DbManage.existeDb())
             criarDb();
 
