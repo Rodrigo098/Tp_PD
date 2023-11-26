@@ -12,7 +12,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.Timer;
@@ -156,11 +155,112 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         try (FileOutputStream fos = new FileOutputStream(nomeFicheiro)) {
             fos.write(copiaDb);
             System.out.println("Copia da base de dados salva localmente: " + nomeFicheiro);
-            versao=DbManager.getVersaoDb();
+            versao = DbManager.getVersaoDb();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public boolean submitcod(int codigo, String nome_evento, String emailuser) throws RemoteException {
+        try(Connection connection = DriverManager.getConnection(dbUrl);
+            Statement statement = connection.createStatement())
+        {
+            String GetQuery = "SELECT * FROM Codigo_Registo where nome_evento=? AND validade>?";
+            PreparedStatement getquery=connection.prepareStatement(GetQuery);
+            getquery.setString(1,nome_evento);
+            getquery.setLong(2,0);
+            ResultSet rs=getquery.executeQuery();
+
+            if(rs.isBeforeFirst())
+            {   rs.next();
+                java.util.Date Data=new Date();
+                long datamili=Data.getTime();
+                if(rs.getTimestamp("validade").getTime()<datamili){
+                    System.out.println("Fora de validade");
+                    String EliminaCodigosAnterioresQuery = "UPDATE Codigo_Registo SET validade=0 WHERE nome_evento = ?";//
+                    PreparedStatement expiraStatement = connection.prepareStatement(EliminaCodigosAnterioresQuery);
+                    expiraStatement.setString(1, nome_evento); // Define o valor do nome_evento para o ? da query
+                    expiraStatement.executeUpdate();// se existirem codigos antigos são eliminados se nao existirem nao acontece nada
+                    return false;
+                }
+                    String createEntryQuery = "INSERT INTO Assiste (nome_evento,email) VALUES ('"
+                            + nome_evento+"','" +emailuser+"')";// qual o valor que é suposto colocar no idassiste??
+
+               statement.executeUpdate(createEntryQuery);
+            }
+        } catch (SQLException e) {
+
+            System.out.println(e.getMessage());
+            return false;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean InserePresencas(String nomeEvento, String[] emails) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(dbUrl)) {
+            for (String emailEstudante : emails) {
+                    String inserePresencaQuery = "INSERT INTO assiste (nome_evento, email) VALUES (?, ?)";
+                    PreparedStatement presencaStatement = connection.prepareStatement(inserePresencaQuery);
+                    presencaStatement.setString(1, nomeEvento);
+                    presencaStatement.setString(2, emailEstudante);
+                    presencaStatement.executeUpdate();
+            }
+            connection.close();
+            return true;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean EliminaPresencas(String nomeEvento, String[] emails) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(dbUrl)) {
+
+            for (String emailEstudante : emails) {
+                String eliminaPresencaQuery = "DELETE FROM assiste WHERE nome_evento = ? AND email = ?";
+                PreparedStatement eliminaPresencaStatement = connection.prepareStatement(eliminaPresencaQuery);
+                eliminaPresencaStatement.setString(1, nomeEvento);
+                eliminaPresencaStatement.setString(2, emailEstudante);
+                 eliminaPresencaStatement.executeUpdate();
+            }
+            connection.close();
+            return true;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public void executaUpdate(String query) throws RemoteException {
+        try(Connection connection = DriverManager.getConnection(dbUrl);
+            Statement statement= connection.createStatement();
+        ) {
+            statement.executeUpdate(query);
+        } catch (SQLException e) {
+            System.out.println("<SERVIDOR BACKUP> Excepcao ao executar um update da base de dados [" + e + "]");
+        }
+    }
+
+    class ThreadLeLinhaComandos extends Thread {
+        @Override
+        public void run(){
+            String inserido;
+            do{
+                Scanner linhaComandos = new Scanner(System.in);
+                System.out.println("<SERVIDOR BACKUP> Escreva \"sair\" para terminar.");
+                inserido = linhaComandos.nextLine();
+            }while (!sair && !inserido.equals("sair"));
+            sair = true;
+            multicastSocket.close();
+        }
+    }
+
+}
+/*
 
     public void avisaObservables(Geral Msg, int versao) {
         System.out.println("Recebeu notificacao");
@@ -260,43 +360,6 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         return false;
     }
 
-    public boolean submitcod(int codigo, String nome_evento, String emailuser) throws RemoteException {
-        try(Connection connection = DriverManager.getConnection(dbUrl);
-            Statement statement = connection.createStatement())
-        {
-            String GetQuery = "SELECT * FROM Codigo_Registo where nome_evento=? AND validade>?";
-            PreparedStatement getquery=connection.prepareStatement(GetQuery);
-            getquery.setString(1,nome_evento);
-            getquery.setLong(2,0);
-            ResultSet rs=getquery.executeQuery();
-
-            if(rs.isBeforeFirst())
-            {   rs.next();
-                java.util.Date Data=new Date();
-                long datamili=Data.getTime();
-                if(rs.getTimestamp("validade").getTime()<datamili){
-                    System.out.println("Fora de validade");
-                    String EliminaCodigosAnterioresQuery = "UPDATE Codigo_Registo SET validade=0 WHERE nome_evento = ?";//
-                    PreparedStatement expiraStatement = connection.prepareStatement(EliminaCodigosAnterioresQuery);
-                    expiraStatement.setString(1, nome_evento); // Define o valor do nome_evento para o ? da query
-                    expiraStatement.executeUpdate();// se existirem codigos antigos são eliminados se nao existirem nao acontece nada
-                    return false;
-                }
-                    String createEntryQuery = "INSERT INTO Assiste (nome_evento,email) VALUES ('"
-                            + nome_evento+"','" +emailuser+"')";// qual o valor que é suposto colocar no idassiste??
-
-               statement.executeUpdate(createEntryQuery);
-               connection.close();
-               setVersao(versao++);
-            }
-        } catch (SQLException e) {
-
-            System.out.println(e.getMessage());
-            return false;
-        }
-        return false;
-    }
-
     public boolean Edita_evento(Msg_Edita_Evento evento) throws RemoteException {
         try (Connection connection = DriverManager.getConnection(dbUrl);
              Statement statement = connection.createStatement()) {
@@ -305,8 +368,6 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
             String updateEventQuery = "UPDATE Evento SET data_realizacao = '" + dataString + "', hora_inicio = '" + evento.getHoreInicio() + "', hora_fim = '" + evento.getHoraFim() + "', nome_evento = '" + evento.getNome() + "', local = '" + evento.getLocal()+ "' WHERE nome_evento = '" + evento.getNome()
                     + "'";
           statement.executeUpdate(updateEventQuery);
-          connection.close();
-          setVersao(versao++);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -319,7 +380,6 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         String deleteEventQuery = "DELETE FROM Evento WHERE nome_evento = '" + nome_evento + "'";
         statement.executeUpdate(deleteEventQuery);
         connection.close();
-        setVersao(versao++);
         return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -327,77 +387,4 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         }
     }
 
-    public boolean InserePresencas(String nomeEvento, String[] emails) throws RemoteException {
-        try (Connection connection = DriverManager.getConnection(dbUrl)) {
-            for (String emailEstudante : emails) {
-                    String inserePresencaQuery = "INSERT INTO assiste (nome_evento, email) VALUES (?, ?)";
-                    PreparedStatement presencaStatement = connection.prepareStatement(inserePresencaQuery);
-                    presencaStatement.setString(1, nomeEvento);
-                    presencaStatement.setString(2, emailEstudante);
-                    presencaStatement.executeUpdate();
-            }
-            connection.close();
-            setVersao(versao++);
-            return true;
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
-    }
-
-    public boolean EliminaPresencas(String nomeEvento, String[] emails) throws RemoteException {
-        try (Connection connection = DriverManager.getConnection(dbUrl)) {
-
-            for (String emailEstudante : emails) {
-                String eliminaPresencaQuery = "DELETE FROM assiste WHERE nome_evento = ? AND email = ?";
-                PreparedStatement eliminaPresencaStatement = connection.prepareStatement(eliminaPresencaQuery);
-                eliminaPresencaStatement.setString(1, nomeEvento);
-                eliminaPresencaStatement.setString(2, emailEstudante);
-                 eliminaPresencaStatement.executeUpdate();
-            }
-            connection.close();
-            setVersao(versao++);
-
-            return true;
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public void executaUpdate(String query) throws RemoteException {
-        try(Connection connection = DriverManager.getConnection(dbUrl);
-            Statement statement= connection.createStatement();
-        ) {
-            statement.executeUpdate(query);
-        } catch (SQLException e) {
-            System.out.println("<SERVIDOR BACKUP> Excepcao ao executar um update da base de dados [" + e + "]");
-        }
-    }
-    @Override
-    public void setVersao(int versao) throws RemoteException {
-        try (Connection connection=DriverManager.getConnection(dbUrl)){
-            String UpdateVersao="UPDATE Versao SET versao_id=? where versao_id=?";
-            PreparedStatement statement=connection.prepareStatement(UpdateVersao);
-            statement.setInt(1,versao);
-            statement.setInt(2,versao-1);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-    class ThreadLeLinhaComandos extends Thread {
-        @Override
-        public void run(){
-            String inserido;
-            do{
-                Scanner linhaComandos = new Scanner(System.in);
-                System.out.println("<SERVIDOR BACKUP> Escreva \"sair\" para terminar.");
-                inserido = linhaComandos.nextLine();
-            }while (!sair && !inserido.equals("sair"));
-            sair = true;
-            multicastSocket.close();
-        }
-    }
-
-}
+ */

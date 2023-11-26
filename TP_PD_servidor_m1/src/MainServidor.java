@@ -65,6 +65,7 @@ public class MainServidor {
 
         // PROGRAMA
         progServidor.servidorMainFunction();
+        System.exit(0);
     }
 
     public static void sair(String msg) {

@@ -166,17 +166,13 @@ public class DbManage implements Serializable {
            if( statement.executeUpdate()<1)
                System.out.println("<BD> Erro na atualizacao da versao da BAse de Dados");
            else{
-               for (ObservableInterface obv:observables) {
-                   obv.setVersao(versao);
-               }
                versaoSuporte.firePropertyChange("versao", null, null);
-               System.out.println("<BD> Versao de Base de Dados atualizada com sucesso");}
+               System.out.println("<BD> Versao de Base de Dados atualizada com sucesso");
+           }
 
            statement.close();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
-        } catch (RemoteException e) {
-            System.out.println("<RMI> Excecao ao atualizar o backup: "+e);
         }
     }
 
@@ -249,7 +245,7 @@ public class DbManage implements Serializable {
             Statement statement = connection.createStatement()){
 
             String GetQuery = "SELECT * FROM Utilizador where email='" + user.email() + "';";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
-            ResultSet rs=statement.executeQuery(GetQuery);
+            ResultSet rs = statement.executeQuery(GetQuery);
 
             if(rs.isBeforeFirst())
             {   rs.next();
@@ -262,13 +258,13 @@ public class DbManage implements Serializable {
                 preparedStatement.executeUpdate();
                 connection.close();
                 for (ObservableInterface obv:observables) {
-                obv.executaUpdate("UPDATE Utilizador SET nome=" + user.nome() + ", numero_estudante="+user.numIdentificacao()+", palavra_passe="+pasword+" WHERE email="+user.email());
+                    obv.executaUpdate("UPDATE Utilizador SET nome='" + user.nome() + "', numero_estudante=" + user.numIdentificacao() + ", palavra_passe=" + pasword + " WHERE email="+ user.email() + ";");
                 }
                 setVersao();
                 return true;
             }
             else{
-               System.out.println("<BD> Nao foi encontrado nenhum utilizador com email [" + user.email() + "]");
+                System.out.println("<BD> Nao foi encontrado nenhum utilizador com email [" + user.email() + "]");
                 return false;
             }
         } catch (SQLException e) {

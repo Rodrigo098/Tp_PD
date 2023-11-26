@@ -12,9 +12,7 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.rmi.AlreadyBoundException;
 import java.rmi.Naming;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -75,9 +73,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
 
         try {
             rmi = this;
-            System.out.println(".....");
             Naming.rebind("rmi://"+ipRegistry+"/" + service_name, rmi);
-            System.out.println(".....");
         } catch (MalformedURLException e) {
             throw new MalformedURLException("<SERVIDOR> Excecao ao registar o servico no Registry.");
         }
@@ -105,6 +101,8 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
     }
     //////////////////////////////////// SERVIDOR /////////////////////////////
     public void servidorMainFunction() {
+        ThreadDeLinhaComandos thLC = new ThreadDeLinhaComandos();
+        thLC.start();
         try
         {
             socketServidor = new ServerSocket(portoClientes);
@@ -141,6 +139,11 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                     System.out.println("\n<SERVIDOR> Excecao ao esperar que a thread do cliente [" + nomeCli + "] terminasse.");
                 }
             }
+        }
+        try {
+            thLC.join();
+        } catch (InterruptedException e) {
+            System.out.println("<SERVIDOR> Excecao ao esperar que a thread Linha de comandos terminasse.");
         }
     }
 
@@ -210,7 +213,6 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                 oout.writeObject(new DadosRmi(InetAddress.getLocalHost().getHostAddress(), service_name, dbManager.getVersao()));
                 oout.flush();
                 heartBeat = new DatagramPacket(bout.toByteArray(), bout.size(), heartbeatgroup, portobackup);
-                System.out.println( multicastSocketBackup.getNetworkInterface());
                 multicastSocketBackup.send(heartBeat);
 
             } catch (IOException ex) {
@@ -231,7 +233,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
     }
 
     ////////////////////////////////// THREAD LINHA DE COMANDOS /////////////////////////////
-    class ThreadLeLinhaComandos extends Thread {
+    class ThreadDeLinhaComandos extends Thread {
         @Override
         public void run(){
             String inserido;
@@ -239,8 +241,6 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                 Scanner linhaComandos = new Scanner(System.in);
                 System.out.println("\n<SERVIDOR> Escreva \"sair\" para terminar o servidor");
                 inserido = linhaComandos.nextLine();
-                if(inserido.equals("atua"))
-                  envioDeAvisoDeAtualizacao("atualizacao");
             }while (!inserido.equals("sair"));
             pararServidor = true;
             temporizador.cancel();
@@ -527,11 +527,11 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                     out.write(fileChunk,0,nbytes);
                     out.flush();
                 }
-            }while (nbytes>0);
-            System.out.println("File sended");
+            }while (nbytes > 0);
+            System.out.println("<SERVIDOR> Ficheiro enviado.");
 
         } catch (IOException e) {
-            System.out.println(""+e.getCause());
+            System.out.println("<SERVIDOR> Excecao ao enviar ficheiro: " + e.getCause());
         }
     }
 
