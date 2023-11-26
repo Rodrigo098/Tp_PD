@@ -439,9 +439,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                                     utilizadoresEvento = dbManager.Presencas_evento(aux.getConteudo());
                                                     if (utilizadoresEvento != null) {
                                                         Utilizador[] res = new Utilizador[utilizadoresEvento.size()];
-                                                        for (int i = 0; i < utilizadoresEvento.size(); i++) {
-                                                            res[i] = utilizadoresEvento.get(i);
-                                                        }
+                                                        utilizadoresEvento.toArray(res);
                                                         out.writeObject(new Msg_ListaRegistos(Message_types.VALIDO, res));
                                                     } else
                                                         out.writeObject(new Geral(Message_types.ERRO));

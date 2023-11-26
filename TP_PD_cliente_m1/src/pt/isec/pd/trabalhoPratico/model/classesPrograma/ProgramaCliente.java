@@ -276,8 +276,8 @@ public class ProgramaCliente {
         if(dataInicio != null && !dataInicio.isBlank() && dataFim != null && !dataFim.isBlank()) {
             LocalDate ini, fim;
             try {
-                ini = LocalDate.parse(dataInicio, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                fim = LocalDate.parse(dataFim, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                ini = LocalDate.parse(dataInicio, DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+                fim = LocalDate.parse(dataFim, DateTimeFormatter.ofPattern("yyyy/MM/dd"));
             } catch (Exception e) {
                 return false;
             }
@@ -547,10 +547,10 @@ public class ProgramaCliente {
                 return "Dados devem ser todos preenchidos.";
 
             LocalDate dataAtual = LocalDate.now(), dataEvento;
-            LocalTime horaAtual = LocalTime.now(), HoraInicio, HoraFim;
+            LocalTime HoraInicio, HoraFim;
 
             try {
-                dataEvento = LocalDate.parse(data, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                dataEvento = LocalDate.parse(data, DateTimeFormatter.ofPattern("yyyy/MM/dd"));
                 HoraInicio = LocalTime.parse(horaInicio, DateTimeFormatter.ofPattern("HH:mm"));
                 HoraFim = LocalTime.parse(horaFim, DateTimeFormatter.ofPattern("HH:mm"));
                 if (dataEvento.isBefore(dataAtual))

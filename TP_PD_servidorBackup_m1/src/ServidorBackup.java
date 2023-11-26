@@ -245,7 +245,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                 PreparedStatement eliminaPresencaStatement = connection.prepareStatement(eliminaPresencaQuery);
                 eliminaPresencaStatement.setString(1, nomeEvento);
                 eliminaPresencaStatement.setString(2, emailEstudante);
-                 eliminaPresencaStatement.executeUpdate();
+                eliminaPresencaStatement.executeUpdate();
             }
             connection.close();
             setVersao(versao++);
@@ -261,6 +261,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         try(Connection connection = DriverManager.getConnection(dbUrl);
             Statement statement= connection.createStatement();
         ) {
+            System.out.println("Chega ca");
             statement.executeUpdate(query);
             connection.close();
             setVersao(versao++);

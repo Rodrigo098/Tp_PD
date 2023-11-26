@@ -475,7 +475,7 @@ public class DbManage implements Serializable {
                 return null;
             }
             while (rs.next()){
-                Utilizador aux = new Utilizador(rs.getString("nome"),rs.getString("email"),rs.getInt("num_estudante"));
+                Utilizador aux = new Utilizador(rs.getString("nome"),rs.getString("email"),rs.getInt("numero_estudante"));
                 res.add(aux);
             }
         } catch (SQLException e) {
@@ -498,11 +498,12 @@ public class DbManage implements Serializable {
             }
             else{
                 System.out.println("<BD> Evento [" + evento +"] criado com sucesso");
-                connection.close();
+
                 for (ObservableInterface obv:observables) {
                  obv.executaUpdate("INSERT INTO Evento (nome_evento,local,data_realizacao,hora_inicio,hora_fim) VALUES ('"
                          + evento.getNome() +"','" + evento.getLocal() +"','" + evento.getData() +"','" + evento.getHoreInicio() +"','" + evento.getHoraFim() +"')");
                 }
+                connection.close();
                 setVersao();
                 return true;
             }
@@ -526,9 +527,8 @@ public class DbManage implements Serializable {
 
             if(presencas == 0){
                 // Se não houver presenças edita todos os campos
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                String dataString = dateFormat.format(evento.getData()); //Alterei isso para termos a data nesse formato, facilita os testes mas sempre se pode alterar
-                String updateEventQuery = "UPDATE Evento SET data_realizacao = '" + dataString + "', hora_inicio = '" + evento.getHoreInicio() + "', hora_fim = '" +
+                System.out.println(evento.getData());
+                String updateEventQuery = "UPDATE Evento SET data_realizacao = '" + evento.getData() + "', hora_inicio = '" + evento.getHoreInicio() + "', hora_fim = '" +
                         evento.getHoraFim() + "', nome_evento = '" + evento.getNome() + "', local = '" + evento.getLocal()+ "' WHERE nome_evento = '" + evento.getNome() + "';";
 
                 if (statement.executeUpdate(updateEventQuery) < 1) {
@@ -538,12 +538,13 @@ public class DbManage implements Serializable {
                     System.out.println("<BD> Evento [" + evento + "] editado com sucesso");
                     connection.close();
                     for (ObservableInterface obv:observables) {
-                      obv.executaUpdate("UPDATE Evento SET data_realizacao = '" + dataString + "', hora_inicio = '"
+                      obv.executaUpdate("UPDATE Evento SET data_realizacao = '" + evento.getData() + "', hora_inicio = '"
                               + evento.getHoreInicio() + "', hora_fim = '" + evento.getHoraFim() + "', nome_evento = '"
                               + evento.getNome() + "', local = '" + evento.getLocal()+ "' WHERE nome_evento = '"
                               + evento.getNome() + "'");
                     }
                     setVersao();
+                    return true;
                     }
             }
         } catch (SQLException e) {
@@ -551,7 +552,7 @@ public class DbManage implements Serializable {
         } catch (RemoteException e) {
             System.out.println("<Rmi>Excecao ao atualizar o backup: "+e);
         }
-        return true;
+        return false;
     }
 
     public boolean Elimina_evento(String nome_evento) {
@@ -720,8 +721,8 @@ public class DbManage implements Serializable {
                 }
             }
             connection.close();
-            setVersao();
             for (ObservableInterface obv:observables) {obv.EliminaPresencas(nomeEvento,emails);}
+            setVersao();
             return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
