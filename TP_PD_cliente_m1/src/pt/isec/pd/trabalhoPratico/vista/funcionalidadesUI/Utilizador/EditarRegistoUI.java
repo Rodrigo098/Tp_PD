@@ -8,11 +8,13 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
+import pt.isec.pd.trabalhoPratico.model.classesPrograma.ParResposta;
 
 public class EditarRegistoUI extends BorderPane {
     private TextField nome, numID, password, confPassword;
     private Button confirmar, cancelar;
     private Text resultado;
+    private Label label;
     private final ProgClienteManager progClienteManager;
 
     public EditarRegistoUI(ProgClienteManager progClienteManager) {
@@ -23,8 +25,8 @@ public class EditarRegistoUI extends BorderPane {
     }
 
     private void createViews() {
-        nome = new TextField(progClienteManager.getNomeCliente());
-        numID = new TextField(progClienteManager.getNumeroCliente());
+        nome = new TextField();
+        numID = new TextField();
         password = new TextField();
         password.setPromptText("nova password");
         confPassword = new TextField();
@@ -40,7 +42,7 @@ public class EditarRegistoUI extends BorderPane {
                              new Text("Número de Identificação:"), numID,
                              new VBox(new Text("Palavra passe:"), new HBox(password, confPassword)));
         vBox.setSpacing(10);
-        Label label = new Label("Editar Registo - " + progClienteManager.getEmailCliente());
+        label = new Label();
         label.getStyleClass().add("titulo");
 
         setMargin(vBox, new javafx.geometry.Insets(10, 0, 0, 0));
@@ -52,23 +54,45 @@ public class EditarRegistoUI extends BorderPane {
 
     private void registerHandlers() {
         confirmar.setOnAction( e -> {
-            resultado.setText(progClienteManager.editarRegisto(nome.getText(), numID.getText(), password.getText(), confPassword.getText()));
-            limparCampos();
+            ParResposta res = progClienteManager.editarRegisto(nome.getText(), numID.getText(), password.getText(), confPassword.getText());
+            if (res.resultado()) {
+            } else {
+                nome.getStyleClass().add("camposInvalidos");
+                numID.getStyleClass().add("camposInvalidos");
+                password.getStyleClass().add("camposInvalidos");
+                confPassword.getStyleClass().add("camposInvalidos");
+            }
+            resultado.setText(res.mensagem());
         });
 
         cancelar.setOnAction(e -> {
             ContaUtilizadorUI.opcaoUti.set("NADA");
-            nome.clear();numID.clear();password.clear();confPassword.clear();
+            resultado.setText("");
+            limpaStyle();
         });
 
         ContaUtilizadorUI.opcaoUti.addListener(observable -> update());
     }
 
     private void update() {
-        this.setVisible(ContaUtilizadorUI.opcaoUti.get().equals("EDITAR_REGISTO"));
+        if(ContaUtilizadorUI.opcaoUti.get().equals("EDITAR_REGISTO")) {
+            resultado.setText("");
+            limpaStyle();
+            label.setText("Editar Registo - " + progClienteManager.getEmailCliente());
+            nome.setText(progClienteManager.getNomeCliente());
+            numID.setText(progClienteManager.getNumeroCliente());
+            this.setVisible(true);
+        }
+        else {
+            this.setVisible(false);
+        }
     }
-
-    private void limparCampos() {
-        nome.setText(null);numID.setText(null);password.setText(null);confPassword.setText(null);
+    private void limpaStyle() {
+        nome.getStyleClass().remove("camposInvalidos");
+        numID.getStyleClass().remove("camposInvalidos");
+        password.getStyleClass().remove("camposInvalidos");
+        confPassword.getStyleClass().remove("camposInvalidos");
+        password.clear();
+        confPassword.clear();
     }
 }
