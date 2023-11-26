@@ -125,7 +125,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         } catch (ClassNotFoundException e) {//NotBoundException |
             System.out.println("<SERVIDOR BACKUP> Info: " + e.getMessage());
         }
-        System.out.println("<SERVIDOR BACKUP> Prima [enter] sair.");
+        System.out.println("<SERVIDOR BACKUP> A encerrar ...");
         sair = true;
         try {
             rmi.RemoveObservable(obs);
