@@ -70,7 +70,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
 
         try
         {   multicastSocket = new MulticastSocket(portobackup);
-            // multicastSocket.setSoTimeout(30000);
+            multicastSocket.setSoTimeout(30000);
             group = InetAddress.getByName(Heartbeatip);
            NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName(InetAddress.getLocalHost().getHostAddress()));// replace with your network interface
             multicastSocket.joinGroup(new InetSocketAddress(group,portobackup),networkInterface);
@@ -109,11 +109,11 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                             recebeuHeartBeat = true;
                             System.out.println("<SERVIDOR BACKUP> Recebeu HeartBeat");
                             // Compara a versão da base de dados recebida com a versão local
-                            /*if (dados.versao() != dbManager.getVersaoDb()) {
+                            if (dados.versao() != dbManager.getVersaoDb()) {
                                 System.out.println("<INFO> Dados " + dados.versao() + " Manager:" + dbManager.getVersaoDb());
                                 System.out.println("<SERVIDOR BACKUP> Versao da base de dados diferente.");
                                 sair = true;
-                            }*/
+                            }
                         }
                     }
                 } while (!sair);
