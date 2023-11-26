@@ -474,13 +474,14 @@ public class ProgramaCliente {
                 return "Dados devem ser todos preenchidos.";
 
             LocalDate dataAtual = LocalDate.now(), dataEvento;
-            LocalTime horaAtual = LocalTime.now(), HoraInicio, HoraFim;
-
+           LocalTime HoraInicio, HoraFim;
+            System.out.println(dataAtual);
             try {
-                dataEvento = LocalDate.parse(data, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                dataEvento = LocalDate.parse(data, DateTimeFormatter.ofPattern("yyyy/MM/dd"));
                 HoraInicio = LocalTime.parse(horaInicio, DateTimeFormatter.ofPattern("HH:mm"));
                 HoraFim = LocalTime.parse(horaFim, DateTimeFormatter.ofPattern("HH:mm"));
-                if (dataEvento.isBefore(dataAtual) || HoraInicio.isBefore(horaAtual))
+                System.out.println(dataEvento);
+                if (dataEvento.isBefore(dataAtual) )
                     return "Não pode marcar no passado!";
                 if(HoraInicio.isAfter(HoraFim))
                     return "A hora de início não pode ser depois da hora de fim!";
