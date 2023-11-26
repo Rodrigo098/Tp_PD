@@ -333,8 +333,7 @@ public class DbManage implements Serializable {
                         System.out.println("<BD> Nova presenca registada de [" + emailuser + "] no evento [" + nome_evento + "]");
                         connection.close();
                         for (ObservableInterface obv:observables) {
-                            obv.submitcod(codigo,nome_evento,emailuser);
-                            }
+                            obv.submitcod(codigo,nome_evento,emailuser);}
                         setVersao();
                         return true;
                     }
