@@ -294,13 +294,17 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                         email = aux.getEmail();
                                         logado = true;
                                         isadmin = resposta.conteudo();
-                                        observers.forEach(observableInterface -> {
-                                            try {
-                                                observableInterface.RegistoNovoUser(user, aux.getPassword());
-                                            } catch (RemoteException e) {
-                                                System.out.println(e.getMessage());
-                                            }
-                                        });
+
+                                        synchronized (observers){
+                                            observers.forEach(observableInterface -> {
+                                                try {
+                                                    observableInterface.RegistoNovoUser(user, aux.getPassword());
+                                                } catch (RemoteException e) {
+                                                    System.out.println(e.getMessage());
+                                                }
+                                            });
+                                        }
+
                                         out.writeObject(new Geral(Message_types.UTILIZADOR));
                                     } else {
                                         out.writeObject(new Geral(resposta.conteudo() ? Message_types.INVALIDO : Message_types.ERRO));
@@ -579,19 +583,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             System.out.println(""+e.getCause());
         }
     }
-    private byte[] getDados(){// como vamos ter duas versos de dados diferentes temis
 
-        try {
-            DadosRmi data = new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME,dbManager.getVersao());
-            ByteArrayOutputStream helpi = new ByteArrayOutputStream(); //for real "help"
-            ObjectOutputStream objout = new ObjectOutputStream(helpi);
-            objout.writeObject(data);
-            return helpi.toByteArray();
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return new byte[0];
-        }
-    }
 }
 
 

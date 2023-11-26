@@ -103,7 +103,7 @@ public class GereRecursosClientes {
 
     public void removeLogado(String email) {
         for(ParesComunicacaoCliente par : paresComunicacaoClientes) {
-            if(par.getCliente().equals(email)) {
+            if(par.getCliente().equals(email) && email!= null) {
                 par.removeDadosAtualizacao();
                 clientesLigados--;
                 break;

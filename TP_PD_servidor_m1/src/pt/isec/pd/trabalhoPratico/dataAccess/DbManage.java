@@ -200,7 +200,7 @@ public class DbManage {
                 //System.out.println(rs.getString("palavra_passe"));
 
                 if(rs.getString("palavra_passe").equals(password)) {
-                    if(rs.getString("tipo_utilizador").equals("admin"))
+                    if(rs.getString("tipo_utilizador").equals("administrador"))
                         return new BDResposta(true, "<BD>Entrou um administrador", true);
                     else
                         return new BDResposta(true, "<BD>Entrou um cliente", false);
