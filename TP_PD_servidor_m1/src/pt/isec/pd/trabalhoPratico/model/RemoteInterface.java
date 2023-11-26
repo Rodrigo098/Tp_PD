@@ -1,8 +1,5 @@
 package pt.isec.pd.trabalhoPratico.model;
 
-import pt.isec.pd.trabalhoPratico.model.classesComunication.Geral;
-import pt.isec.pd.trabalhoPratico.model.classesPrograma.QueryService;
-
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
