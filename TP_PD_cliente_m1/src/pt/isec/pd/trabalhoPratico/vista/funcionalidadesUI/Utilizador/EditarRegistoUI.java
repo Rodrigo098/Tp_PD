@@ -23,10 +23,8 @@ public class EditarRegistoUI extends BorderPane {
     }
 
     private void createViews() {
-        nome = new TextField();
-        nome.setPromptText("novo nome");
-        numID = new TextField();
-        numID.setPromptText("novo número");
+        nome = new TextField(progClienteManager.getNomeCliente());
+        numID = new TextField(progClienteManager.getNumeroCliente());
         password = new TextField();
         password.setPromptText("nova password");
         confPassword = new TextField();
@@ -42,7 +40,7 @@ public class EditarRegistoUI extends BorderPane {
                              new Text("Número de Identificação:"), numID,
                              new VBox(new Text("Palavra passe:"), new HBox(password, confPassword)));
         vBox.setSpacing(10);
-        Label label = new Label("Editar Registo");
+        Label label = new Label("Editar Registo - " + progClienteManager.getEmailCliente());
         label.getStyleClass().add("titulo");
 
         setMargin(vBox, new javafx.geometry.Insets(10, 0, 0, 0));
@@ -73,5 +71,4 @@ public class EditarRegistoUI extends BorderPane {
     private void limparCampos() {
         nome.setText(null);numID.setText(null);password.setText(null);confPassword.setText(null);
     }
-
 }

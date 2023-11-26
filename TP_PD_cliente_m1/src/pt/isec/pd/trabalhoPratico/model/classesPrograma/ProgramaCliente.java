@@ -33,8 +33,8 @@ public class ProgramaCliente {
     private ObjectOutputStream oout;
     private ObjectInputStream oin;
     private InetAddress ipServidor;
-    private static String email;
-    private static String oMeuID;
+    private static String email, oMeuID;
+    private String nome, numero;
 
 //-------------------- ATUALIZACAO ASSINCRONA -----------------
     static class AtualizacaoAsync implements Runnable {
@@ -154,6 +154,15 @@ public class ProgramaCliente {
         return email.split("[@.]").length != 3;
     }
 
+    public String getEmailCliente() {
+        return email;
+    }
+    public String getNomeCliente() {
+        return nome;
+    }
+    public String getNumeroCliente() {
+        return numero;
+    }
     /*---------------------------------- COMUNS: --------------------------------------*/
     public ParResposta criaSocket(List<String> list) {
         ParResposta pontoSituacao = new ParResposta(false, "Erro na criação do socket");
@@ -200,10 +209,20 @@ public class ProgramaCliente {
                         }
                         case INVALIDO -> { return new ParResposta( false, "Não está registado na app :(");}
                         case ERRO -> { return new ParResposta( false, "Ocorreu um erro na BD.");}
-                        default -> {
+                        case ADMINISTRADOR, UTILIZADOR -> {
                             try {
                                 this.email = dadosLogin.getEmail();
-                                gereMudancasPLC.setEstadoNaAplicacao(g.getTipo() == Message_types.UTILIZADOR ? EstadoNaAplicacao.UTILIZADOR : EstadoNaAplicacao.ADMINISTRADOR);
+                                if(g.getTipo() == Message_types.ADMINISTRADOR) {
+                                    gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.ADMINISTRADOR);
+                                }
+                                else {
+                                    this.email = dadosLogin.getEmail();
+                                    Msg_String msg = (Msg_String) g;
+                                    String [] msg2 = msg.getConteudo().split(",");
+                                    this.nome = msg2[0];
+                                    this.numero = msg2[1];
+                                    gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.UTILIZADOR);
+                                }
                                 fezLogin = true;
                                 new Thread(new AtualizacaoAsync(portoServidor, ipServidor)).start();
                                 System.out.println("<CLIENTE> Esta atualmente logado com a conta [" + email + "]");
@@ -353,7 +372,6 @@ public class ProgramaCliente {
         return "Deve fazer login para usufruir da app!";
     }
 
-
     /*---------------------------------- UTILIZADOR: --------------------------------------*/
     public ParResposta registarConta(String nome, String email, String numIdentificacao, String password, String confPass) {
 
@@ -384,6 +402,10 @@ public class ProgramaCliente {
                     default -> {
                             try {
                                 this.email = email;
+                                Msg_String msg = (Msg_String) g;
+                                String [] msg2 = msg.getConteudo().split(",");
+                                this.nome = msg2[0];
+                                this.numero = msg2[1];
                                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.UTILIZADOR);
                                 fezLogin = true;
                                 new Thread(new AtualizacaoAsync(portoServidor, ipServidor)).start();
@@ -696,27 +718,3 @@ public class ProgramaCliente {
         return null;
     }
 }
-
-    /*public void addLogadoListener(InvalidationListener listener) {
-        logado.addListener(listener);
-    }
-
-    public void addAtualizacaoListener(InvalidationListener listener) {
-        atualizacao.addListener(listener);
-    }
-
-    public void addErroListener(InvalidationListener listener) {
-        erro.addListener(listener);
-    }
-
-    protected static synchronized void setErro() {
-        erro.set(erro.getValue() + 1);
-    }
-
-    public static synchronized void setLogado(String valor) {
-        logado.set(valor);
-    }
-
-    public String getLogado() {
-        return logado.getValue();
-    }*/

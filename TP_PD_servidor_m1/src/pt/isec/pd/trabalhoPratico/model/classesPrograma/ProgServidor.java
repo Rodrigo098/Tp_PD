@@ -296,10 +296,14 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                         email = aux.getEmail();
                                         logado = true;
                                         isadmin = resposta.conteudo();
-
-                                        out.writeObject(new Geral(resposta.conteudo() ? Message_types.ADMINISTRADOR : Message_types.UTILIZADOR));
+                                        if(isadmin)
+                                            out.writeObject(new Geral(Message_types.ADMINISTRADOR));
+                                        else {
+                                            String dados = resposta.mensagem().split("#")[1];
+                                            out.writeObject(new Msg_String(dados, Message_types.UTILIZADOR));
+                                        }
                                     }
-                                    System.out.println("\n<SERVIDOR> [OPERACAO DE LOGIN] -> " + resposta.mensagem());
+                                    System.out.println("\n<SERVIDOR> [OPERACAO DE LOGIN] -> " + resposta.mensagem().split("#")[0]);
                                 }
                                 case REGISTO -> {
                                     Mgs_RegistarEditar_Conta aux = (Mgs_RegistarEditar_Conta) interacao;
@@ -309,12 +313,13 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                         email = aux.getEmail();
                                         logado = true;
                                         isadmin = resposta.conteudo();
-                                        out.writeObject(new Geral(Message_types.UTILIZADOR));
+                                        String dados = resposta.mensagem().split("#")[1];
+                                        out.writeObject(new Msg_String(dados, Message_types.UTILIZADOR));
                                     } else {
                                         out.writeObject(new Geral(resposta.conteudo() ? Message_types.INVALIDO : Message_types.ERRO));
                                     }
 
-                                    System.out.println("\n<SERVIDOR> [OPERACAO DE REGISTO] -> " + resposta.mensagem());
+                                    System.out.println("\n<SERVIDOR> [OPERACAO DE REGISTO] -> " + resposta.mensagem().split("#")[0]);
                                 }
                                 case FECHOU_APP -> {
                                     System.out.println("\n<SERVIDOR> [CLIENTE SAIU DA APP] -> " + email );

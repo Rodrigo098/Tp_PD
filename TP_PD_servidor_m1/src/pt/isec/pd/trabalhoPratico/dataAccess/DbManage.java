@@ -199,7 +199,7 @@ public class DbManage implements Serializable {
 
                 }
                 setVersao();
-                return new BDResposta(true, "<BD>Insercao de novo utilizador com sucesso", false);
+                return new BDResposta(true, "<BD>Insercao de novo utilizador com sucesso # " + user.nome() + "," + user.numIdentificacao(), false);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -221,14 +221,13 @@ public class DbManage implements Serializable {
 
             if(rs.isBeforeFirst())
             {   rs.next();
-                //System.out.println(rs.getString("email"));
-                //System.out.println(rs.getString("palavra_passe"));
-
                 if(rs.getString("palavra_passe").equals(password)) {
                     if(rs.getString("tipo_utilizador").equals("administrador"))
                         return new BDResposta(true, "<BD>Entrou um administrador", true);
-                    else
-                        return new BDResposta(true, "<BD>Entrou um cliente", false);
+                    else {
+                        String dados = rs.getString("nome") + "," + rs.getString("numero_estudante");
+                        return new BDResposta(true, "<BD>Entrou um cliente # " + dados, false);
+                    }
                 }
                 return new BDResposta(false, "<BD>Password errada", false);
             }

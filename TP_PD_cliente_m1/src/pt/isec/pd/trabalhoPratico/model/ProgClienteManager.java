@@ -15,6 +15,15 @@ public class ProgClienteManager {
         programaCliente = new ProgramaCliente();
     }
 
+    public String getNomeCliente() {
+        return programaCliente.getNomeCliente();
+    }
+    public String getEmailCliente() {
+        return programaCliente.getEmailCliente();
+    }
+    public String getNumeroCliente() {
+        return programaCliente.getNumeroCliente();
+    }
     //////////////////////////// PROPRIEDADE LISTENERS ////////////////////////////////////
     public void addLogadoListener(PropertyChangeListener listener) {
         programaCliente.addPropertyChangeListener(GereMudancasPLC.PROP_ESTADO ,listener);
