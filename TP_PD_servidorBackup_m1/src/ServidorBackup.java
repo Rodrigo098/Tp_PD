@@ -161,6 +161,23 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         }
     }
 
+    public static void setVersao(int versao) {
+
+        try (Connection connection=DriverManager.getConnection(dbUrl)){
+            String UpdateVersao="UPDATE Versao SET versao_id=? where versao_id=?";
+            PreparedStatement statement=connection.prepareStatement(UpdateVersao);
+            statement.setInt(1,versao);
+            statement.setInt(2,versao-1);
+            if( statement.executeUpdate()<1)
+                System.out.println("Erro a atualizar a versao");
+            else{
+
+                System.out.println("Versao atualizada com sucesso");}
+            statement.close();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
     @Override
     public boolean submitcod(int codigo, String nome_evento, String emailuser) throws RemoteException {
         try(Connection connection = DriverManager.getConnection(dbUrl);
@@ -188,6 +205,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                             + nome_evento+"','" +emailuser+"')";// qual o valor que é suposto colocar no idassiste??
 
                statement.executeUpdate(createEntryQuery);
+               setVersao(versao++);
             }
         } catch (SQLException e) {
 
@@ -208,6 +226,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                     presencaStatement.executeUpdate();
             }
             connection.close();
+            setVersao(versao++);
             return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -227,6 +246,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                  eliminaPresencaStatement.executeUpdate();
             }
             connection.close();
+            setVersao(versao++);
             return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -240,6 +260,8 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
             Statement statement= connection.createStatement();
         ) {
             statement.executeUpdate(query);
+            connection.close();
+            setVersao(versao++);
         } catch (SQLException e) {
             System.out.println("<SERVIDOR BACKUP> Excepcao ao executar um update da base de dados [" + e + "]");
         }
