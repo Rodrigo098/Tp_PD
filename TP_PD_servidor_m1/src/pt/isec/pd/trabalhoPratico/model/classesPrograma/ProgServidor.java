@@ -12,32 +12,24 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.rmi.AlreadyBoundException;
-import java.rmi.Naming;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
 
-public class ProgServidor  extends UnicastRemoteObject implements RemoteInterface {
+public class ProgServidor implements RemoteInterface {
     // BACKUPS
     public static final int MAX_SIZE = 4000;
     private static final int portobackup = 4444;
-    public static final String SERVICE_NAME = "servidor";
-    private final String ipMuticastString = "224.0.1.0";
-    private final String Heartbeatip="230.44.44.44";
-    private RemoteInterface rmi;
+    private final String ipMuticastString = "224.0.1.0", Heartbeatip="230.44.44.44", service_name;
     private MulticastSocket multicastSocketBackup;
     private final Timer temporizador;
     private final HeartBeatTask heartBeatTask;
-    List<ObservableInterface> observers=new ArrayList<>();
+    private List<ObservableInterface> observers;//ArrayList<ObservableInterface> observers;
     private DbManage dbManager;
-    private DatagramPacket heartBeatPacket;
-    private int timerCount;
     private InetAddress heartbeatgroup;
-    private Geral  Lastupdate;
+    private Geral Lastupdate;
+    private int timerCount = 0;
     
     // CLIENTES
     private final int portoClientes;
@@ -50,50 +42,48 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     private static HeartBeatTask teste;
 
 
-    public ProgServidor(int portoClientes) throws RemoteException {
+    public ProgServidor(int portoClientes, String service_name) {
         this.portoClientes = portoClientes;
+        this.service_name = service_name;
+
         gereRecursosClientes = new GereRecursosClientes();
         threadsClientes = new ArrayList<>();
+
         temporizador = new Timer();
         heartBeatTask = new HeartBeatTask();
+        observers = new ArrayList<>();
+
         dbManager = new DbManage();
         dbManager.addVersaoListener(event -> envioDeAvisoDeAtualizacao("atualizacao"));
     }
 
-    //////////////////////////////////// SERVIÇO /////////////////////////////
-    public void servico() {
-        new Thread(new ThreadLeLinhaComandos()).start();
+    //////////////////////////////////// MULTICAST ////////////////////////////
+    public String setMulticastSocketBackup() {
+        try {
+            heartbeatgroup = InetAddress.getByName(Heartbeatip);
+            multicastSocketBackup = new MulticastSocket(portobackup);
+
+            networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName(InetAddress.getLocalHost().getHostAddress()));// replace with your network interface
+            System.out.println(networkInterface);
+            multicastSocketBackup.setNetworkInterface(networkInterface);
+            multicastSocketBackup.joinGroup(new InetSocketAddress(heartbeatgroup, portobackup), networkInterface);
+
+            temporizador.schedule(teste, 0, 1000);
+        } catch (SocketException e) {
+            return "<SERVIDOR> Excecao na criacao do socket para heartBeat.";
+        } catch (UnknownHostException e) {
+            return "<SERVIDOR> Excecao ao obter o host necessario hearBeat.";
+        } catch (IOException e) {
+            return "<SERVIDOR> Excecao IO na criacao do socket para hearBeat.";
+        }
+        return null;
+    }
+    //////////////////////////////////// SERVIDOR /////////////////////////////
+    public void servidorMainFunction() {
         try
         {
             socketServidor = new ServerSocket(portoClientes);
-            try {
 
-                System.setProperty("java.rmi.server.hostname", InetAddress.getLocalHost().getHostName());
-                LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
-                System.out.println("\n<SERVIDOR> Registry lancado");
-
-                heartbeatgroup = InetAddress.getByName(Heartbeatip);
-                multicastSocketBackup = new MulticastSocket(portobackup);
-
-                networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName(InetAddress.getLocalHost().getHostAddress()));// replace with your network interface
-                System.out.println(networkInterface);
-                multicastSocketBackup.setNetworkInterface(networkInterface);
-              multicastSocketBackup.joinGroup(new InetSocketAddress(heartbeatgroup, portobackup),networkInterface);
-
-
-                rmi = this ;//???
-                teste=new HeartBeatTask();
-                //String myIpIdress = "192.168.43.48";//InetAddress.getLocalHost().getHostAddress();
-                Naming.bind("rmi://"+InetAddress.getLocalHost().getHostAddress()+"/"+SERVICE_NAME,rmi);
-
-                temporizador.schedule(teste,0,1000);
-            } catch (SocketException | UnknownHostException e) {
-              e.printStackTrace();
-            }catch (RemoteException e){
-                System.out.println("\n<SERVIDOR> Registry ja em execucao");
-            } catch (AlreadyBoundException e) {
-                throw new RuntimeException(e);
-            }
             // ACEITA CLIENTES
             while(!pararServidor){
                 try {
@@ -114,7 +104,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                 }
             }
         } catch (IOException e) {
-            System.out.println("\n<SERVIDOR> Excecao a criar socket para o Servidor.");
+            System.out.println("\n<SERVIDOR> Excecao a criar socket para comunicacao com clientes.");
         }
         System.out.println("\n<SERVIDOR> A terminar threads para atendimento de clientes.");
         if(!threadsClientes.isEmpty()){
@@ -131,7 +121,91 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
 
     ////////////////////////////// ATUALIZAÇÃO ASSÍNCRONA /////////////////////////////
     public synchronized void envioDeAvisoDeAtualizacao(String msgAtaulizacao) {
+        observers.forEach(observableInterface -> {
+            try {
+                observableInterface.setVersao(dbManager.getVersao());
+                observableInterface.executaUpdate(Lastupdate);
+            } catch (RemoteException e) {
+                System.out.println(e.getMessage());
+            }
+        });
+        /*switch(queryAFazer) {
+            case REGISTO -> {
 
+                synchronized (observers) {
+                    observers.forEach(observableInterface -> {
+                        try {
+                            observableInterface.RegistoNovoUser(user, aux.getPassword());
+                        } catch (RemoteException e) {
+                            System.out.println("<SERVIDOR> Excecao: " + e.getMessage());
+                        }
+                    });
+                }
+            }
+            case INSERE_PRES -> {
+                observers.forEach(observableInterface -> {
+                    try {
+                        observableInterface.InserePresencas(aux.getNome_evento(), aux.getLista());
+                    } catch (RemoteException e) {
+                        System.out.println(e.getMessage());
+                    }
+                });
+            }
+            case ELIMINA_PRES -> {
+                observers.forEach(observableInterface -> {
+                    try {
+                        observableInterface.EliminaPresencas(aux.getNome_evento(), aux.getLista());
+                    } catch (RemoteException e) {
+                        System.out.println(e.getMessage());
+                    }
+                });
+            }
+            case ELIMINAR_EVENTO -> {
+                observers.forEach(observableInterface -> {
+                    try {
+                        observableInterface.Elimina_evento(aux.getConteudo());
+                    } catch (RemoteException e) {
+                        System.out.println(e.getMessage());
+                    }
+                });
+            }
+            case EDIT_EVENTO -> {
+                observers.forEach(observableInterface -> {
+                    try {
+                        observableInterface.Edita_evento(evento);
+                    } catch (RemoteException e) {
+                        System.out.println(e.getMessage());
+                    }
+                });
+            }
+            case CRIA_EVENTO -> {
+                observers.forEach(observableInterface -> {
+                    try {
+                        observableInterface.Cria_evento(evento);
+                    } catch (RemoteException e) {
+                        System.out.println(e.getMessage());
+                    }
+                });
+            }
+            case EDITAR_REGISTO -> {
+                observers.forEach(observableInterface -> {
+                    try {
+                        observableInterface.edita_registo(user, aux.getPassword());
+                    } catch (RemoteException e) {
+                        System.out.println(e.getMessage());
+                    }
+                });
+            }
+            case SUBMICAO_COD -> {
+                observers.forEach(observableInterface -> {
+                    try {
+                        observableInterface.submitcod(aux.getNumero(), aux.getConteudo(), email);
+                    } catch (RemoteException e) {
+                        System.out.println(e.getMessage());
+                    }
+                });
+            }
+        }*/
         System.out.println("\n-------------------- ATUALIZACAO ----------------------");
         //aviso de atualizacao aos backups
         System.out.println("<SERVIDOR> HeartBeat de atualizacao enviado aos servidores backup");
@@ -190,7 +264,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             try (ByteArrayOutputStream bout = new ByteArrayOutputStream();
                 ObjectOutputStream oout = new ObjectOutputStream(bout))
             {
-                oout.writeObject(new DadosRmi(InetAddress.getLocalHost().getHostAddress(), SERVICE_NAME, dbManager.getVersao()));
+                oout.writeObject(new DadosRmi(InetAddress.getLocalHost().getHostAddress(), service_name, dbManager.getVersao()));
                 oout.flush();
                 heartBeat = new DatagramPacket(bout.toByteArray(), bout.size(), heartbeatgroup, portobackup);
                 System.out.println( multicastSocketBackup.getNetworkInterface());
@@ -201,6 +275,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
             }
 
     }
+
 
     class HeartBeatTask extends TimerTask {
         @Override
@@ -294,17 +369,6 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                         email = aux.getEmail();
                                         logado = true;
                                         isadmin = resposta.conteudo();
-
-                                        synchronized (observers){
-                                            observers.forEach(observableInterface -> {
-                                                try {
-                                                    observableInterface.RegistoNovoUser(user, aux.getPassword());
-                                                } catch (RemoteException e) {
-                                                    System.out.println(e.getMessage());
-                                                }
-                                            });
-                                        }
-
                                         out.writeObject(new Geral(Message_types.UTILIZADOR));
                                     } else {
                                         out.writeObject(new Geral(resposta.conteudo() ? Message_types.INVALIDO : Message_types.ERRO));
@@ -332,28 +396,14 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                     Lastupdate = aux;
                                                     if (dbManager.edita_registo(user, aux.getPassword())) {
                                                         out.writeObject(new Geral(Message_types.VALIDO));
-                                                        observers.forEach(observableInterface -> {
-                                                            try {observableInterface.edita_registo(user, aux.getPassword());}
-                                                            catch (RemoteException e) {
-                                                                System.out.println(e.getMessage());
-                                                            }
-                                                        });
-
                                                     } else
                                                         out.writeObject(new Geral(Message_types.ERRO));
                                                 }
                                                 case SUBMICAO_COD -> {
-                                                    //vai à BD verificar -> têm de fazer, por enquanto está inválido
                                                     Msg_String_Int aux = (Msg_String_Int) message;
                                                     Lastupdate = new Msg_Sub_Cod(aux.getTipo(), email, aux.getConteudo(), aux.getNumero());
                                                     if (!dbManager.submitcod(aux.getNumero(), aux.getConteudo(), email)) {
                                                         out.writeObject(new Geral(Message_types.INVALIDO));
-                                                        observers.forEach(observableInterface -> {
-                                                            try {observableInterface.submitcod(aux.getNumero(),aux.getConteudo(),email);}
-                                                            catch (RemoteException e) {
-                                                                System.out.println(e.getMessage());
-                                                            }
-                                                        });
                                                     } else {
                                                         out.writeObject(new Geral(Message_types.VALIDO));
                                                     }
@@ -365,8 +415,8 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                     if (eventosAssistidos.isEmpty())
                                                         out.writeObject(new Geral(Message_types.ERRO));
                                                     else {
-                                                        eventosAssistidos.clear();
-                                                        eventosPresencasUser.addAll(eventosAssistidos); //vou utilizar o eventos presenças user para fazer o ficheiro csv do utilizador
+                                                        eventosPresencasUser.clear();
+                                                        eventosPresencasUser.addAll(eventosAssistidos);
                                                         Evento[] res = eventosAssistidos.toArray(new Evento[0]);
                                                         out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));
                                                     }
@@ -404,13 +454,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                 case CRIA_EVENTO -> {
                                                     Msg_Cria_Evento evento = (Msg_Cria_Evento) message;
                                                     Lastupdate = evento;
-                                                    if (dbManager.Cria_evento(evento)) {//.getNome(), evento.getLocal(), evento.getData(), evento.getHoreInicio(), evento.getHoraFim())){
-                                                        observers.forEach(observableInterface -> {
-                                                            try {observableInterface.Cria_evento(evento);}
-                                                            catch (RemoteException e) {
-                                                                System.out.println(e.getMessage());
-                                                            }
-                                                        });
+                                                    if (dbManager.Cria_evento(evento)) {
                                                         out.writeObject(new Geral(Message_types.VALIDO));
                                                     } else
                                                         out.writeObject(new Geral(Message_types.ERRO));
@@ -419,10 +463,6 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                     Msg_Edita_Evento evento = (Msg_Edita_Evento) message;
                                                     Lastupdate = evento;
                                                     if (dbManager.Edita_evento(evento)) {
-                                                        observers.forEach(observableInterface -> {
-                                                            try {observableInterface.Edita_evento(evento);}
-                                                            catch (RemoteException e) {System.out.println(e.getMessage());}
-                                                        });
                                                         out.writeObject(new Geral(Message_types.VALIDO));
                                                     } else
                                                         out.writeObject(new Geral(Message_types.ERRO));
@@ -431,10 +471,6 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                     Msg_String aux = (Msg_String) message;
                                                     Lastupdate = aux;
                                                     if (dbManager.Elimina_evento(aux.getConteudo())) {
-                                                        observers.forEach(observableInterface -> {
-                                                            try {observableInterface.Elimina_evento(aux.getConteudo());}
-                                                            catch (RemoteException e) {System.out.println(e.getMessage());}
-                                                        });
                                                         out.writeObject(new Geral(Message_types.VALIDO));
                                                     } else
                                                         out.writeObject(new Geral(Message_types.ERRO));
@@ -457,8 +493,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                     int code = dbManager.GeraCodigoRegisto(aux.getConteudo(), aux.getNumero());
                                                     Lastupdate = aux;
                                                     if (code != 0) {
-                                                     //   observers.forEach(observableInterface -> observableInterface.);
-                                                        out.writeObject(new Msg_String(Integer.toString(code), Message_types.VALIDO));
+                                                         out.writeObject(new Msg_String(Integer.toString(code), Message_types.VALIDO));
                                                     } else
                                                         out.writeObject(new Geral(Message_types.ERRO));
                                                 }
@@ -509,11 +544,6 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                     Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas) message;
                                                     Lastupdate = aux;
                                                     if (dbManager.EliminaPresencas(aux.getNome_evento(), aux.getLista())) {
-                                                        observers.forEach(observableInterface -> {
-                                                            try {observableInterface.EliminaPresencas(aux.getNome_evento(), aux.getLista());} catch (RemoteException e) {
-                                                                System.out.println(e.getMessage());
-                                                            }
-                                                        });
                                                         out.writeObject(new Geral(Message_types.VALIDO));
                                                     } else
                                                         out.writeObject(new Geral(Message_types.ERRO));
@@ -523,12 +553,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
                                                     Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas) message;
                                                     Lastupdate = aux;
                                                     if (dbManager.InserePresencas(aux.getNome_evento(), aux.getLista())) {
-                                                        observers.forEach(observableInterface -> {
-                                                            try {
-                                                                observableInterface.InserePresencas(aux.getNome_evento(), aux.getLista());}
-                                                            catch (RemoteException e) {System.out.println(e.getMessage());
-                                                            }
-                                                        });
+                                                        out.writeObject(new Geral(Message_types.VALIDO));
                                                     } else
                                                         out.writeObject(new Geral(Message_types.ERRO));
                                                 }

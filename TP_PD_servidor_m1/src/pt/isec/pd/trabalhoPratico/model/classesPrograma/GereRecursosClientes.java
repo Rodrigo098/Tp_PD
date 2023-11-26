@@ -84,7 +84,6 @@ public class GereRecursosClientes {
         for (ParesComunicacaoCliente par : paresComunicacaoClientes) {
             if (par.getSocketID().equals(idCliente)) {
                 clientesLigados++;
-                //System.out.println("----------------> " + ipCliente);
                 par.setUserName(nomeCli);
                 par.setDadosAtualizacao(socketAtualizacao, psAtualizacao);
                 break;
@@ -103,7 +102,7 @@ public class GereRecursosClientes {
 
     public void removeLogado(String email) {
         for(ParesComunicacaoCliente par : paresComunicacaoClientes) {
-            if(par.getCliente().equals(email) && email!= null) {
+            if(par.getCliente().equals(email)) {
                 par.removeDadosAtualizacao();
                 clientesLigados--;
                 break;

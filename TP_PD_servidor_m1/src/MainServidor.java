@@ -1,31 +1,28 @@
-import pt.isec.pd.trabalhoPratico.dataAccess.DbManage;
 import pt.isec.pd.trabalhoPratico.model.classesPrograma.ProgServidor;
+import pt.isec.pd.trabalhoPratico.model.classesPrograma.QueryService;
 
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.UnknownHostException;
+import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalTime;
-import java.util.Date;
-
-import static java.lang.System.exit;
 
 public class MainServidor {
+    private static String SERVICE_NAME = "servidor";//por enquanto, este devia ser o arg[2]
     public static void main(String[] args) throws ParseException {
+        // VALIDA ARGUMENTOS
   /*      if(args.length != 4){
             System.out.println("<SERVIDOR> Argumentos inválidos:\n" +
                     "\t[1] - Porto escuta para conexao e clientes;" +
                     "\t[2] - Caminho da diretoria de armazenamento da BD SQLite;" +
                     "\t[3] - Nome de registo do servico RMI;" +
                     "\t[4] - Porto escuta para lancar o resgistry local.");
-            return;
+
+            exit(1);
         }
-*/
-        //Para termos dados para testar as horas e datas dos eventos
-        LocalTime horainicio = LocalTime.of(00, 00);
-        LocalTime horafim = LocalTime.of(23, 55);
-        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
-        Date data = df.parse("09-11-2023");
-/*
         try {
             Integer.parseInt(args[0]);//verifica validade do porto inserido para conexao - cliente
             Integer.parseInt(args[3]);//verifica validade do porto inserido para registry
@@ -48,59 +45,41 @@ public class MainServidor {
             throw new NumberFormatException("<SERVIDOR> Os portos inseridos devem ter ser inteiros! [ERRO] " + e.getCause());
         }
 */
-
-        ProgServidor prog ;//Integer.parseInt(args[0]));
+        String s = null;
+        ProgServidor progServidor = null;
 
         try {
-            prog = new ProgServidor(6001);
-            prog.servico();
+            s = InetAddress.getLocalHost().getHostName();
+            System.setProperty("java.rmi.server.hostname", s); //parametro aquiii
+            LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
+            sair("\n<SERVIDOR> Registry lancado");
         } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
-        System.out.println("<SERVIDOR> Servidor fim!");
-        exit(0);
-     //  DbManage.Registonovouser(new Utilizador("Joao","eu@tu.isec","9876"),"12345");
-    //  DbManage.autentica_user("eu","12345");
-         //DbManage.edita_registo(new Utilizador("Joao","eu@tu.isec","9876"),"123");
-      //  System.out.println( DbManage.autentica_user(new Utilizador("Joao","eu@tu.isec","9876"),"12345"));
-       // System.out.println( DbManage.autentica_user(new Utilizador("Joao","eu@tu.isec","9876"),"123"));
-        //DbManage.Cria_evento("Testenovo2","Isec",data,horainicio,horafim);
-  // DbManage.EliminaPresencas("Testenovo2",new String[]{"eu@tu.isec"} );
-    //   DbManage.Edita_evento(new Cria_evento("Testenovo2","Isec",data,horainicio,horafim),"Testenovo2");
-    // int code=DbManage.GeraCodigoRegisto(new Cria_evento("Testenovo2","Isec",data,horainicio,horafim),0);
-      //System.out.println(DbManage.submitcod(795921,"Testenovo2","eu@tu.isec"));
-      /*  List<String> teste=DbManage.Presencas_evento("Chelsea");
-        for (String a:teste
-             ) {
-            System.out.println(a);
-
-        }*/
-
-        //------------------------ Testes Chelsea, tudo a funcionar ------------------------
-        //DbManage.Cria_evento("TesteCod","Lua",data,horainicio,horafim);
-        //DbManage.Cria_evento("Chelsea3","Casa",data,horainicio,horafim);
-        //DbManage.Edita_evento(new Cria_evento("TesteCod2","Lua",data,horainicio,horafim),"TesteCod");
-        //DbManage.Elimina_evento("Chelsea2");
-         /*List <Evento> eventos2 =DbManage.Consulta_eventos(new Cria_evento(null,"Casa", data,horainicio,null));
-            System.out.println("Eventos encontrados:");
-            for (Evento evento : eventos2) {
-                System.out.println(evento.toString());
-            }*/
-        //DbManage.InserePresencas("Chelsea", new String[]{"eu@tu.isec"});
-        //DbManage.InserePresencas("Chelsea2", new String[]{"eu@tu.isec"});
-        //DbManage.InserePresencas("Chelsea3", new String[]{"eu@tu.isec"});
-        //DbManage.EliminaPresencas("Chelsea",new String[]{"eu@tu.isec"} );
-     /* int code =  DbManage.GeraCodigoRegisto(new Cria_evento("TesteCod2","Lua",data,horainicio,horafim),30);// estive a alterar esta funcao
-        System.out.println(code);*/
-/*
-        List <Evento> presencasUser = DbManage.ConsultaPresencas_user("eu@tu.isec",null,null,null,null,null);
-        System.out.println("Presenças registadas nos seguintes eventos:");
-        for (Evento evento : presencasUser) {
-            System.out.println(evento.toString());
+            sair("\n<SERVIDOR> Registry ja em execucao");
+        } catch (UnknownHostException e) {
+            sair("\n<SERVIDOR> Exececao ao obter o nome do host");
         }
 
-        DbManage.PresencasCSV(presencasUser,"minhasPresencas.csv");*/
+        try {
+            progServidor = new ProgServidor(Integer.parseInt(args[0]), args[2]);;
+            Naming.rebind("rmi://" + s + "/" + SERVICE_NAME, progServidor);
+        } catch (RemoteException e) {
+            sair("\n<SERVIDOR> Excecao remota ao criar o servico de QueryServidorService");
+        } catch (MalformedURLException e) {
+            sair("\n<SERVIDOR> Excecao ao registar o servico de QueryServidorService");
+        }
+
+        // SERVIDOR
+        // HEARTBEAT SERVIDORES BACKUP
+        String resultado = progServidor.setMulticastSocketBackup();
+        if(resultado != null)
+            sair(resultado);
+
+        // PROGRAMA
+        progServidor.servidorMainFunction();
     }
 
-
+    public static void sair(String msg) {
+        System.out.println(msg);
+        System.exit(1);
+    }
 }

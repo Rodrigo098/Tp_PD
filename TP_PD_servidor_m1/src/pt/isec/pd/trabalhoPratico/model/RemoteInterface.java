@@ -1,6 +1,7 @@
 package pt.isec.pd.trabalhoPratico.model;
 
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Geral;
+import pt.isec.pd.trabalhoPratico.model.classesPrograma.QueryService;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -10,6 +11,4 @@ public interface RemoteInterface extends Remote {
         void registaBackupServers(String backupServiceURL) throws RemoteException;
         public void addObservable(ObservableInterface obv) throws RemoteException;
         public void RemoveObservable(ObservableInterface obv) throws RemoteException;
-
-
 }
