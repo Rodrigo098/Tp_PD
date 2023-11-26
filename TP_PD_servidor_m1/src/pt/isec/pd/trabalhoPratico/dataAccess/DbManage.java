@@ -175,6 +175,7 @@ public class DbManage {
                 return new BDResposta(false, "<BD>Falha na inserção de novo utilizador", true);
             }
             else{
+                connection.close();
                 setVersao();
                 return new BDResposta(true, "<BD>Insercao de novo utilizador com sucesso", false);
             }
@@ -230,6 +231,7 @@ public class DbManage {
                 preparedStatement.setString(3, pasword);
                 preparedStatement.setString(4, user.email());
                 preparedStatement.executeUpdate();
+                connection.close();
                 setVersao();
                 return true;
             }
@@ -297,6 +299,7 @@ public class DbManage {
                     }
                     else{
                         System.out.println("<BD> Nova presenca registada de [" + emailuser + "] no evento [" + nome_evento + "]");
+                        connection.close();
                         setVersao();
                         return true;
                     }
@@ -448,6 +451,7 @@ public class DbManage {
             }
             else{
                 System.out.println("<BD> Evento [" + evento +"] criado com sucesso");
+                connection.close();
                 setVersao();
             }
         } catch (SQLException e) {
@@ -478,6 +482,7 @@ public class DbManage {
                     return false;
                 } else {
                     System.out.println("<BD> Evento [" + evento + "] editado com sucesso");
+                    connection.close();
                     setVersao();
                     }
             }
@@ -509,6 +514,7 @@ public class DbManage {
                     return false; // erro na eliminação do evento
                 } else {
                     System.out.println("<BD> Evento ["+ nome_evento +"] eliminado com sucesso");
+                    connection.close();
                     setVersao();
                     }
             }
@@ -617,6 +623,7 @@ public class DbManage {
                 }
             }
             else System.out.println("<BD> Evento [" + nomeEvento +"] nao existe.");
+            connection.close();
             setVersao();
             return true;
         } catch (SQLException e) {
@@ -641,6 +648,7 @@ public class DbManage {
                     System.out.println("<BD> Nao foi encontrada a presenca do estudante " + emailEstudante + " no evento " + nomeEvento + ".");
                 }
             }
+            connection.close();
             setVersao();
             return true;
         } catch (SQLException e) {
@@ -710,6 +718,7 @@ public class DbManage {
                     insereStatement.setTimestamp(3, horarioValidade); //Estou a salvar em TimeStamp porque é melhor para verificar a validade do codigo
                     insereStatement.executeUpdate();
                     System.out.println("<BD> Novo codigo para o evento [" + evento + "]");
+                    connection.close();
                     setVersao();
                         return codigo;
                 } else {

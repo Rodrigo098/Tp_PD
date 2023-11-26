@@ -11,15 +11,21 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 import java.util.Timer;
 
 public class ServidorBackup extends UnicastRemoteObject implements ObservableInterface {
+    private static final String dbAdress = "Base de Dados/copiaDb.db";
+    private static final String dbUrl= "jdbc:sqlite:"+dbAdress;
     private static String registration;
     private static boolean sair;
     private static boolean recebeuHeartBeat;
     private static RemoteInterface rmi;
     private static MulticastSocket multicastSocket;
+    private static int versao;
 
     private static final int portobackup = 4444;
     private static final String Heartbeatip = "230.44.44.44";
@@ -41,7 +47,9 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
             System.exit(1);
         }
 
+
         diretoria = args[0];
+        System.setProperty("sun.rmi.transport.connectionTimeout","60000");
 
         // Verifica se o caminho existe
         File caminho = new File(diretoria);
@@ -62,9 +70,9 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
 
         try
         {   multicastSocket = new MulticastSocket(portobackup);
-            multicastSocket.setSoTimeout(30000);
+            // multicastSocket.setSoTimeout(30000);
             group = InetAddress.getByName(Heartbeatip);
-           NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName("192.168.0.142"));// replace with your network interface
+           NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName(InetAddress.getLocalHost().getHostAddress()));// replace with your network interface
             multicastSocket.joinGroup(new InetSocketAddress(group,portobackup),networkInterface);
             DatagramPacket heartBeat;
 
@@ -75,13 +83,13 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                 // PRIMEIRO HEATBEAT PARA REGISTO
                 Object object = oin.readObject();
                 if (object instanceof DadosRmi dados) {
-                    registration = "rmi://" + "192.168.0.142" + "/" + dados.nome_servico();
+                    registration = "rmi://" + dados.Registo() + "/" + dados.nome_servico();
                     rmi = (RemoteInterface) Naming.lookup(registration);
                     //conected = true;
 
                     System.out.println("Servidor de backup conectado ao servidor principal");
 
-                    receiveDb(); //recebe a copia da base de dados do servidor principal
+                   receiveDb(); //recebe a copia da base de dados do servidor principal
 
                     obs = new ServidorBackup();
                     rmi.addObservable(obs);
@@ -120,6 +128,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         System.out.println("<SERVIDOR BACKUP> Prima [enter] sair.");
         sair = true;
         try {
+            rmi.RemoveObservable(obs);
             multicastSocket.leaveGroup(InetAddress.getByName(Heartbeatip));
             multicastSocket.close();
             linhaComandos.join();
@@ -133,11 +142,13 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
 
     public static void receiveDb() {
         try {
-            byte[] copiaDb = rmi.getCopiaDb();
 
-            salvarCopiaDb(copiaDb, diretoria +File.separator+ "copiaDb.db");
-        } catch (Exception e) {
-            e.printStackTrace();
+           byte[] copiaDb = rmi.getCopiaDb();
+            System.out.println("Chegou aqui");
+           salvarCopiaDb(copiaDb, diretoria +File.separator+ "copiaDb.db");
+
+        } catch (RemoteException e) {
+          e.printStackTrace();
         }
 
     }
@@ -146,6 +157,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         try (FileOutputStream fos = new FileOutputStream(nomeFicheiro)) {
             fos.write(copiaDb);
             System.out.println("Copia da base de dados salva localmente: " + nomeFicheiro);
+            versao=DbManager.getVersaoDb();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -197,6 +209,189 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
 
         }
     }
+
+    @Override
+    public boolean RegistoNovoUser(Utilizador user, String password) throws RemoteException {
+        try(Connection connection = DriverManager.getConnection(dbUrl);
+            Statement statement = connection.createStatement())
+        {String createEntryQuery = "INSERT INTO Utilizador (email,nome,numero_estudante,palavra_passe,tipo_utilizador) VALUES ('"
+                    + user.email() + "','" + user.nome() + "','" + user.numIdentificacao() + "','" + password +"','" + "cliente" +"')";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
+           connection.close();
+            setVersao(versao++);
+            return true;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean edita_registo(Utilizador user, String pasword) throws RemoteException {
+        try(Connection connection = DriverManager.getConnection(dbUrl);
+            Statement statement = connection.createStatement()){
+                String updateQuery = "UPDATE Utilizador SET nome=?, numero_estudante=?, palavra_passe=? WHERE email=?";
+                PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
+                preparedStatement.setString(1, user.nome());
+                preparedStatement.setInt(2, user.numIdentificacao());
+                preparedStatement.setString(3, pasword);
+                preparedStatement.setString(4, user.email());
+                preparedStatement.executeUpdate();
+                connection.close();
+                setVersao(versao++);
+                return true;
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public void setVersao(int versao) throws RemoteException {
+        try (Connection connection=DriverManager.getConnection(dbUrl)){
+            String UpdateVersao="UPDATE Versao SET versao_id=? where versao_id=?";
+            PreparedStatement statement=connection.prepareStatement(UpdateVersao);
+            statement.setInt(1,versao);
+            statement.setInt(2,versao-1);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    @Override
+    public boolean Cria_evento(Msg_Cria_Evento evento) throws RemoteException {
+        try(Connection connection = DriverManager.getConnection(dbUrl);
+
+            Statement statement = connection.createStatement()){
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+            String dataString = dateFormat.format(evento.getData()); //Alterei isso para termos a data nesse formato, facilita os testes
+
+            String createEntryQuery = "INSERT INTO Evento (nome_evento,local,data_realizacao,hora_inicio,hora_fim) VALUES ('"
+                    + evento.getNome() +"','" + evento.getLocal() +"','" + dataString +"','" + evento.getHoreInicio() +"','" + evento.getHoraFim() +"')";
+          statement.executeUpdate(createEntryQuery);
+          connection.close();
+          setVersao(versao++);
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return false;
+    }
+
+    @Override
+    public boolean submitcod(int codigo, String nome_evento, String emailuser) throws RemoteException {
+        try(Connection connection = DriverManager.getConnection(dbUrl);
+            Statement statement = connection.createStatement())
+        {
+
+
+            String GetQuery = "SELECT * FROM Codigo_Registo where nome_evento=? AND validade>?";
+            PreparedStatement getquery=connection.prepareStatement(GetQuery);
+            getquery.setString(1,nome_evento);
+            getquery.setLong(2,0);
+            ResultSet rs=getquery.executeQuery();
+
+            if(rs.isBeforeFirst())
+            {   rs.next();
+                java.util.Date Data=new Date();
+                long datamili=Data.getTime();
+                if(rs.getTimestamp("validade").getTime()<datamili){
+                    System.out.println("Fora de validade");
+                    String EliminaCodigosAnterioresQuery = "UPDATE Codigo_Registo SET validade=0 WHERE nome_evento = ?";//
+                    PreparedStatement expiraStatement = connection.prepareStatement(EliminaCodigosAnterioresQuery);
+                    expiraStatement.setString(1, nome_evento); // Define o valor do nome_evento para o ? da query
+                    expiraStatement.executeUpdate();// se existirem codigos antigos são eliminados se nao existirem nao acontece nada
+                    return false;
+                }
+
+
+                    String createEntryQuery = "INSERT INTO Assiste (nome_evento,email) VALUES ('"
+                            + nome_evento+"','" +emailuser+"')";// qual o valor que é suposto colocar no idassiste??
+
+               statement.executeUpdate(createEntryQuery);
+               connection.close();
+               setVersao(versao++);
+
+            }
+        } catch (SQLException e) {
+
+            System.out.println(e.getMessage());
+            return false;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean Edita_evento(Msg_Edita_Evento evento) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(dbUrl);
+             Statement statement = connection.createStatement()) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+            String dataString = dateFormat.format(evento.getData()); //Alterei isso para termos a data nesse formato, facilita os testes mas sempre se pode alterar
+            String updateEventQuery = "UPDATE Evento SET data_realizacao = '" + dataString + "', hora_inicio = '" + evento.getHoreInicio() + "', hora_fim = '" + evento.getHoraFim() + "', nome_evento = '" + evento.getNome() + "', local = '" + evento.getLocal()+ "' WHERE nome_evento = '" + evento.getNome()
+                    + "'";
+          statement.executeUpdate(updateEventQuery);
+          connection.close();
+          setVersao(versao++);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return true;
+    }
+
+    @Override
+    public boolean Elimina_evento(String nome_evento) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(dbUrl);
+             Statement statement = connection.createStatement()){
+        String deleteEventQuery = "DELETE FROM Evento WHERE nome_evento = '" + nome_evento + "'";
+        statement.executeUpdate(deleteEventQuery);
+        connection.close();
+        setVersao(versao++);
+        return true;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean InserePresencas(String nomeEvento, String[] emails) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(dbUrl)) {
+            for (String emailEstudante : emails) {
+                    String inserePresencaQuery = "INSERT INTO assiste (nome_evento, email) VALUES (?, ?)";
+                    PreparedStatement presencaStatement = connection.prepareStatement(inserePresencaQuery);
+                    presencaStatement.setString(1, nomeEvento);
+                    presencaStatement.setString(2, emailEstudante);
+                    presencaStatement.executeUpdate();
+            }
+            connection.close();
+            setVersao(versao++);
+            return true;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean EliminaPresencas(String nomeEvento, String[] emails) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(dbUrl)) {
+
+            for (String emailEstudante : emails) {
+                String eliminaPresencaQuery = "DELETE FROM assiste WHERE nome_evento = ? AND email = ?";
+                PreparedStatement eliminaPresencaStatement = connection.prepareStatement(eliminaPresencaQuery);
+                eliminaPresencaStatement.setString(1, nomeEvento);
+                eliminaPresencaStatement.setString(2, emailEstudante);
+                 eliminaPresencaStatement.executeUpdate();
+            }
+            connection.close();
+            setVersao(versao++);
+
+            return true;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
     class ThreadLeLinhaComandos extends Thread {
         @Override
         public void run(){
@@ -210,65 +405,5 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
             multicastSocket.close();
         }
     }
-/*
-    class Heartbeat extends Thread{// im not sure pq é que criei este thread  mas agr ta criadad
 
-        @Override
-        public void run() {
-            try(MulticastSocket mSocket = new MulticastSocket(portobackup)){
-                multicastSocket = mSocket;
-                multicastSocket.setSoTimeout(30000);
-                group = InetAddress.getByName(Heartbeatip);
-                multicastSocket.joinGroup(group);
-
-                DatagramPacket packet = new DatagramPacket(new byte[2024],2024);// aqui tenho de por um valor diferente i guess
-
-                multicastSocket.receive(packet);
-                ByteArrayInputStream bye = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
-                ObjectInputStream oin = new ObjectInputStream(bye);
-                DadosRmi dados = (DadosRmi) oin.readObject();
-
-                registration = "rmi://" + dados.Registo()+ "/" + dados.nome_servico();
-                rmi = (RemoteInterface) Naming.lookup(registration);
-                //conected = true;
-
-                System.out.println("Servidor de backup conectado ao servidor principal");
-
-                receiveDb(); //recebe a copia da base de dados do servidor principal
-
-                obs = new ServidorBackup();
-                rmi.addObservable(obs);
-
-                while (!sair) {
-                    recebeuHeartBeat = false;
-                    DatagramPacket heartBeat = new DatagramPacket(new byte[2024],2024);// aqui tenho de por um valor diferente i guess
-                    multicastSocket.receive(heartBeat);
-                    bye = new ByteArrayInputStream(heartBeat.getData(), 0, heartBeat.getLength());
-                    oin = new ObjectInputStream(bye);
-                    dados = (DadosRmi) oin.readObject();
-
-                    // Compara a versão da base de dados recebida com a versão local
-                    if (dados.versao() != dbManager.getVersaoDb()) {
-                        System.out.println("Dados " + dados.versao() + " Manager:" + dbManager.getVersaoDb());
-                        System.out.println("Versao da base de dados diferente. A encerrar o servidor backup...");
-                        sair = true;
-                    }
-                }
-            } catch (SocketTimeoutException e) {
-                System.out.println("<SERVIDOR BACKUP> Nao foi detetado nenhum HearBeat nos ultimos 30 segundos.");
-                System.out.println("<SERVIDOR BACKUP> Prime [enter] para terminar.");
-                sair = true;
-            } catch (IOException e) {
-                System.out.println("\n<SERVIDOR BACKUP> Erro ao criar socket multicast: " + e.getMessage());
-            } catch (NotBoundException | ClassNotFoundException e) {
-                System.out.println("<SERVIDOR BACKUP> Info: " + e.getMessage());
-            }
-            try {
-                multicastSocket.leaveGroup(InetAddress.getByName(Heartbeatip));
-                multicastSocket.close();
-            } catch (IOException e) {
-                System.out.println("\n<SERVIDOR BACKUP> Info: " + e.getMessage());
-            }
-        }
-    }*/
 }

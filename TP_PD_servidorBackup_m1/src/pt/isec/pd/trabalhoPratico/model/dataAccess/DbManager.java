@@ -19,7 +19,7 @@ public class DbManager {
     private int versao;
 
 
-    public int getVersaoDb(){
+    public static int getVersaoDb(){
         try(Connection connection=DriverManager.getConnection(dbUrl)) {
             String GetQuery="Select versao_id FROM VERSAO";
             PreparedStatement statement=connection.prepareStatement(GetQuery);
@@ -38,7 +38,6 @@ public class DbManager {
     }
     public static boolean RegistoNovoUser(Utilizador user, String password){
         try(Connection connection = DriverManager.getConnection(dbUrl);
-
             Statement statement = connection.createStatement())
         {
             String createEntryQuery = "INSERT INTO Utilizador (email,nome,numero_estudante,palavra_passe,tipo_utilizador) VALUES ('"
@@ -56,7 +55,6 @@ public class DbManager {
     }
     public static boolean edita_registo( Utilizador user, String pasword ){
         try(Connection connection = DriverManager.getConnection(dbUrl);
-
             Statement statement = connection.createStatement()){
 
             //Somente para teste de ligação a base de dados
