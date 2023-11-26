@@ -1,5 +1,6 @@
 package pt.isec.pd.trabalhoPratico.dataAccess;
 
+import pt.isec.pd.trabalhoPratico.model.ObservableInterface;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Msg_ConsultaComFiltros;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Msg_Cria_Evento;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Msg_Edita_Evento;
@@ -9,10 +10,10 @@ import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.rmi.RemoteException;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -23,17 +24,32 @@ public class DbManage {
     private static final String dbAdress = "databasePD.db";
     private static final String dbUrl= "jdbc:sqlite:"+dbAdress;
     private int versao;
+
+    private List<ObservableInterface>observables;
     private PropertyChangeSupport versaoSuporte;
 
-    public DbManage() {
+    public DbManage(List<ObservableInterface> obv) {
         if(!DbManage.existeDb())
             criarDb();
-
+        this.observables=obv;
         versao = getversaobd();
         versaoSuporte = new PropertyChangeSupport(this);
         int codigo_registo = 1;
         String nome_evento = "Evento1";
         String email="email";
+    }
+
+    public void addObserver(ObservableInterface o){
+
+            if(!observables.contains(o))
+                observables.add(o);
+
+    }
+    public void removeObserver(ObservableInterface o){
+            if(observables.contains(o))
+                observables.remove(o);
+
+
     }
 
     public static String getDbAdress() {
@@ -176,12 +192,18 @@ public class DbManage {
             }
             else{
                 connection.close();
+                for (ObservableInterface obv:observables) {
+                    obv.RegistoNovoUser(user,password);
+                }
                 setVersao();
                 return new BDResposta(true, "<BD>Insercao de novo utilizador com sucesso", false);
             }
         } catch (SQLException e) {
             e.printStackTrace();
             return new BDResposta(false, "<BD>Erro no acesso a base de dados", false);
+        } catch (RemoteException e) {
+            System.out.println("<Rmi>Excecao ao atualizar o backup: "+e);
+            return new BDResposta(true, "<RMI>Erro no acesso a base de dados", false);
         }
     }
 
@@ -232,6 +254,9 @@ public class DbManage {
                 preparedStatement.setString(4, user.email());
                 preparedStatement.executeUpdate();
                 connection.close();
+                for (ObservableInterface obv:observables) {
+                    obv.edita_registo(user,pasword);
+                }
                 setVersao();
                 return true;
             }
@@ -242,6 +267,9 @@ public class DbManage {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             return false;
+        } catch (RemoteException e) {
+            System.out.println("<Rmi>Excecao ao atualizar o backup: "+e);
+            return true;
         }
 
     }
@@ -300,6 +328,7 @@ public class DbManage {
                     else{
                         System.out.println("<BD> Nova presenca registada de [" + emailuser + "] no evento [" + nome_evento + "]");
                         connection.close();
+                        for (ObservableInterface obv:observables) {obv.submitcod(codigo,nome_evento,emailuser);}
                         setVersao();
                         return true;
                     }
@@ -317,6 +346,9 @@ public class DbManage {
 
             System.out.println(e.getMessage());
             return false;
+        } catch (RemoteException e) {
+            System.out.println("<Rmi>Excecao ao atualizar o backup: "+e);
+            return true;
         }
     }
 
@@ -452,12 +484,15 @@ public class DbManage {
             else{
                 System.out.println("<BD> Evento [" + evento +"] criado com sucesso");
                 connection.close();
+                for (ObservableInterface obv:observables) {obv.Cria_evento(evento);}
                 setVersao();
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+        } catch (RemoteException e) {
+            System.out.println("<Rmi>Excecao ao atualizar o backup: "+e);
         }
-    return false;
+        return false;
     }
 
     public boolean Edita_evento(Msg_Edita_Evento evento) {
@@ -483,11 +518,14 @@ public class DbManage {
                 } else {
                     System.out.println("<BD> Evento [" + evento + "] editado com sucesso");
                     connection.close();
+                    for (ObservableInterface obv:observables) {obv.Edita_evento(evento);}
                     setVersao();
                     }
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+        } catch (RemoteException e) {
+            System.out.println("<Rmi>Excecao ao atualizar o backup: "+e);
         }
         return true;
     }
@@ -515,11 +553,14 @@ public class DbManage {
                 } else {
                     System.out.println("<BD> Evento ["+ nome_evento +"] eliminado com sucesso");
                     connection.close();
+                    for (ObservableInterface obv:observables) {obv.Elimina_evento(nome_evento);}
                     setVersao();
                     }
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+        } catch (RemoteException e) {
+            System.out.println("<Rmi>Excecao ao atualizar o backup: "+e);
         }
         return false;
     }
@@ -624,11 +665,15 @@ public class DbManage {
             }
             else System.out.println("<BD> Evento [" + nomeEvento +"] nao existe.");
             connection.close();
+            for (ObservableInterface obv:observables) {obv.InserePresencas(nomeEvento,emails);}
             setVersao();
             return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             return false;
+        } catch (RemoteException e) {
+            System.out.println("<Rmi>Excecao ao atualizar o backup: "+e);
+            return true;
         }
     }
 
@@ -650,10 +695,14 @@ public class DbManage {
             }
             connection.close();
             setVersao();
+            for (ObservableInterface obv:observables) {obv.EliminaPresencas(nomeEvento,emails);}
             return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             return false;
+        } catch (RemoteException e) {
+            System.out.println("<Rmi>Excecao ao atualizar o backup: "+e);
+            return true;
         }
     }
 

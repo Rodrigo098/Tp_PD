@@ -56,7 +56,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
         threadsClientes = new ArrayList<>();
         temporizador = new Timer();
         heartBeatTask = new HeartBeatTask();
-        dbManager = new DbManage();
+        dbManager = new DbManage(observers);
         dbManager.addVersaoListener(event -> envioDeAvisoDeAtualizacao("atualizacao"));
     }
 
@@ -169,6 +169,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
         synchronized (observers){
       if(!observers.contains(obv)){
           observers.add(obv);
+          dbManager.addObserver(obv);
           System.out.println("\n<SERVIDOR> Observable adicionado");
       }
         }
@@ -179,6 +180,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     public  void RemoveObservable(ObservableInterface obv) throws RemoteException {
         synchronized (observers){
         observers.remove(obv);
+        dbManager.removeObserver(obv);
             System.out.println("\n<SERVIDOR> Observable Removido");
         }
     }
