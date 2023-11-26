@@ -503,14 +503,14 @@ public class ProgramaCliente {
                 return "Dados devem ser todos preenchidos.";
 
             LocalDate dataAtual = LocalDate.now(), dataEvento;
-           LocalTime HoraInicio, HoraFim;
-            System.out.println(dataAtual);
+            LocalTime HoraInicio, HoraFim;
+
             try {
                 dataEvento = LocalDate.parse(data, DateTimeFormatter.ofPattern("yyyy/MM/dd"));
                 HoraInicio = LocalTime.parse(horaInicio, DateTimeFormatter.ofPattern("HH:mm"));
                 HoraFim = LocalTime.parse(horaFim, DateTimeFormatter.ofPattern("HH:mm"));
                 System.out.println(dataEvento);
-                if (dataEvento.isBefore(dataAtual) )
+                if (dataEvento.isBefore(dataAtual))
                     return "Não pode marcar no passado!";
                 if(HoraInicio.isAfter(HoraFim))
                     return "A hora de início não pode ser depois da hora de fim!";
@@ -529,7 +529,7 @@ public class ProgramaCliente {
                 if (validacao instanceof Geral g)
                     return  g.getTipo() == Message_types.VALIDO ?
                             "Evento criado com sucesso!"
-                            : "Ocorreu um erro na BD.";
+                            : "Ocorreu um erro na BD/Não pode alterar o evento.";
 
             } catch (IOException | ClassNotFoundException ignored) {
                 gereMudancasPLC.setErros();
@@ -553,8 +553,10 @@ public class ProgramaCliente {
                 dataEvento = LocalDate.parse(data, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 HoraInicio = LocalTime.parse(horaInicio, DateTimeFormatter.ofPattern("HH:mm"));
                 HoraFim = LocalTime.parse(horaFim, DateTimeFormatter.ofPattern("HH:mm"));
-                if (dataEvento.isBefore(dataAtual) || HoraInicio.isBefore(horaAtual))
+                if (dataEvento.isBefore(dataAtual))
                     return "Não pode mudar para o passado!";
+                if (dataEvento.isEqual(dataAtual) && horaAtual.isAfter(HoraInicio))
+                    return "Não pode editar enquanto o evento está a decorrer!";
                 if(HoraInicio.isAfter(HoraFim))
                     return "A hora de início não pode ser depois da hora de fim!";
             } catch (Exception e) {
