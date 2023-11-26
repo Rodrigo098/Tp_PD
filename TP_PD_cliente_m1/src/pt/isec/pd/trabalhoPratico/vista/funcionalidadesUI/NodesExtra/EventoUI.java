@@ -25,7 +25,7 @@ public class EventoUI extends VBox {
         local = new TextField();
         local.setPromptText("local do evento");
         data = new TextField();
-        data.setPromptText("AAAA/MM/DD");
+        data.setPromptText("DD-MM-AAAA");
 
         horaInicio = new TextField();
         horaInicio.setPromptText("HH:MM");

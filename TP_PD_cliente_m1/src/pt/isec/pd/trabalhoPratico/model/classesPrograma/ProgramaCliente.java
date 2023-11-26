@@ -479,7 +479,7 @@ public class ProgramaCliente {
             LocalTime horaAtual = LocalTime.now(), HoraInicio, HoraFim;
 
             try {
-                dataEvento = LocalDate.parse(data, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                dataEvento = LocalDate.parse(data, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
                 HoraInicio = LocalTime.parse(horaInicio, DateTimeFormatter.ofPattern("HH:mm"));
                 HoraFim = LocalTime.parse(horaFim, DateTimeFormatter.ofPattern("HH:mm"));
                 if (dataEvento.isBefore(dataAtual) || HoraInicio.isBefore(horaAtual))
@@ -487,7 +487,7 @@ public class ProgramaCliente {
                 if(HoraInicio.isAfter(HoraFim))
                     return "A hora de início não pode ser depois da hora de fim!";
             } catch (Exception e) {
-                return "Verifique o formato da hora/data!";
+                return "Verifique o formato da hora/data!" + e;
             }
 
             Msg_Cria_Evento evento = new Msg_Cria_Evento(new Evento(nome, local, data, horaInicio, horaFim));
