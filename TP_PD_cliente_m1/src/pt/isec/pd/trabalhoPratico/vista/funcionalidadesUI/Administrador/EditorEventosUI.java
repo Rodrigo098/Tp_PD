@@ -138,7 +138,9 @@ public class EditorEventosUI extends BorderPane {
 
         opcaoEdicao.addListener(observable -> update2());
 
-        progClienteManager.addAtualizacaoListener(observable -> Platform.runLater(this::extrairListaPresencas));
+        progClienteManager.addAtualizacaoListener(observable -> {
+            if(this.isVisible()) Platform.runLater(this::extrairListaPresencas);
+        });
     }
 
     private void update() {

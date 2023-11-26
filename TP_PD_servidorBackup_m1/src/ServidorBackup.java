@@ -161,12 +161,28 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         }
     }
 
+    public static void setVersao(int versao) {
+        try (Connection connection=DriverManager.getConnection(dbUrl)){
+            String UpdateVersao="UPDATE Versao SET versao_id=? where versao_id=?;";
+            PreparedStatement statement=connection.prepareStatement(UpdateVersao);
+            statement.setInt(1,ServidorBackup.versao);
+            statement.setInt(2,ServidorBackup.versao-1);
+            if( statement.executeUpdate()<1)
+                System.out.println("Erro a atualizar a versao");
+            else{
+
+                System.out.println("Versao atualizada com sucesso");}
+            statement.close();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
     @Override
     public boolean submitcod(int codigo, String nome_evento, String emailuser) throws RemoteException {
         try(Connection connection = DriverManager.getConnection(dbUrl);
             Statement statement = connection.createStatement())
         {
-            String GetQuery = "SELECT * FROM Codigo_Registo where nome_evento=? AND validade>?";
+            String GetQuery = "SELECT * FROM Codigo_Registo where nome_evento=? AND validade>?;";
             PreparedStatement getquery=connection.prepareStatement(GetQuery);
             getquery.setString(1,nome_evento);
             getquery.setLong(2,0);
@@ -188,6 +204,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                             + nome_evento+"','" +emailuser+"')";// qual o valor que é suposto colocar no idassiste??
 
                statement.executeUpdate(createEntryQuery);
+               setVersao(versao++);
             }
         } catch (SQLException e) {
 
@@ -201,13 +218,14 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
     public boolean InserePresencas(String nomeEvento, String[] emails) throws RemoteException {
         try (Connection connection = DriverManager.getConnection(dbUrl)) {
             for (String emailEstudante : emails) {
-                    String inserePresencaQuery = "INSERT INTO assiste (nome_evento, email) VALUES (?, ?)";
+                    String inserePresencaQuery = "INSERT INTO assiste (nome_evento, email) VALUES (?, ?);";
                     PreparedStatement presencaStatement = connection.prepareStatement(inserePresencaQuery);
                     presencaStatement.setString(1, nomeEvento);
                     presencaStatement.setString(2, emailEstudante);
                     presencaStatement.executeUpdate();
             }
             connection.close();
+            setVersao(versao++);
             return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -220,13 +238,14 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         try (Connection connection = DriverManager.getConnection(dbUrl)) {
 
             for (String emailEstudante : emails) {
-                String eliminaPresencaQuery = "DELETE FROM assiste WHERE nome_evento = ? AND email = ?";
+                String eliminaPresencaQuery = "DELETE FROM assiste WHERE nome_evento = ? AND email = ?;";
                 PreparedStatement eliminaPresencaStatement = connection.prepareStatement(eliminaPresencaQuery);
                 eliminaPresencaStatement.setString(1, nomeEvento);
                 eliminaPresencaStatement.setString(2, emailEstudante);
                  eliminaPresencaStatement.executeUpdate();
             }
             connection.close();
+            setVersao(versao++);
             return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -240,6 +259,8 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
             Statement statement= connection.createStatement();
         ) {
             statement.executeUpdate(query);
+            connection.close();
+            setVersao(versao++);
         } catch (SQLException e) {
             System.out.println("<SERVIDOR BACKUP> Excepcao ao executar um update da base de dados [" + e + "]");
         }

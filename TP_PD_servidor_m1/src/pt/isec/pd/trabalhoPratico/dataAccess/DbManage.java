@@ -81,7 +81,7 @@ public class DbManage implements Serializable {
                     + "email TEXT,"
                     + "FOREIGN KEY(email) REFERENCES Utilizador(email),"
                     + "FOREIGN KEY(nome_evento) REFERENCES Evento(nome_evento)"
-                    + ")";
+                    + ");";
             statement.executeUpdate(criaAssiste);
 
             // Tabela Codigo_Registo
@@ -90,7 +90,7 @@ public class DbManage implements Serializable {
                     + "nome_evento TEXT,"
                     + "validade TIMESTAMP,"
                     + "FOREIGN KEY(nome_evento) REFERENCES Evento(nome_evento)"
-                    + ")";
+                    + ");";
             statement.executeUpdate(criaCodigoRegisto);
 
             // Tabela Evento
@@ -100,7 +100,7 @@ public class DbManage implements Serializable {
                     + "data_realizacao DATE,"
                     + "hora_inicio TIME,"
                     + "hora_fim TIME"
-                    + ")";
+                    + ");";
             statement.executeUpdate(criaEvento);
 
             // Tabela Utilizador
@@ -110,18 +110,18 @@ public class DbManage implements Serializable {
                     + "numero_estudante INTEGER,"
                     + "palavra_passe TEXT,"
                     + "tipo_utilizador TEXT"
-                    + ")";
+                    + ");";
             statement.executeUpdate(criaUtilizador);
 
             // Tabela Versao
             String criaVersao = "CREATE TABLE Versao ("
                     + "versao_id INTEGER PRIMARY KEY,"
                     + "descricao TEXT"
-                    + ")";
+                    + ");";
             statement.executeUpdate(criaVersao);
 
             // versao_id = 0
-            String insereVersao = "INSERT INTO Versao (versao_id, descricao) VALUES (0, 'Versão Inicial')";
+            String insereVersao = "INSERT INTO Versao (versao_id, descricao) VALUES (0, 'Versão Inicial');";
             statement.executeUpdate(insereVersao);
 
             statement.close();
@@ -186,7 +186,7 @@ public class DbManage implements Serializable {
             Statement statement = connection.createStatement())
         {
             String createEntryQuery = "INSERT INTO Utilizador (email,nome,numero_estudante,palavra_passe,tipo_utilizador) VALUES ('"
-                    + user.email() + "','" + user.nome() + "','" + user.numIdentificacao() + "','" + password +"','" + "cliente" +"')";
+                    + user.email() + "','" + user.nome() + "','" + user.numIdentificacao() + "','" + password +"','" + "cliente" +"');";
 
             if(statement.executeUpdate(createEntryQuery)<1){
                 return new BDResposta(false, "<BD>Falha na inserção de novo utilizador", true);
@@ -214,7 +214,7 @@ public class DbManage implements Serializable {
 
         try(Connection connection = DriverManager.getConnection(dbUrl))
         {
-            String verificaEstudanteQuery = "SELECT * FROM Utilizador WHERE email = ?";
+            String verificaEstudanteQuery = "SELECT * FROM Utilizador WHERE email = ?;";
             PreparedStatement alunoStatement = connection.prepareStatement(verificaEstudanteQuery);
             alunoStatement.setString(1, user);
             ResultSet rs=alunoStatement.executeQuery();
@@ -248,7 +248,7 @@ public class DbManage implements Serializable {
 
             if(rs.isBeforeFirst())
             {   rs.next();
-                String updateQuery = "UPDATE Utilizador SET nome=?, numero_estudante=?, palavra_passe=? WHERE email=?";
+                String updateQuery = "UPDATE Utilizador SET nome=?, numero_estudante=?, palavra_passe=? WHERE email=?;";
                 PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
                 preparedStatement.setString(1, user.nome());
                 preparedStatement.setInt(2, user.numIdentificacao());
@@ -279,7 +279,7 @@ public class DbManage implements Serializable {
         try(Connection connection = DriverManager.getConnection(dbUrl);
             Statement statement = connection.createStatement())
         {
-            String verificaEstudanteQuery = "SELECT COUNT(*) FROM Utilizador WHERE email = ?";
+            String verificaEstudanteQuery = "SELECT COUNT(*) FROM Utilizador WHERE email = ?;";
             PreparedStatement alunoStatement = connection.prepareStatement(verificaEstudanteQuery);
             alunoStatement.setString(1, emailuser);
             int estudantesEncontrados = alunoStatement.executeQuery().getInt(1);
@@ -289,7 +289,7 @@ public class DbManage implements Serializable {
                 return false;
             }
 
-            String verificasejaseincreveuQuery="SELECT COUNT(*) FROM Assiste where nome_evento=? AND email=?";
+            String verificasejaseincreveuQuery="SELECT COUNT(*) FROM Assiste where nome_evento=? AND email=?;";
             PreparedStatement verstatemente=connection.prepareStatement(verificasejaseincreveuQuery);
             verstatemente.setString(1,nome_evento);
             verstatemente.setString(2,emailuser);
@@ -300,7 +300,7 @@ public class DbManage implements Serializable {
             }
 
 
-            String GetQuery = "SELECT * FROM Codigo_Registo where nome_evento=? AND validade>?";
+            String GetQuery = "SELECT * FROM Codigo_Registo where nome_evento=? AND validade>?;";
             PreparedStatement getquery=connection.prepareStatement(GetQuery);
             getquery.setString(1,nome_evento);
             getquery.setLong(2,0);
@@ -312,7 +312,7 @@ public class DbManage implements Serializable {
                 long datamili = Data.getTime();
                 if(rs.getTimestamp("validade").getTime()<datamili){
                     System.out.println("<BD> Tentativa de registo no evento [" + nome_evento + "] com codigo invalido por [" + emailuser + "]");
-                    String EliminaCodigosAnterioresQuery = "UPDATE Codigo_Registo SET validade=0 WHERE nome_evento = ?";//
+                    String EliminaCodigosAnterioresQuery = "UPDATE Codigo_Registo SET validade=0 WHERE nome_evento = ?;";//
                     PreparedStatement expiraStatement = connection.prepareStatement(EliminaCodigosAnterioresQuery);
                     expiraStatement.setString(1, nome_evento); // Define o valor do nome_evento para o ? da query
                     expiraStatement.executeUpdate();// se existirem codigos antigos são eliminados se nao existirem nao acontece nada
@@ -321,7 +321,7 @@ public class DbManage implements Serializable {
 
                 if(rs.getInt("n_codigo_registo")==codigo  ){
                     String createEntryQuery = "INSERT INTO Assiste (nome_evento,email) VALUES ('"
-                            + nome_evento+"','" +emailuser+"')";// qual o valor que é suposto colocar no idassiste??
+                            + nome_evento+"','" +emailuser+"');";// qual o valor que é suposto colocar no idassiste??
 
                     if(statement.executeUpdate(createEntryQuery)<1){
                         System.out.println("<BD> Erro na insercao da presenca de [" + emailuser + "] no evento [" + nome_evento + "]");
@@ -396,7 +396,7 @@ public class DbManage implements Serializable {
             Statement statement = connection.createStatement()) {
             String FiltroEventosUser = "SELECT * FROM Evento " +
                     "INNER JOIN Assiste ON Evento.nome_evento = Assiste.nome_evento " +
-                    "WHERE Assiste.email = '" + email_utilizador + "' ";
+                    "WHERE Assiste.email = '" + email_utilizador + "' ;";
 
             //ResultSet rs = statement.executeQuery(FiltroEventosUser);
 
@@ -479,7 +479,7 @@ public class DbManage implements Serializable {
 
             Statement statement = connection.createStatement()){
             String createEntryQuery = "INSERT INTO Evento (nome_evento,local,data_realizacao,hora_inicio,hora_fim) VALUES ('"
-                    + evento.getNome() +"','" + evento.getLocal() +"','" + evento.getData() +"','" + evento.getHoreInicio() +"','" + evento.getHoraFim() +"')";
+                    + evento.getNome() +"','" + evento.getLocal() +"','" + evento.getData() +"','" + evento.getHoreInicio() +"','" + evento.getHoraFim() +"');";
 
             if(statement.executeUpdate(createEntryQuery)<1){
                 System.out.println("<BD> Erro na criacao do evento [" + evento.getNome() +"]");
@@ -493,6 +493,7 @@ public class DbManage implements Serializable {
                          + evento.getNome() +"','" + evento.getLocal() +"','" + evento.getData() +"','" + evento.getHoreInicio() +"','" + evento.getHoraFim() +"')");
                 }
                 setVersao();
+                return true;
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -507,17 +508,17 @@ public class DbManage implements Serializable {
              Statement statement = connection.createStatement()) {
 
             // Estou a verificar se há presenças na tabela assiste para o evento (pelo seu nomeantigo que é o seu id)
-            String checkAssisteQuery = "SELECT COUNT(*) FROM assiste WHERE nome_evento = '" + evento.getNome() + "'";
+            String checkAssisteQuery = "SELECT COUNT(*) FROM assiste WHERE nome_evento = '" + evento.getNome() + "';";
             ResultSet resultSet = statement.executeQuery(checkAssisteQuery);
             resultSet.next();
             int presencas = resultSet.getInt(1);
 
             if(presencas == 0){
                 // Se não houver presenças edita todos os campos
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 String dataString = dateFormat.format(evento.getData()); //Alterei isso para termos a data nesse formato, facilita os testes mas sempre se pode alterar
                 String updateEventQuery = "UPDATE Evento SET data_realizacao = '" + dataString + "', hora_inicio = '" + evento.getHoreInicio() + "', hora_fim = '" +
-                        evento.getHoraFim() + "', nome_evento = '" + evento.getNome() + "', local = '" + evento.getLocal()+ "' WHERE nome_evento = '" + evento.getNome() + "'";
+                        evento.getHoraFim() + "', nome_evento = '" + evento.getNome() + "', local = '" + evento.getLocal()+ "' WHERE nome_evento = '" + evento.getNome() + "';";
 
                 if (statement.executeUpdate(updateEventQuery) < 1) {
                     System.out.println("<BD> Erro na edição do evento [" + evento.getNome() + "]");
@@ -547,7 +548,7 @@ public class DbManage implements Serializable {
              Statement statement = connection.createStatement()) {
 
             // Verifico se há presenças na tabela "assiste" para o evento
-            String checkAssisteQuery = "SELECT COUNT(*) FROM assiste WHERE nome_evento = '" + nome_evento + "'";
+            String checkAssisteQuery = "SELECT COUNT(*) FROM assiste WHERE nome_evento = '" + nome_evento + "';";
             ResultSet resultSet = statement.executeQuery(checkAssisteQuery);
             resultSet.next();
             int presencas = resultSet.getInt(1);
@@ -557,7 +558,7 @@ public class DbManage implements Serializable {
                 return false;
             } else {
                 // Se não houver presenças, elimina o evento
-                String deleteEventQuery = "DELETE FROM Evento WHERE nome_evento = '" + nome_evento + "'";
+                String deleteEventQuery = "DELETE FROM Evento WHERE nome_evento = '" + nome_evento + "';";
 
                 if (statement.executeUpdate(deleteEventQuery) < 1) {
                     System.out.println("<BD> Erro na eliminacao do evento [" + nome_evento + "]");
@@ -587,7 +588,7 @@ public class DbManage implements Serializable {
         try (Connection connection = DriverManager.getConnection(dbUrl);
              Statement statement = connection.createStatement()) {
 
-            String filtroEvento = "SELECT * FROM Evento WHERE 1=1"; // Começa com "1=1" para mostrar todos resultados
+            String filtroEvento = "SELECT * FROM Evento WHERE 1=1;"; // Começa com "1=1" para mostrar todos resultados
                                                                   // A medida que campos forem não null ele inclui na pesquisa
 
             if (filtros.getNome() != null && !filtros.getNome().isEmpty()) {
@@ -645,7 +646,7 @@ public class DbManage implements Serializable {
             //É rezar que funcione bem e que seja assim mesmo
 
             // Verificar se o evento existe
-            String verificaEventoQuery = "SELECT COUNT(*) FROM Evento WHERE nome_evento = ?";
+            String verificaEventoQuery = "SELECT COUNT(*) FROM Evento WHERE nome_evento = ?;";
             PreparedStatement eventoStatement = connection.prepareStatement(verificaEventoQuery); //Para preparar a consulta
             eventoStatement.setString(1, nomeEvento); //Para substituir o ? pelo nome do evento, ou seja indexar o nome do evento
             int eventosEncontrados = eventoStatement.executeQuery().getInt(1); //Para executar a consulta e devolver o resultado
@@ -653,14 +654,14 @@ public class DbManage implements Serializable {
             if(eventosEncontrados == 1) {
                 for (String emailEstudante : emails) {
                     // Verificar se os estudantes da lista existem na db
-                    String verificaEstudanteQuery = "SELECT COUNT(*) FROM Utilizador WHERE email = ?";
+                    String verificaEstudanteQuery = "SELECT COUNT(*) FROM Utilizador WHERE email = ?;";
                     PreparedStatement alunoStatement = connection.prepareStatement(verificaEstudanteQuery);
                     alunoStatement.setString(1, emailEstudante);
                     int estudantesEncontrados = alunoStatement.executeQuery().getInt(1);
 
                     if (estudantesEncontrados == 1) {
                         // Se o evento e o aluno existirem insere a presença
-                        String inserePresencaQuery = "INSERT INTO assiste (nome_evento, email) VALUES (?, ?)";
+                        String inserePresencaQuery = "INSERT INTO assiste (nome_evento, email) VALUES (?, ?);";
                         PreparedStatement presencaStatement = connection.prepareStatement(inserePresencaQuery);
                         presencaStatement.setString(1, nomeEvento);
                         presencaStatement.setString(2, emailEstudante);
@@ -694,7 +695,7 @@ public class DbManage implements Serializable {
     public boolean EliminaPresencas(String nomeEvento, String [] emails) {
         try (Connection connection = DriverManager.getConnection(dbUrl)) {
             for (String emailEstudante : emails) {
-                String eliminaPresencaQuery = "DELETE FROM assiste WHERE nome_evento = ? AND email = ?";
+                String eliminaPresencaQuery = "DELETE FROM assiste WHERE nome_evento = ? AND email = ?;";
                 PreparedStatement eliminaPresencaStatement = connection.prepareStatement(eliminaPresencaQuery);
                 eliminaPresencaStatement.setString(1, nomeEvento);
                 eliminaPresencaStatement.setString(2, emailEstudante);
@@ -723,7 +724,7 @@ public class DbManage implements Serializable {
 //Gerar codigo
     public int GeraCodigoRegisto(String evento, int validadeMinutos) {
         //Estou a utilizar o PreparedStatement pq é necessário para passar valores dinâmicos por parametros (para consultas)
-        String verificaEventoQuery = "SELECT data_realizacao, hora_inicio, hora_fim FROM Evento WHERE nome_evento = ?";
+        String verificaEventoQuery = "SELECT data_realizacao, hora_inicio, hora_fim FROM Evento WHERE nome_evento = ?;";
 
         try (Connection connection = DriverManager.getConnection(dbUrl);
          PreparedStatement eventoStatement = connection.prepareStatement(verificaEventoQuery)) {
@@ -761,7 +762,7 @@ public class DbManage implements Serializable {
 
 
                     // Eu alterei para passar a eliminar os codigos antigos e substituir pelos novos, nao me parece muito logico guarda-los, dps diz me o que achas
-                    String EliminaCodigosAnterioresQuery = "DELETE  FROM Codigo_Registo  WHERE nome_evento = ?";//
+                    String EliminaCodigosAnterioresQuery = "DELETE  FROM Codigo_Registo  WHERE nome_evento = ?;";//
                     PreparedStatement expiraStatement = connection.prepareStatement(EliminaCodigosAnterioresQuery);
                     expiraStatement.setString(1, evento); // Define o valor do nome_evento para o ? da query
                     expiraStatement.executeUpdate();// se existirem codigos antigos são eliminados se nao existirem nao acontece nada
@@ -774,7 +775,7 @@ public class DbManage implements Serializable {
                     long validadeMillis = validadeMinutos * 60 * 1000;
                     Timestamp horarioValidade = new Timestamp(dataAtualMillis + validadeMillis);
 
-                    String insereCodigoQuery = "INSERT INTO Codigo_Registo (n_codigo_registo, nome_evento, validade) VALUES (?, ?, ?)";
+                    String insereCodigoQuery = "INSERT INTO Codigo_Registo (n_codigo_registo, nome_evento, validade) VALUES (?, ?, ?);";
                     PreparedStatement insereStatement = connection.prepareStatement(insereCodigoQuery);
                     insereStatement.setInt(1, codigo);
                     insereStatement.setString(2, evento);
