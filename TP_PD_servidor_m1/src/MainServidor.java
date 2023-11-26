@@ -3,6 +3,7 @@ import pt.isec.pd.trabalhoPratico.model.classesPrograma.ProgServidor;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
+import java.rmi.AlreadyBoundException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -51,20 +52,21 @@ public class MainServidor {
             s = InetAddress.getLocalHost().getHostName();
             System.setProperty("java.rmi.server.hostname", s); //parametro aquiii
             LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
-            sair("\n<SERVIDOR> Registry lancado");
+            System.out.println("\n<SERVIDOR> Registry lancado");
         } catch (RemoteException e) {
             sair("\n<SERVIDOR> Registry ja em execucao");
         } catch (UnknownHostException e) {
             sair("\n<SERVIDOR> Exececao ao obter o nome do host");
         }
-
         try {
-            progServidor = new ProgServidor(Integer.parseInt(args[0]), args[2]);;
-            Naming.rebind("rmi://" + s + "/" + SERVICE_NAME, progServidor);
+            progServidor = new ProgServidor(6001, SERVICE_NAME); //args!!
+            Naming.bind("rmi://" + s + "/" + SERVICE_NAME, progServidor);
         } catch (RemoteException e) {
-            sair("\n<SERVIDOR> Excecao remota ao criar o servico de QueryServidorService");
+            sair("\n<SERVIDOR> Excecao remota ao criar o servico");
         } catch (MalformedURLException e) {
-            sair("\n<SERVIDOR> Excecao ao registar o servico de QueryServidorService");
+            sair("\n<SERVIDOR> Excecao ao registar o servico");
+        } catch (AlreadyBoundException e) {
+            throw new RuntimeException(e);
         }
 
         // SERVIDOR
