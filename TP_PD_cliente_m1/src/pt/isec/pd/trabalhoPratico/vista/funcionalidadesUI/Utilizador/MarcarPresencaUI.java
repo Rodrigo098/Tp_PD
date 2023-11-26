@@ -6,12 +6,13 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 
 public class MarcarPresencaUI extends BorderPane {
     private TextField codigo, evento;
     private Button submeter, cancelar;
-    private Label resultado;
+    private Text resultado;
     private final ProgClienteManager progClienteManager;
 
     public MarcarPresencaUI(ProgClienteManager progClienteManager) {
@@ -27,7 +28,7 @@ public class MarcarPresencaUI extends BorderPane {
         codigo = new TextField();
         codigo.setPromptText("codigo do evento");
 
-        resultado = new Label();
+        resultado = new Text();
 
         submeter = new Button("Submeter");
         submeter.getStyleClass().add("confirmar");
@@ -48,19 +49,26 @@ public class MarcarPresencaUI extends BorderPane {
     private void registerHandlers() {
         submeter.setOnAction( e -> {
             resultado.setText(progClienteManager.registarPresenca(evento.getText(), codigo.getText()));
-            codigo.clear();
         });
 
         cancelar.setOnAction(e -> {
             ContaUtilizadorUI.opcaoUti.set("NADA");
-            codigo.clear();
         });
 
         ContaUtilizadorUI.opcaoUti.addListener(observable -> update());
     }
 
     private void update() {
-        this.setVisible(ContaUtilizadorUI.opcaoUti.get().equals("MARCAR_PRES"));
+        if(ContaUtilizadorUI.opcaoUti.get().equals("MARCAR_PRES")) {
+            limparTextFields();
+            this.setVisible(true);
+        }
+        else this.setVisible(false);
     }
 
+    private void limparTextFields() {
+        resultado.setText("");
+        evento.clear();
+        codigo.clear();
+    }
 }

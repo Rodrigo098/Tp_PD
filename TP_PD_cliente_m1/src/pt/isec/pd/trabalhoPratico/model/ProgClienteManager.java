@@ -68,7 +68,7 @@ public class ProgClienteManager {
     public String registarPresenca(String evento, String codigo){
         return programaCliente.registarPresenca(evento, codigo);
     }
-    public String editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
+    public ParResposta editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
         return programaCliente.editarRegisto(nome, numIdentificacao, password, confPass);
     }
 

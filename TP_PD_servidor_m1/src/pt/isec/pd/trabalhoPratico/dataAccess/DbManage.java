@@ -238,7 +238,7 @@ public class DbManage implements Serializable {
             return new BDResposta(false, "<BD>Erro no acesso a Base de Dados", false);
         }
     }
-    public boolean edita_registo( Utilizador user, String pasword ){
+    public boolean edita_registo( Utilizador user, String password ){
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
             Statement statement = connection.createStatement()){
@@ -248,16 +248,26 @@ public class DbManage implements Serializable {
 
             if(rs.isBeforeFirst())
             {   rs.next();
-                String updateQuery = "UPDATE Utilizador SET nome=?, numero_estudante=?, palavra_passe=? WHERE email=?;";
-                PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
+                String updateQuery;
+                PreparedStatement preparedStatement;
+
+                if(password != null && !password.isBlank()) {
+                    updateQuery = "UPDATE Utilizador SET nome=?, numero_estudante=?, palavra_passe=? WHERE email=?;";
+                    preparedStatement = connection.prepareStatement(updateQuery);
+                    preparedStatement.setString(3, password);
+                    preparedStatement.setString(4, user.email());
+                }
+                else {
+                    updateQuery = "UPDATE Utilizador SET nome=?, numero_estudante=? WHERE email=?;";
+                    preparedStatement = connection.prepareStatement(updateQuery);
+                    preparedStatement.setString(3, user.email());
+                }
                 preparedStatement.setString(1, user.nome());
                 preparedStatement.setInt(2, user.numIdentificacao());
-                preparedStatement.setString(3, pasword);
-                preparedStatement.setString(4, user.email());
                 preparedStatement.executeUpdate();
                 connection.close();
                 for (ObservableInterface obv:observables) {
-                    obv.executaUpdate("UPDATE Utilizador SET nome='" + user.nome() + "', numero_estudante=" + user.numIdentificacao() + ", palavra_passe=" + pasword + " WHERE email="+ user.email() + ";");
+                    obv.executaUpdate("UPDATE Utilizador SET nome='" + user.nome() + "', numero_estudante=" + user.numIdentificacao() + ", palavra_passe=" + password + " WHERE email="+ user.email() + ";");
                 }
                 setVersao();
                 return true;

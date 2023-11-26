@@ -86,7 +86,7 @@ public class ProgramaCliente {
 
     public ProgramaCliente() {
         gereMudancasPLC = new GereMudancasPLC();
-        gereMudancasPLC.addPropertyChangeListener(gereMudancasPLC.PROP_ESTADO, est -> verificacaoLigacao());
+        gereMudancasPLC.addPropertyChangeListener(GereMudancasPLC.PROP_ESTADO, est -> verificacaoLigacao());
         try {
             oMeuID = InetAddress.getLocalHost().getHostAddress() + ProcessHandle.current().pid();
             gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.ENTRADA);
@@ -114,7 +114,7 @@ public class ProgramaCliente {
         terminou = true;
         temporizador.cancel();
         tarefa.cancel();
-        gereMudancasPLC.removePropertyChangeListener(gereMudancasPLC.PROP_ESTADO, evt -> verificacaoLigacao());
+        gereMudancasPLC.removePropertyChangeListener(GereMudancasPLC.PROP_ESTADO, evt -> verificacaoLigacao());
         System.out.println("<CLIENTE> Programa cliente terminado");
     }
 
@@ -165,7 +165,7 @@ public class ProgramaCliente {
     }
     /*---------------------------------- COMUNS: --------------------------------------*/
     public ParResposta criaSocket(List<String> list) {
-        ParResposta pontoSituacao = new ParResposta(false, "Erro na criação do socket");
+        ParResposta pontoSituacao;
         if (list.size() == 2) {
             try {
                 portoServidor = Integer.parseInt(list.get(1));
@@ -211,12 +211,12 @@ public class ProgramaCliente {
                         case ERRO -> { return new ParResposta( false, "Ocorreu um erro na BD.");}
                         case ADMINISTRADOR, UTILIZADOR -> {
                             try {
-                                this.email = dadosLogin.getEmail();
+                                ProgramaCliente.email = dadosLogin.getEmail();
                                 if(g.getTipo() == Message_types.ADMINISTRADOR) {
                                     gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.ADMINISTRADOR);
                                 }
                                 else {
-                                    this.email = dadosLogin.getEmail();
+                                    ProgramaCliente.email = dadosLogin.getEmail();
                                     Msg_String msg = (Msg_String) g;
                                     String [] msg2 = msg.getConteudo().split(",");
                                     this.nome = msg2[0];
@@ -293,8 +293,8 @@ public class ProgramaCliente {
                 return null;
             }
             else {
-                limData1 = limData1 == null || limData1.isBlank()? null : limData1.toString();
-                limData2 = limData2 == null || limData2.isBlank()? null : limData2.toString();
+                limData1 = limData1 == null || limData1.isBlank()? null : limData1;
+                limData2 = limData2 == null || limData2.isBlank()? null : limData2;
             }
 
             if(!validaHorario(horaInicio, horaFim))
@@ -401,7 +401,7 @@ public class ProgramaCliente {
                     case INVALIDO -> { return new ParResposta(false, "O seu registo é inválido");}
                     default -> {
                             try {
-                                this.email = email;
+                                ProgramaCliente.email = email;
                                 Msg_String msg = (Msg_String) g;
                                 String [] msg2 = msg.getConteudo().split(",");
                                 this.nome = msg2[0];
@@ -454,37 +454,44 @@ public class ProgramaCliente {
         return "Deve fazer login para usufruir da app!";
     }
 
-    public String editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
+    public ParResposta editarRegisto(String nome, String numIdentificacao, String password, String confPass) {
         if(fezLogin) {
-            if (nome == null || nome.isBlank() || password == null || password.isBlank() || !password.equals(confPass) || numIdentificacao == null || numIdentificacao.isBlank())
-                return "Dados de input inválidos :(";
+            if(nome == null || nome.isBlank() || numIdentificacao == null || numIdentificacao.isBlank())
+                return new ParResposta(false, "O nome e o número são obrigatórios.");
+
+            if(password != null && confPass != null && !password.equals(confPass))
+                return new ParResposta(false, "As passwords não coincidem!");
 
             int numID;
             try {
-                numID = Integer.parseInt(numIdentificacao);//?? como é que ponho para long?
+                numID = Integer.parseInt(numIdentificacao);
                 if (numID < 0)
-                    return "O teu número acho que não é negativo...";
+                    return new ParResposta(false, "O teu número acho que não é negativo...");
 
-                Mgs_RegistarEditar_Conta dadosRegisto = new Mgs_RegistarEditar_Conta(nome, null, password, numID, Message_types.EDITAR_REGISTO);
+                Mgs_RegistarEditar_Conta dadosRegisto = new Mgs_RegistarEditar_Conta(nome, email, password, numID, Message_types.EDITAR_REGISTO);
 
                 oout.writeObject(dadosRegisto);
                 oout.flush();
 
                 Object validacao = oin.readObject();
 
-                if (validacao instanceof Geral g)
-                    return  g.getTipo() == Message_types.VALIDO ?
-                            "Registo editado com sucesso!"
-                            : "Ocorreu um erro na BD.";
-
+                if (validacao instanceof Geral g) {
+                    if(g.getTipo() == Message_types.VALIDO) {
+                        this.nome = nome;
+                        this.numero = numIdentificacao;
+                        return new ParResposta(true, "Registo editado com sucesso!");
+                    }
+                    else
+                        return new ParResposta(false, "Ocorreu um erro na BD.");
+                }
             } catch (NumberFormatException e) {
-                return "O teu número deve ser inteiro!";
+                return new ParResposta(false, "O teu número deve ser inteiro!");
             } catch (ClassNotFoundException | IOException ignored) {
                 gereMudancasPLC.setErros();
             }
-            return "Erro...";
+            return new ParResposta(false,"Erro...");
         }
-        return "Deve fazer login para usufruir da app!";
+        return new ParResposta(false, "Deve fazer login para usufruir da app!");
     }
 
 
@@ -603,7 +610,7 @@ public class ProgramaCliente {
 
     public String eliminaInserePresencas_Eventos(Message_types tipo, String evento, String emailsP) {
         if(fezLogin) {
-            if (evento == null || evento.isBlank() || emailsP == null || emailsP.length() == 0 || emailsP.isBlank())
+            if (evento == null || evento.isBlank() || emailsP == null || emailsP.isEmpty() || emailsP.isBlank())
                 return "Não foram inseridos emails!";
 
             ArrayList<String> emails = new ArrayList<>();
