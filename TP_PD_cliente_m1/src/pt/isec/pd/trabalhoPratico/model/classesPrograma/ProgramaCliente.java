@@ -131,7 +131,7 @@ public class ProgramaCliente {
                 termina();
             }
             case EXCEDEU_TEMPO -> {
-                logout("TMP");
+                if(oout != null && oin != null) logout("TMP");
                 System.out.println("<INFO> Excedeu tempo para registo.");
                 termina();
             }
