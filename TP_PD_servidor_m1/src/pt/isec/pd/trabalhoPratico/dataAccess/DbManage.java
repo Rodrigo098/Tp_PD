@@ -20,12 +20,13 @@ import java.util.Random;
 
 
 public class DbManage {
-    private static final String dbAdress = "databasePD.db";
+    private static String dbAdress = "databasePD.db";
     private static final String dbUrl= "jdbc:sqlite:"+dbAdress;
     private int versao;
     private PropertyChangeSupport versaoSuporte;
 
-    public DbManage() {
+    public DbManage(String dbAdress) {
+        //this.dbAdress = dbAdress;
         if(!DbManage.existeDb())
             criarDb();
 

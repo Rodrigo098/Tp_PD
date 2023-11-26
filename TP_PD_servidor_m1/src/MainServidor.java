@@ -1,5 +1,6 @@
 import pt.isec.pd.trabalhoPratico.model.classesPrograma.ProgServidor;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -8,11 +9,11 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.text.ParseException;
 
 public class MainServidor {
     private static String SERVICE_NAME = "servidor";//por enquanto, este devia ser o arg[2]
     public static void main(String[] args) {
+        File localDirectory;// = new File(args[1].trim());
         // VALIDA ARGUMENTOS
   /*      if(args.length != 4){
             System.out.println("<SERVIDOR> Argumentos inválidos:\n" +
@@ -25,9 +26,10 @@ public class MainServidor {
         }
         try {
             Integer.parseInt(args[0]);//verifica validade do porto inserido para conexao - cliente
-            Integer.parseInt(args[3]);//verifica validade do porto inserido para registry
+            Integer.parseInt(args[2]);//verifica validade do porto inserido para registry
 
-            File localDirectory = new File(args[1].trim());
+            localDirectory = new File(args[1].trim());
+            SERVICE_NAME = args[2];
 
             if(!localDirectory.exists()){
                 System.out.println("<SERVIDOR> A directoria " + localDirectory + " nao existe!");
@@ -58,7 +60,7 @@ public class MainServidor {
         }*/
 
         try {
-            progServidor = new ProgServidor(6001, SERVICE_NAME); //args!!
+            progServidor = new ProgServidor(6001, SERVICE_NAME, "ola");//args[1].trim()); //args!!
             Naming.bind("rmi://localhost/" + SERVICE_NAME, progServidor);//"/" + SERVICE_NAME
         } catch (RemoteException e) {
             sair("\n<SERVIDOR> Excecao remota ao criar o servico");
