@@ -45,22 +45,21 @@ public class MainServidor {
             throw new NumberFormatException("<SERVIDOR> Os portos inseridos devem ter ser inteiros! [ERRO] " + e.getCause());
         }
 */
-        String s = null;
         ProgServidor progServidor = null;
 
         try {
-            s = InetAddress.getLocalHost().getHostName();
-            System.setProperty("java.rmi.server.hostname", s); //parametro aquiii
+            //System.setProperty("java.rmi.server.hostname", "192.168.1.126"); //parametro aquiii
             LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
             System.out.println("\n<SERVIDOR> Registry lancado");
         } catch (RemoteException e) {
             sair("\n<SERVIDOR> Registry ja em execucao");
-        } catch (UnknownHostException e) {
+        } /*catch (UnknownHostException e) {
             sair("\n<SERVIDOR> Exececao ao obter o nome do host");
-        }
+        }*/
+
         try {
             progServidor = new ProgServidor(6001, SERVICE_NAME); //args!!
-            Naming.bind("rmi://" + s + "/" + SERVICE_NAME, progServidor);
+            Naming.bind("rmi://localhost/" + SERVICE_NAME, progServidor);//"/" + SERVICE_NAME
         } catch (RemoteException e) {
             sair("\n<SERVIDOR> Excecao remota ao criar o servico");
         } catch (MalformedURLException e) {
