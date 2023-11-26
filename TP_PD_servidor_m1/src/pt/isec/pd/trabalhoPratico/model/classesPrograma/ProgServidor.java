@@ -420,7 +420,6 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                                     if (eventosConsultados.isEmpty())
                                                         out.writeObject(new Geral(Message_types.ERRO));
                                                     else {
-                                                        eventosConsultados.clear();
                                                         eventosPresencasUser.addAll(eventosConsultados); //vou utilizar o eventos presenças user para fazer o ficheiro csv do utilizador
                                                         Evento[] res = eventosConsultados.toArray(new Evento[0]);
                                                         out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));
@@ -428,6 +427,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                                 }
                                                 case GERAR_COD -> {
                                                     Msg_String_Int aux = (Msg_String_Int) message;
+
                                                     int code = dbManager.GeraCodigoRegisto(aux.getConteudo(), aux.getNumero());
                                                     if (code != 0) {
                                                          out.writeObject(new Msg_String(Integer.toString(code), Message_types.VALIDO));

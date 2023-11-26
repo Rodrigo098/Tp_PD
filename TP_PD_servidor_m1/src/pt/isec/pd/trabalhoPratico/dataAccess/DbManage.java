@@ -328,8 +328,10 @@ public class DbManage implements Serializable {
                     expiraStatement.executeUpdate();// se existirem codigos antigos são eliminados se nao existirem nao acontece nada
                         return false;
                 }
-
-                if(rs.getInt("n_codigo_registo")==codigo  ){
+                System.out.println(  rs.getInt("n_codigo_registo"));
+                System.out.println("O codigo e "+codigo);
+                if(rs.getInt("n_codigo_registo")==codigo){
+                    ;
                     String createEntryQuery = "INSERT INTO Assiste (nome_evento,email) VALUES ('"
                             + nome_evento+"','" +emailuser+"');";// qual o valor que é suposto colocar no idassiste??
 
@@ -470,7 +472,7 @@ public class DbManage implements Serializable {
             ResultSet rs = preparedStatement.executeQuery();
             if(!rs.isBeforeFirst())
             {
-                System.out.println("<BD> Nenhum evento [" + nome_evento + "] encontrado");
+                System.out.println("<BD> Nenhuma presenca registada no evento: [" + nome_evento + "] ");
                 return null;
             }
             while (rs.next()){
@@ -734,8 +736,8 @@ public class DbManage implements Serializable {
 //Gerar codigo
     public int GeraCodigoRegisto(String evento, int validadeMinutos) {
         //Estou a utilizar o PreparedStatement pq é necessário para passar valores dinâmicos por parametros (para consultas)
-        String verificaEventoQuery = "SELECT data_realizacao, hora_inicio, hora_fim FROM Evento WHERE nome_evento = ?;";
-
+        String verificaEventoQuery = "SELECT * FROM Evento WHERE nome_evento = ?;";
+        System.out.println(evento);
         try (Connection connection = DriverManager.getConnection(dbUrl);
          PreparedStatement eventoStatement = connection.prepareStatement(verificaEventoQuery)) {
             //Statement statement = connection.createStatement();
@@ -745,13 +747,13 @@ public class DbManage implements Serializable {
             ResultSet resultSet = eventoStatement.executeQuery();
 
 
-            if (resultSet.next()) {
+            if (resultSet.isBeforeFirst()) {
                 String dataRealizacao = resultSet.getString("data_realizacao");
                 String horaInicio = resultSet.getString("hora_inicio");
                 String horaFim = resultSet.getString("hora_fim");
 
                 // Estou a criar um objeto SimpleDateFormat para analisar a data e hora no formato correto
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
                 Date dataRealizacaoInicio = dateFormat.parse(dataRealizacao + " "+ horaInicio);
                 Date dataRealizacaoDateFim = dateFormat.parse(dataRealizacao + " "+ horaFim);
 
@@ -772,7 +774,7 @@ public class DbManage implements Serializable {
 
 
                     // Eu alterei para passar a eliminar os codigos antigos e substituir pelos novos, nao me parece muito logico guarda-los, dps diz me o que achas
-                    String EliminaCodigosAnterioresQuery = "DELETE  FROM Codigo_Registo  WHERE nome_evento = ?;";//
+                    String EliminaCodigosAnterioresQuery = "UPDATE Codigo_Registo SET VALIDADE=0  WHERE nome_evento = ?;";//
                     PreparedStatement expiraStatement = connection.prepareStatement(EliminaCodigosAnterioresQuery);
                     expiraStatement.setString(1, evento); // Define o valor do nome_evento para o ? da query
                     expiraStatement.executeUpdate();// se existirem codigos antigos são eliminados se nao existirem nao acontece nada
@@ -793,8 +795,12 @@ public class DbManage implements Serializable {
                     insereStatement.executeUpdate();
                     System.out.println("<BD> Novo codigo para o evento [" + evento + "]");
                     connection.close();
+                    for (ObservableInterface obv:observables) {
+                        obv.executaUpdate("INSERT INTO Codigo_Registo (n_codigo_registo, nome_evento, validade) VALUES ('"+codigo+"', '"+evento+"','"+horarioValidade+"');");
+                    }
+                    System.out.println(codigo);
                     setVersao();
-                  //  observables.get(0).insert("INSERT INTO Codigo_Registo (n_codigo_registo, nome_evento, validade) VALUES (?, ?, ?)")
+
                         return codigo;
                 } else {
                     System.out.println("<BD> O evento [" + evento +"] não esta a decorrer no momento");
@@ -805,8 +811,11 @@ public class DbManage implements Serializable {
                 return 0;
             }
         } catch (SQLException | ParseException e) {
+            e.printStackTrace();
             System.out.println(e.getMessage());
             return 0;
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
         }
     }
 

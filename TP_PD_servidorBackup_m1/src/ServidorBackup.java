@@ -112,6 +112,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                                 System.out.println("<INFO> Dados " + dados.versao() + " Manager:" + dbManager.getVersaoDb());
                                 System.out.println("<SERVIDOR BACKUP> Versao da base de dados diferente.");
                                 sair = true;
+
                             }
                         }
                     }
@@ -204,6 +205,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                             + nome_evento+"','" +emailuser+"')";// qual o valor que é suposto colocar no idassiste??
 
                statement.executeUpdate(createEntryQuery);
+               connection.close();
                setVersao(versao++);
             }
         } catch (SQLException e) {
