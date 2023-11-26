@@ -10,13 +10,14 @@ import java.net.*;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.Timer;
 
-public class ServidorBackup implements ObservableInterface {
+public class ServidorBackup extends UnicastRemoteObject implements ObservableInterface {
     private static final String dbAdress = "Base de Dados/copiaDb.db";
     private static final String dbUrl= "jdbc:sqlite:"+dbAdress;
     private static String registration;
@@ -365,9 +366,13 @@ public class ServidorBackup implements ObservableInterface {
     }
 
     @Override
-    public void executaUpdate(Geral conteudo) throws RemoteException {
-        switch (conteudo.getTipo()) {
-            //chama cada funcao que fizeram
+    public void executaUpdate(String query) throws RemoteException {
+        try(Connection connection = DriverManager.getConnection(dbUrl);
+            Statement statement= connection.createStatement();
+        ) {
+            statement.executeUpdate(query);
+        } catch (SQLException e) {
+            System.out.println("<SERVIDOR BACKUP> Excepcao ao executar um update da base de dados [" + e + "]");
         }
     }
     @Override

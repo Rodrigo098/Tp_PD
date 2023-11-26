@@ -21,5 +21,8 @@ public interface ObservableInterface extends Remote {
     public boolean EliminaPresencas(String nomeEvento, String [] emails) throws RemoteException;*/
 
     public void setVersao(int versao) throws RemoteException;
-    public void executaUpdate(Geral conteudo) throws RemoteException;
+    public boolean submitcod(int codigo,String nome_evento,String emailuser) throws RemoteException;
+    public void executaUpdate(String query) throws RemoteException;
+    public boolean InserePresencas(String nomeEvento, String[] emails) throws RemoteException;
+    public boolean EliminaPresencas(String nomeEvento, String [] emails) throws RemoteException;
 }
