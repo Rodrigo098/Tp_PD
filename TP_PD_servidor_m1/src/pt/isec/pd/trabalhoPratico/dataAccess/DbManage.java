@@ -10,6 +10,7 @@ import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.sql.*;
 import java.text.ParseException;
@@ -20,8 +21,8 @@ import java.util.List;
 import java.util.Random;
 
 
-public class DbManage {
-    private static final String dbAdress = "databasePD.db";
+public class DbManage implements Serializable {
+    private static String dbAdress = "databasePD.db";
     private static final String dbUrl= "jdbc:sqlite:"+dbAdress;
     private int versao;
 
@@ -139,7 +140,7 @@ public class DbManage {
     }
     private int getversaobd(){
         try(Connection connection=DriverManager.getConnection(dbUrl)) {
-            String GetQuery="Select versao_id FROM VERSAO";
+            String GetQuery="Select versao_id FROM VERSAO;";
             PreparedStatement statement=connection.prepareStatement(GetQuery);
             ResultSet rs= statement.executeQuery();
             if(rs.isBeforeFirst()){
@@ -158,20 +159,24 @@ public class DbManage {
     public void setVersao() {
         versao++;
         try (Connection connection=DriverManager.getConnection(dbUrl)){
-            String UpdateVersao="UPDATE Versao SET versao_id=? where versao_id=?";
+            String UpdateVersao="UPDATE Versao SET versao_id=? where versao_id=?;";
             PreparedStatement statement=connection.prepareStatement(UpdateVersao);
             statement.setInt(1,versao);
             statement.setInt(2,versao-1);
            if( statement.executeUpdate()<1)
                System.out.println("<BD> Erro na atualizacao da versao da BAse de Dados");
            else{
-
+               for (ObservableInterface obv:observables) {
+                   obv.setVersao(versao);
+               }
                versaoSuporte.firePropertyChange("versao", null, null);
                System.out.println("<BD> Versao de Base de Dados atualizada com sucesso");}
 
            statement.close();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+        } catch (RemoteException e) {
+            System.out.println("<RMI> Excecao ao atualizar o backup: "+e);
         }
     }
 
@@ -185,7 +190,7 @@ public class DbManage {
             Statement statement = connection.createStatement())
         {
             String createEntryQuery = "INSERT INTO Utilizador (email,nome,numero_estudante,palavra_passe,tipo_utilizador) VALUES ('"
-                    + user.email() + "','" + user.nome() + "','" + user.numIdentificacao() + "','" + password +"','" + "cliente" +"')";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
+                    + user.email() + "','" + user.nome() + "','" + user.numIdentificacao() + "','" + password +"','" + "cliente" +"')";
 
             if(statement.executeUpdate(createEntryQuery)<1){
                 return new BDResposta(false, "<BD>Falha na inserção de novo utilizador", true);
@@ -193,7 +198,9 @@ public class DbManage {
             else{
                 connection.close();
                 for (ObservableInterface obv:observables) {
-                    obv.RegistoNovoUser(user,password);
+                    obv.executaUpdate("INSERT INTO Utilizador (email,nome,numero_estudante,palavra_passe,tipo_utilizador) VALUES ('"
+                            + user.email() + "','" + user.nome() + "','" + user.numIdentificacao() + "','" + password +"','" + "cliente" +"')");
+
                 }
                 setVersao();
                 return new BDResposta(true, "<BD>Insercao de novo utilizador com sucesso", false);
@@ -255,7 +262,7 @@ public class DbManage {
                 preparedStatement.executeUpdate();
                 connection.close();
                 for (ObservableInterface obv:observables) {
-                    obv.edita_registo(user,pasword);
+                obv.executaUpdate("UPDATE Utilizador SET nome=" + user.nome() + ", numero_estudante="+user.numIdentificacao()+", palavra_passe="+pasword+" WHERE email="+user.email());
                 }
                 setVersao();
                 return true;
@@ -306,8 +313,8 @@ public class DbManage {
 
             if(rs.isBeforeFirst())
             {   rs.next();
-                Date Data=new Date();
-                long datamili=Data.getTime();
+                Date Data = new Date();
+                long datamili = Data.getTime();
                 if(rs.getTimestamp("validade").getTime()<datamili){
                     System.out.println("<BD> Tentativa de registo no evento [" + nome_evento + "] com codigo invalido por [" + emailuser + "]");
                     String EliminaCodigosAnterioresQuery = "UPDATE Codigo_Registo SET validade=0 WHERE nome_evento = ?";//
@@ -328,7 +335,9 @@ public class DbManage {
                     else{
                         System.out.println("<BD> Nova presenca registada de [" + emailuser + "] no evento [" + nome_evento + "]");
                         connection.close();
-                        for (ObservableInterface obv:observables) {obv.submitcod(codigo,nome_evento,emailuser);}
+                        for (ObservableInterface obv:observables) {
+                            obv.submitcod(codigo,nome_evento,emailuser);
+                            }
                         setVersao();
                         return true;
                     }
@@ -484,7 +493,10 @@ public class DbManage {
             else{
                 System.out.println("<BD> Evento [" + evento +"] criado com sucesso");
                 connection.close();
-                for (ObservableInterface obv:observables) {obv.Cria_evento(evento);}
+                for (ObservableInterface obv:observables) {
+                 obv.executaUpdate("INSERT INTO Evento (nome_evento,local,data_realizacao,hora_inicio,hora_fim) VALUES ('"
+                         + evento.getNome() +"','" + evento.getLocal() +"','" + evento.getData() +"','" + evento.getHoreInicio() +"','" + evento.getHoraFim() +"')");
+                }
                 setVersao();
             }
         } catch (SQLException e) {
@@ -509,8 +521,8 @@ public class DbManage {
                 // Se não houver presenças edita todos os campos
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
                 String dataString = dateFormat.format(evento.getData()); //Alterei isso para termos a data nesse formato, facilita os testes mas sempre se pode alterar
-                String updateEventQuery = "UPDATE Evento SET data_realizacao = '" + dataString + "', hora_inicio = '" + evento.getHoreInicio() + "', hora_fim = '" + evento.getHoraFim() + "', nome_evento = '" + evento.getNome() + "', local = '" + evento.getLocal()+ "' WHERE nome_evento = '" + evento.getNome()
-                        + "'";
+                String updateEventQuery = "UPDATE Evento SET data_realizacao = '" + dataString + "', hora_inicio = '" + evento.getHoreInicio() + "', hora_fim = '" +
+                        evento.getHoraFim() + "', nome_evento = '" + evento.getNome() + "', local = '" + evento.getLocal()+ "' WHERE nome_evento = '" + evento.getNome() + "'";
 
                 if (statement.executeUpdate(updateEventQuery) < 1) {
                     System.out.println("<BD> Erro na edição do evento [" + evento.getNome() + "]");
@@ -518,7 +530,12 @@ public class DbManage {
                 } else {
                     System.out.println("<BD> Evento [" + evento + "] editado com sucesso");
                     connection.close();
-                    for (ObservableInterface obv:observables) {obv.Edita_evento(evento);}
+                    for (ObservableInterface obv:observables) {
+                      obv.executaUpdate("UPDATE Evento SET data_realizacao = '" + dataString + "', hora_inicio = '"
+                              + evento.getHoreInicio() + "', hora_fim = '" + evento.getHoraFim() + "', nome_evento = '"
+                              + evento.getNome() + "', local = '" + evento.getLocal()+ "' WHERE nome_evento = '"
+                              + evento.getNome() + "'");
+                    }
                     setVersao();
                     }
             }
@@ -553,7 +570,9 @@ public class DbManage {
                 } else {
                     System.out.println("<BD> Evento ["+ nome_evento +"] eliminado com sucesso");
                     connection.close();
-                    for (ObservableInterface obv:observables) {obv.Elimina_evento(nome_evento);}
+                    for (ObservableInterface obv:observables) {
+                        obv.executaUpdate("DELETE FROM Evento WHERE nome_evento = '" + nome_evento + "'");
+                    }
                     setVersao();
                     }
             }

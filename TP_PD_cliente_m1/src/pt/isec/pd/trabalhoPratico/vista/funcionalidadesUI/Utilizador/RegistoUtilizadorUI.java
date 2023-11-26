@@ -77,6 +77,11 @@ public class RegistoUtilizadorUI extends BorderPane {
                 MainCliente.menuSBP.set("MENU");
             }
             else {
+                nomeUtilizador.getStyleClass().add("camposInvalidos");
+                email.getStyleClass().add("camposInvalidos");
+                password.getStyleClass().add("camposInvalidos");
+                confirmar_password.getStyleClass().add("camposInvalidos");
+                numIdentificacao.getStyleClass().add("camposInvalidos");
                 resultado.setText(res.mensagem());
             }
         });
@@ -94,6 +99,11 @@ public class RegistoUtilizadorUI extends BorderPane {
         password.clear();
         confirmar_password.clear();
         numIdentificacao.clear();
-        resultado.setText("");
+        resultado.setText(null);
+        nomeUtilizador.getStyleClass().remove("camposInvalidos");
+        email.getStyleClass().remove("camposInvalidos");
+        password.getStyleClass().remove("camposInvalidos");
+        confirmar_password.getStyleClass().remove("camposInvalidos");
+        numIdentificacao.getStyleClass().remove("camposInvalidos");
     }
 }

@@ -181,10 +181,10 @@ public class ProgramaCliente {
         return pontoSituacao;
     }
 
-    public String login(String email, String password) {
+    public ParResposta login(String email, String password) {
         if(!fezLogin) {
             if (password == null || password.isBlank() || verificaFormato(email))
-                return "Tem que preencher os dados corretamente!!";
+                return new ParResposta(false, "Tem que preencher os dados corretamente!!");
 
             Msg_Login dadosLogin = new Msg_Login(email, password);
             try {
@@ -196,10 +196,10 @@ public class ProgramaCliente {
                 if (validacao instanceof Geral g) {
                     switch (g.getTipo()) {
                         case WRONG_PASS -> {
-                            return "Password incorreta :(";
+                            return new ParResposta( false,"Password incorreta :(");
                         }
-                        case INVALIDO -> { return "Não está registado na app :(";}
-                        case ERRO -> { return "Ocorreu um erro na BD.";}
+                        case INVALIDO -> { return new ParResposta( false, "Não está registado na app :(");}
+                        case ERRO -> { return new ParResposta( false, "Ocorreu um erro na BD.");}
                         default -> {
                             try {
                                 this.email = dadosLogin.getEmail();
@@ -207,12 +207,12 @@ public class ProgramaCliente {
                                 fezLogin = true;
                                 new Thread(new AtualizacaoAsync(portoServidor, ipServidor)).start();
                                 System.out.println("<CLIENTE> Esta atualmente logado com a conta [" + email + "]");
-                                return "Estabeleceu ligação!!";
+                                return new ParResposta( true, "Estabeleceu ligação!!");
                             } catch (Exception e) {
                                 gereMudancasPLC.setErros();
                                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.FIM);
                             }
-                            return "Erro ao preparar a aplicação";
+                            return new ParResposta( false, "Erro ao preparar a ligação.");
                         }
                     }
                 }
@@ -220,9 +220,9 @@ public class ProgramaCliente {
                 gereMudancasPLC.setErros();
                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.FIM);
             }
-            return "Tente novamente...";
+            return new ParResposta( false, "Tente novamente...");
         }
-        return "Já fez login!";
+        return new ParResposta( false, "Já fez login!");
     }
 
     public void logout(String fonte) {
@@ -382,7 +382,6 @@ public class ProgramaCliente {
                     case ERRO -> { return new ParResposta(false, "Ocorreu um erro na BD.");}
                     case INVALIDO -> { return new ParResposta(false, "O seu registo é inválido");}
                     default -> {
-                        if(validacao instanceof Msg_String info) {
                             try {
                                 this.email = email;
                                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.UTILIZADOR);
@@ -393,7 +392,6 @@ public class ProgramaCliente {
                                 gereMudancasPLC.setErros();
                                 gereMudancasPLC.setEstadoNaAplicacao(EstadoNaAplicacao.FIM);
                             }
-                        }
                         return new ParResposta(false, "Ocorreu um erro ao preparar a aplicação.");
                     }
                 }

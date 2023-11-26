@@ -1,10 +1,11 @@
 package pt.isec.pd.trabalhoPratico.model.classesPrograma;
 
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 
-class ParesComunicacaoCliente {
+class ParesComunicacaoCliente implements Serializable {
     private Socket socketAtualizacao, socketPedidos;
     private PrintStream psClienteAtualizacao;
     private String cliente, idCliente;
@@ -60,7 +61,7 @@ class ParesComunicacaoCliente {
     }
 }
 
-public class GereRecursosClientes {
+public class GereRecursosClientes implements Serializable {
     private int clientesLigados;
     private ArrayList<ParesComunicacaoCliente> paresComunicacaoClientes;
 
@@ -84,7 +85,6 @@ public class GereRecursosClientes {
         for (ParesComunicacaoCliente par : paresComunicacaoClientes) {
             if (par.getSocketID().equals(idCliente)) {
                 clientesLigados++;
-                //System.out.println("----------------> " + ipCliente);
                 par.setUserName(nomeCli);
                 par.setDadosAtualizacao(socketAtualizacao, psAtualizacao);
                 break;
@@ -103,7 +103,7 @@ public class GereRecursosClientes {
 
     public void removeLogado(String email) {
         for(ParesComunicacaoCliente par : paresComunicacaoClientes) {
-            if(par.getCliente().equals(email) && email!= null) {
+            if(par.getCliente().equals(email)) {
                 par.removeDadosAtualizacao();
                 clientesLigados--;
                 break;
