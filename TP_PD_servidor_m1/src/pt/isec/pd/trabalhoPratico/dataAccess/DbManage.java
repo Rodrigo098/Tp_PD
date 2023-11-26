@@ -769,6 +769,7 @@ public class DbManage {
                     System.out.println("<BD> Novo codigo para o evento [" + evento + "]");
                     connection.close();
                     setVersao();
+                  //  observables.get(0).insert("INSERT INTO Codigo_Registo (n_codigo_registo, nome_evento, validade) VALUES (?, ?, ?)")
                         return codigo;
                 } else {
                     System.out.println("<BD> O evento [" + evento +"] não esta a decorrer no momento");

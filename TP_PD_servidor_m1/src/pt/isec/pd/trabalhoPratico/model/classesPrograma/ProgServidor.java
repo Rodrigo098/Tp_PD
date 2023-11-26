@@ -177,7 +177,7 @@ public class ProgServidor  extends UnicastRemoteObject implements RemoteInterfac
     }
 
     @Override
-    public  void RemoveObservable(ObservableInterface obv) throws RemoteException {
+    public void RemoveObservable(ObservableInterface obv) throws RemoteException {
         synchronized (observers){
         observers.remove(obv);
         dbManager.removeObserver(obv);
