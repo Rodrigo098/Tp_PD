@@ -12,7 +12,7 @@ import java.text.ParseException;
 
 public class MainServidor {
     private static String SERVICE_NAME = "servidor";//por enquanto, este devia ser o arg[2]
-    public static void main(String[] args) throws ParseException {
+    public static void main(String[] args) {
         // VALIDA ARGUMENTOS
   /*      if(args.length != 4){
             System.out.println("<SERVIDOR> Argumentos inválidos:\n" +
