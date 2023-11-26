@@ -9,6 +9,7 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
+import pt.isec.pd.trabalhoPratico.model.classesPrograma.ParResposta;
 import pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.Administrador.ContaAdministradorUI;
 import pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.NodesExtra.MensagemBox;
 import pt.isec.pd.trabalhoPratico.vista.funcionalidadesUI.NodesExtra.SairApp;
@@ -64,12 +65,21 @@ public class RootPane extends BorderPane {
 
     private void registerHandlers() {
         login.setOnAction(e -> {
-            resultado.setText(progClienteManager.login(username.getText(), password.getText()));
-            username.setText(null);
-            password.setText(null);
+            ParResposta pe = progClienteManager.login(username.getText(), password.getText());
+            if(pe.resultado()) {
+                limpaCampos();
+            }
+            else {
+                resultado.setText(pe.mensagem());
+                password.getStyleClass().add("camposInvalidos");
+                username.getStyleClass().add("camposInvalidos");
+            }
         });
 
-        registar.setOnMouseClicked( e -> MainCliente.menuSBP.set("REGISTO"));
+        registar.setOnMouseClicked( e -> {
+            MainCliente.menuSBP.set("REGISTO");
+            limpaCampos();
+        });
 
         progClienteManager.addErroListener(observable -> Platform.runLater(msgBox::update));
         progClienteManager.addLogadoListener(observable -> Platform.runLater(this::update));
@@ -82,5 +92,12 @@ public class RootPane extends BorderPane {
         else if(progClienteManager.getLogado().equals("FIM")) {
             Platform.exit();
         }
+    }
+    private void limpaCampos() {
+        resultado.setText(null);
+        username.clear();
+        password.clear();
+        password.getStyleClass().remove("camposInvalidos");
+        username.getStyleClass().remove("camposInvalidos");
     }
 }

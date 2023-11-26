@@ -36,7 +36,7 @@ public class ProgClienteManager {
         return programaCliente.criaSocket(list);
     }
 
-    public String login(String email, String password) {
+    public ParResposta login(String email, String password) {
         return programaCliente.login(email, password);
     }
 

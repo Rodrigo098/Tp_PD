@@ -167,3 +167,8 @@ HBox {
 .filtros > VBox > TextField {
      -fx-font-size: 12px;
 }
+
+.camposInvalidos {
+    -fx-border-color: #D32F2F;
+    -fx-background-color: #FFCDD2
+}
