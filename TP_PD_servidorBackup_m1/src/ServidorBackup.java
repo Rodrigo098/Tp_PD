@@ -183,6 +183,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         try(Connection connection = DriverManager.getConnection(dbUrl);
             Statement statement = connection.createStatement())
         {
+            System.out.println("Recebeu");
             String GetQuery = "SELECT * FROM Codigo_Registo where nome_evento=? AND validade>?;";
             PreparedStatement getquery=connection.prepareStatement(GetQuery);
             getquery.setString(1,nome_evento);
