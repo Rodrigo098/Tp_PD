@@ -1,5 +1,4 @@
 import pt.isec.pd.trabalhoPratico.model.classesPrograma.ProgServidor;
-import pt.isec.pd.trabalhoPratico.model.classesPrograma.QueryService;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;
