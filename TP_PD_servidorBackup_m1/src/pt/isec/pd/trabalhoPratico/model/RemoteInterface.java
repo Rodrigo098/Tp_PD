@@ -10,5 +10,4 @@ public interface RemoteInterface extends Remote {
         void registaBackupServers(String backupServiceURL) throws RemoteException;
         public void addObservable(ObservableInterface obv) throws RemoteException;
         public void RemoveObservable(ObservableInterface obv) throws RemoteException;
-        Geral getAtualizacao() throws RemoteException;
 }

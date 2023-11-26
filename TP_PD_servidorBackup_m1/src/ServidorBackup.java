@@ -10,14 +10,13 @@ import java.net.*;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.Timer;
 
-public class ServidorBackup extends UnicastRemoteObject implements ObservableInterface {
+public class ServidorBackup implements ObservableInterface {
     private static final String dbAdress = "Base de Dados/copiaDb.db";
     private static final String dbUrl= "jdbc:sqlite:"+dbAdress;
     private static String registration;
@@ -72,7 +71,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         {   multicastSocket = new MulticastSocket(portobackup);
             multicastSocket.setSoTimeout(30000);
             group = InetAddress.getByName(Heartbeatip);
-           NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName(InetAddress.getLocalHost().getHostAddress()));// replace with your network interface
+            NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName(InetAddress.getLocalHost().getHostAddress()));// replace with your network interface
             multicastSocket.joinGroup(new InetSocketAddress(group,portobackup),networkInterface);
             DatagramPacket heartBeat;
 
@@ -89,7 +88,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
 
                     System.out.println("Servidor de backup conectado ao servidor principal");
 
-                   receiveDb(); //recebe a copia da base de dados do servidor principal
+                    receiveDb(); //recebe a copia da base de dados do servidor principal
 
                     obs = new ServidorBackup();
                     rmi.addObservable(obs);
@@ -142,7 +141,6 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
 
     public static void receiveDb() {
         try {
-
            byte[] copiaDb = rmi.getCopiaDb();
             System.out.println("Chegou aqui");
            salvarCopiaDb(copiaDb, diretoria +File.separator+ "copiaDb.db");
@@ -163,7 +161,6 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         }
     }
 
-    @Override
     public void avisaObservables(Geral Msg, int versao) {
         System.out.println("Recebeu notificacao");
         DbManager.setVersao(versao);
@@ -210,7 +207,6 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         }
     }
 
-    @Override
     public boolean RegistoNovoUser(Utilizador user, String password) throws RemoteException {
         try(Connection connection = DriverManager.getConnection(dbUrl);
             Statement statement = connection.createStatement())
@@ -224,7 +220,6 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         }
     }
 
-    @Override
     public boolean edita_registo(Utilizador user, String pasword) throws RemoteException {
         try(Connection connection = DriverManager.getConnection(dbUrl);
             Statement statement = connection.createStatement()){
@@ -245,19 +240,6 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         }
     }
 
-    @Override
-    public void setVersao(int versao) throws RemoteException {
-        try (Connection connection=DriverManager.getConnection(dbUrl)){
-            String UpdateVersao="UPDATE Versao SET versao_id=? where versao_id=?";
-            PreparedStatement statement=connection.prepareStatement(UpdateVersao);
-            statement.setInt(1,versao);
-            statement.setInt(2,versao-1);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    @Override
     public boolean Cria_evento(Msg_Cria_Evento evento) throws RemoteException {
         try(Connection connection = DriverManager.getConnection(dbUrl);
 
@@ -277,13 +259,10 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         return false;
     }
 
-    @Override
     public boolean submitcod(int codigo, String nome_evento, String emailuser) throws RemoteException {
         try(Connection connection = DriverManager.getConnection(dbUrl);
             Statement statement = connection.createStatement())
         {
-
-
             String GetQuery = "SELECT * FROM Codigo_Registo where nome_evento=? AND validade>?";
             PreparedStatement getquery=connection.prepareStatement(GetQuery);
             getquery.setString(1,nome_evento);
@@ -302,15 +281,12 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                     expiraStatement.executeUpdate();// se existirem codigos antigos são eliminados se nao existirem nao acontece nada
                     return false;
                 }
-
-
                     String createEntryQuery = "INSERT INTO Assiste (nome_evento,email) VALUES ('"
                             + nome_evento+"','" +emailuser+"')";// qual o valor que é suposto colocar no idassiste??
 
                statement.executeUpdate(createEntryQuery);
                connection.close();
                setVersao(versao++);
-
             }
         } catch (SQLException e) {
 
@@ -320,7 +296,6 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         return false;
     }
 
-    @Override
     public boolean Edita_evento(Msg_Edita_Evento evento) throws RemoteException {
         try (Connection connection = DriverManager.getConnection(dbUrl);
              Statement statement = connection.createStatement()) {
@@ -337,7 +312,6 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         return true;
     }
 
-    @Override
     public boolean Elimina_evento(String nome_evento) throws RemoteException {
         try (Connection connection = DriverManager.getConnection(dbUrl);
              Statement statement = connection.createStatement()){
@@ -352,7 +326,6 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         }
     }
 
-    @Override
     public boolean InserePresencas(String nomeEvento, String[] emails) throws RemoteException {
         try (Connection connection = DriverManager.getConnection(dbUrl)) {
             for (String emailEstudante : emails) {
@@ -371,7 +344,6 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         }
     }
 
-    @Override
     public boolean EliminaPresencas(String nomeEvento, String[] emails) throws RemoteException {
         try (Connection connection = DriverManager.getConnection(dbUrl)) {
 
@@ -392,6 +364,23 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         }
     }
 
+    @Override
+    public void executaUpdate(Geral conteudo) throws RemoteException {
+        switch (conteudo.getTipo()) {
+            //chama cada funcao que fizeram
+        }
+    }
+    @Override
+    public void setVersao(int versao) throws RemoteException {
+        try (Connection connection=DriverManager.getConnection(dbUrl)){
+            String UpdateVersao="UPDATE Versao SET versao_id=? where versao_id=?";
+            PreparedStatement statement=connection.prepareStatement(UpdateVersao);
+            statement.setInt(1,versao);
+            statement.setInt(2,versao-1);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
     class ThreadLeLinhaComandos extends Thread {
         @Override
         public void run(){
