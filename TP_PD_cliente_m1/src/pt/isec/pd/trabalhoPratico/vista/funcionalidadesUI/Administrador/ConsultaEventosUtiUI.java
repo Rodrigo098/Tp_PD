@@ -10,6 +10,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import pt.isec.pd.trabalhoPratico.MainCliente;
 import pt.isec.pd.trabalhoPratico.model.ProgClienteManager;
 import pt.isec.pd.trabalhoPratico.model.classesComunication.Message_types;
 import pt.isec.pd.trabalhoPratico.model.recordDados.Evento;
@@ -62,7 +63,10 @@ public class ConsultaEventosUtiUI extends BorderPane {
             caminhoCSV.setText(null);
         });
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
-        progClienteManager.addAtualizacaoListener(observable -> Platform.runLater(this::extrairListaEventos));
+        progClienteManager.addAtualizacaoListener(observable -> {
+            if(this.isVisible()) Platform.runLater(this::extrairListaEventos);
+        }
+        );
     }
 
     private void update() {

@@ -60,7 +60,9 @@ public class ListarPresencasUI extends BorderPane {
         });
 
         ContaUtilizadorUI.opcaoUti.addListener(observable -> update());
-        progClienteManager.addAtualizacaoListener(observable -> Platform.runLater(this::extrairListaEventos));
+        progClienteManager.addAtualizacaoListener(observable -> {
+            if(this.isVisible()) Platform.runLater(this::extrairListaEventos);
+        });
     }
 
     private void update() {

@@ -48,7 +48,9 @@ public class ListarEventosUI extends BorderPane {
         });
         filtros.procurar.setOnAction( e -> extrairListaEventos());
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
-        progClienteManager.addAtualizacaoListener(observable -> Platform.runLater(this::extrairListaEventos));
+        progClienteManager.addAtualizacaoListener(observable -> {
+            if (this.isVisible()) Platform.runLater(this::extrairListaEventos);
+        });
     }
 
     private void update() {
