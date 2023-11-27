@@ -72,6 +72,7 @@ public class ListarPresencasUI extends BorderPane {
 
     private void extrairListaEventos() {
         lista.getItems().clear();
+        System.out.println(lista.getItems().size());
         Evento[] eventos = progClienteManager.obterListaConsulta(Message_types.CONSULTA_PRES_UTILIZADOR,
                 filtros.getNomeEvento(), filtros.getLocal(), filtros.getLimData1(), filtros.getLimData2(),
                 filtros.getHoraInicio(), filtros.getHoraFim());
@@ -79,5 +80,6 @@ public class ListarPresencasUI extends BorderPane {
             for (Evento evento : eventos) {
                 lista.getItems().add(evento);
             }
+        System.out.println(lista.getItems().size());
     }
 }

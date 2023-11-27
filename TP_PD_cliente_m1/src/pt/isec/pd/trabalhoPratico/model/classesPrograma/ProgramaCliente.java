@@ -288,7 +288,6 @@ public class ProgramaCliente {
 
     public Evento[] obterListaConsultaEventos(Message_types tipo, String nome, String local, String limData1, String limData2, String horaInicio, String horaFim) {
         if(fezLogin) {
-            //return new Evento[]{new Evento("ola", "HelloMate", LocalDate.now(), 11, 12)};
             if(!validaDatas(limData1, limData2)) {
                 return null;
             }

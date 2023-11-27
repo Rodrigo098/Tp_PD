@@ -42,7 +42,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         if (args.length != 1) {
             sair("<SERVIDOR BACKUP> Sintaxe: ServidorBackup <caminho_da_diretoria>");
         }
-
+        System.setProperty("sun.rmi.transport.proxy.connectTimeout", "60000");
         diretoria = args[0];
         File destinoBDSB = new File(diretoria);
 
@@ -76,7 +76,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
             multicastSocket.setSoTimeout(30000);
             group = InetAddress.getByName(Heartbeatip);
             NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName(InetAddress.getLocalHost().getHostAddress()));// replace with your network interface
-            multicastSocket.joinGroup(new InetSocketAddress(group,portobackup),networkInterface);
+            multicastSocket.joinGroup(new InetSocketAddress(group, portobackup),networkInterface);
             DatagramPacket heartBeat;
 
             heartBeat = new DatagramPacket(new byte[2024],2024);
