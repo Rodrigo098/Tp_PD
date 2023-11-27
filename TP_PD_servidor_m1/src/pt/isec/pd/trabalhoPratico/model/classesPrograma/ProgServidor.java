@@ -576,7 +576,6 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
         } catch (IOException e) {
             System.out.println("<SERVIDOR> Excecao ao enviar ficheiro: " + e.getCause());
         }
-       // file.delete();
     }
 
 }
