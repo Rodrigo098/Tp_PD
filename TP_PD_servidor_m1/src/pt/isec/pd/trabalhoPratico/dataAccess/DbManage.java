@@ -194,11 +194,12 @@ public class DbManage implements Serializable {
             }
             else{
                 connection.close();
+                synchronized (observables){
                 for (ObservableInterface obv:observables) {
                     obv.executaUpdate("INSERT INTO Utilizador (email,nome,numero_estudante,palavra_passe,tipo_utilizador) VALUES ('"
                             + user.email() + "','" + user.nome() + "','" + user.numIdentificacao() + "','" + password +"','" + "cliente" +"')");
 
-                }
+                }}
                 setVersao();
                 return new BDResposta(true, "<BD>Insercao de novo utilizador com sucesso # " + user.nome() + "," + user.numIdentificacao(), false);
             }
@@ -267,8 +268,10 @@ public class DbManage implements Serializable {
                 preparedStatement.setInt(2, user.numIdentificacao());
                 preparedStatement.executeUpdate();
                 connection.close();
+                synchronized (observables){
                 for (ObservableInterface obv:observables) {
                     obv.executaUpdate("UPDATE Utilizador SET nome='" + user.nome() + "', numero_estudante='" + user.numIdentificacao() + "', palavra_passe='" + password + "' WHERE email='"+ user.email() + "';");
+                }
                 }
                 setVersao();
                 return true;
@@ -343,8 +346,10 @@ public class DbManage implements Serializable {
                     else{
                         System.out.println("<BD> Nova presenca registada de [" + emailuser + "] no evento [" + nome_evento + "]");
                         connection.close();
+                        synchronized (observables){
                         for (ObservableInterface obv:observables) {
                             obv.submitcod(codigo,nome_evento,emailuser);}
+                        }
                         setVersao();
                         return true;
                     }
@@ -499,11 +504,11 @@ public class DbManage implements Serializable {
             }
             else{
                 System.out.println("<BD> Evento [" + evento +"] criado com sucesso");
-
+                synchronized (observables){
                 for (ObservableInterface obv:observables) {
                  obv.executaUpdate("INSERT INTO Evento (nome_evento,local,data_realizacao,hora_inicio,hora_fim) VALUES ('"
                          + evento.getNome() +"','" + evento.getLocal() +"','" + evento.getData() +"','" + evento.getHoreInicio() +"','" + evento.getHoraFim() +"')");
-                }
+                }}
                 connection.close();
                 setVersao();
                 return true;
@@ -538,12 +543,13 @@ public class DbManage implements Serializable {
                 } else {
                     System.out.println("<BD> Evento [" + evento + "] editado com sucesso");
                     connection.close();
+                    synchronized (observables){
                     for (ObservableInterface obv:observables) {
                       obv.executaUpdate("UPDATE Evento SET data_realizacao = '" + evento.getData() + "', hora_inicio = '"
                               + evento.getHoreInicio() + "', hora_fim = '" + evento.getHoraFim() + "', nome_evento = '"
                               + evento.getNome() + "', local = '" + evento.getLocal()+ "' WHERE nome_evento = '"
                               + evento.getNome() + "'");
-                    }
+                    }}
                     setVersao();
                     return true;
                     }
@@ -579,8 +585,10 @@ public class DbManage implements Serializable {
                 } else {
                     System.out.println("<BD> Evento ["+ nome_evento +"] eliminado com sucesso");
                     connection.close();
-                    for (ObservableInterface obv:observables) {
-                        obv.executaUpdate("DELETE FROM Evento WHERE nome_evento = '" + nome_evento + "'");
+                    synchronized (observables) {
+                        for (ObservableInterface obv : observables) {
+                            obv.executaUpdate("DELETE FROM Evento WHERE nome_evento = '" + nome_evento + "'");
+                        }
                     }
                     setVersao();
                     return true;
@@ -693,8 +701,11 @@ public class DbManage implements Serializable {
                 }
             }
             else System.out.println("<BD> Evento [" + nomeEvento +"] nao existe.");
-            connection.close();
+
+            synchronized (observables){
             for (ObservableInterface obv:observables) {obv.InserePresencas(nomeEvento,emails);}
+            }
+            connection.close();
             setVersao();
             return true;
         } catch (SQLException e) {
@@ -722,8 +733,11 @@ public class DbManage implements Serializable {
                     System.out.println("<BD> Nao foi encontrada a presenca do estudante " + emailEstudante + " no evento " + nomeEvento + ".");
                 }
             }
-            connection.close();
+
+            synchronized (observables){
             for (ObservableInterface obv:observables) {obv.EliminaPresencas(nomeEvento,emails);}
+            }
+            connection.close();
             setVersao();
             return true;
         } catch (SQLException e) {
@@ -796,10 +810,12 @@ public class DbManage implements Serializable {
                     insereStatement.setTimestamp(3, horarioValidade); //Estou a salvar em TimeStamp porque é melhor para verificar a validade do codigo
                     insereStatement.executeUpdate();
                     System.out.println("<BD> Novo codigo para o evento [" + evento + "]");
-                    connection.close();
+                    synchronized (observables){
                     for (ObservableInterface obv:observables) {
                         obv.executaUpdate("INSERT INTO Codigo_Registo (n_codigo_registo, nome_evento, validade) VALUES ('"+codigo+"', '"+evento+"','"+horarioValidade+"');");
                     }
+                    }
+                    connection.close();
                     System.out.println(codigo);
                     setVersao();
 
