@@ -121,7 +121,9 @@ public class DbManage implements Serializable {
 
             // versao_id = 0
             String insereVersao = "INSERT INTO Versao (versao_id, descricao) VALUES (0, 'Versão Inicial');";
+            String criaAdm="INSERT INTO UTILIZADOR(email,nome,numero_estudante,palavra_passe,tipo_utilizador) VALUES('admin@isec.pt','adm',0000,'admin','administrador');";
             statement.executeUpdate(insereVersao);
+            System.out.println(statement.executeUpdate(criaAdm));
 
             statement.close();
             connection.close();
