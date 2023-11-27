@@ -358,9 +358,7 @@ public class ProgramaCliente {
                 oout.writeObject(csv);
                 oout.flush();
 
-                InputStream inStream = socketPedidos.getInputStream();
-
-                while ((nbytes = inStream.read(fileChunk)) > 0) {
+                while ((nbytes = oin.read(fileChunk)) > 0) {
                     localFileOutputStream.write(fileChunk, 0, nbytes);
                 }
                 return "CSV gerado com sucesso guardado em: " + localCSVCaminho;

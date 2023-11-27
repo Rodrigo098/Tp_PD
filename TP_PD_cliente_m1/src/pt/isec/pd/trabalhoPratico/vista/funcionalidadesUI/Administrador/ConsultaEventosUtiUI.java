@@ -19,6 +19,7 @@ public class ConsultaEventosUtiUI extends BorderPane {
     private TextField utilizador, caminhoCSV;
     private Button obterCSV, listar;
     private ListView<Evento> listaEventos;
+    private Text resultado;
     private final ProgClienteManager progClienteManager;
 
     public ConsultaEventosUtiUI(ProgClienteManager progClienteManager)  {
@@ -32,12 +33,13 @@ public class ConsultaEventosUtiUI extends BorderPane {
         utilizador = new TextField();
         utilizador.setPromptText("Email do utilizador");
         caminhoCSV = new TextField();
-        caminhoCSV.setPromptText("Caminho para o ficheiro CSV");
+        caminhoCSV.setPromptText("Caminho CSV");
         obterCSV = new Button("Obter CSV");
         obterCSV.setDisable(true);
         listar = new Button("listar");
         listaEventos = new ListView<>();
         listaEventos.setPlaceholder(new Text("Este utilizador ainda não presenciou nenhum evento"));
+        resultado = new Text();
 
         Label label = new Label("Lista de eventos presenciados por:");
         label.getStyleClass().add("titulo");
@@ -49,7 +51,7 @@ public class ConsultaEventosUtiUI extends BorderPane {
         setAlignment(label, javafx.geometry.Pos.CENTER);
         this.setTop(label);
         this.setCenter(vBox);
-        this.setBottom(new HBox(caminhoCSV, obterCSV));
+        this.setBottom(new VBox(new HBox(caminhoCSV, obterCSV), resultado));
     }
 
     private void registerHandlers() {
@@ -58,8 +60,7 @@ public class ConsultaEventosUtiUI extends BorderPane {
             obterCSV.setDisable(!listaEventos.isVisible());
         });
         obterCSV.setOnAction(e -> {
-            progClienteManager.obterCSV_ListaEventos(caminhoCSV.getText(),"evenosPresenciadosPor_" + utilizador.getText(), Message_types.CSV_PRESENCAS_UTI_NUM_EVENTO);
-            obterCSV.setDisable(true);
+            resultado.setText(progClienteManager.obterCSV_ListaEventos(caminhoCSV.getText(),"evenosPresenciadosPor_" + utilizador.getText().split("@")[0], Message_types.CSV_PRESENCAS_UTI_NUM_EVENTO));
             caminhoCSV.setText(null);
         });
         ContaAdministradorUI.opcaoAdmin.addListener(observable -> update());
@@ -70,7 +71,10 @@ public class ConsultaEventosUtiUI extends BorderPane {
     }
 
     private void update() {
-        this.setVisible(ContaAdministradorUI.opcaoAdmin.get().equals("EVENTOS_PRESENCA_UTI"));
+        if(ContaAdministradorUI.opcaoAdmin.get().equals("EVENTOS_PRESENCA_UTI")) {
+            resultado.setText("");
+            this.setVisible(true);
+        }
         listaEventos.setVisible(false);
     }
 
@@ -78,7 +82,10 @@ public class ConsultaEventosUtiUI extends BorderPane {
         if(utilizador.getText() == null || utilizador.getText().isBlank())
             return false;
         listaEventos.getItems().clear();
-        for (Evento evento : progClienteManager.consultaEventosUtilizador(utilizador.getText())) {
+        Evento [] eventos = progClienteManager.consultaEventosUtilizador(utilizador.getText());
+        if(eventos == null || eventos.length == 0)
+            return false;
+        for (Evento evento : eventos) {
             listaEventos.getItems().add(evento);
         }
         return true;

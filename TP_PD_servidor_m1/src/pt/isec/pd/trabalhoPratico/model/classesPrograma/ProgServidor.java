@@ -522,7 +522,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
 
     public synchronized void sendfile(OutputStream out, File file){
         byte []fileChunk = new byte[ProgServidor.MAX_SIZE];
-        try (FileInputStream filereader=new FileInputStream(file)){
+        try (FileInputStream filereader = new FileInputStream(file)){
             int nbytes;
             do{
                 nbytes = filereader.read(fileChunk);
