@@ -24,11 +24,11 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
     // BACKUPS
     public static final int MAX_SIZE = 4000;
     private static final int portobackup = 4444;
-    private final String ipMuticastString = "224.0.1.0", Heartbeatip="230.44.44.44", service_name;
+    private final String Heartbeatip = "230.44.44.44", service_name;
     private MulticastSocket multicastSocketBackup;
     private final Timer temporizador;
     private final HeartBeatTask heartBeatTask;
-    private List<ObservableInterface> observers;//ArrayList<ObservableInterface> observers;
+    private List<ObservableInterface> observers;
     private DbManage dbManager;
     private InetAddress heartbeatgroup;
     private int timerCount = 0;
@@ -41,8 +41,6 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
     private final GereRecursosClientes gereRecursosClientes;
     private final List<ThreadCliente> threadsClientes;
     private NetworkInterface networkInterface;
-
-    private static HeartBeatTask teste;
 
 
     public ProgServidor(int portoClientes, String service_name, String caminhoBD) throws RemoteException {
@@ -164,7 +162,6 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
     ////////////////////////////////// OBSERVABLE /////////////////////////////
     @Override
     public byte[] getCopiaDb() throws RemoteException {
-
         try {
             //Para evitar que sejam feitas alterações enquanto a cópia é feita
             synchronized (this){
@@ -186,7 +183,9 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
         synchronized (observers){
       if(!observers.contains(obv)){
           observers.add(obv);
-          dbManager.addObserver(obv);
+          synchronized (dbManager) {
+              dbManager.addObserver(obv);
+          }
           System.out.println("\n<SERVIDOR> Observable adicionado");
       }
         }
@@ -197,7 +196,9 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
     public void RemoveObservable(ObservableInterface obv) throws RemoteException {
         synchronized (observers){
         observers.remove(obv);
-        dbManager.removeObserver(obv);
+        synchronized (dbManager) {
+            dbManager.removeObserver(obv);
+        }
             System.out.println("\n<SERVIDOR> Observable Removido");
         }
     }
@@ -291,8 +292,10 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                             switch (loginRegisto.getTipo()) {
                                 case LOGIN -> {
                                     Msg_Login aux = (Msg_Login) interacao;
-                                    BDResposta resposta = dbManager.autentica_user(aux.getEmail(), aux.getPassword());
-
+                                    BDResposta resposta;
+                                    synchronized (dbManager) {
+                                        resposta = dbManager.autentica_user(aux.getEmail(), aux.getPassword());
+                                    }
                                     if (!resposta.resultado()) {
                                         out.writeObject(new Geral(resposta.mensagem().contains("Password") ? Message_types.WRONG_PASS : resposta.conteudo() ? Message_types.INVALIDO : Message_types.ERRO));
                                     } else {
@@ -311,7 +314,10 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                 case REGISTO -> {
                                     Mgs_RegistarEditar_Conta aux = (Mgs_RegistarEditar_Conta) interacao;
                                     Utilizador user = new Utilizador(aux.getNome(), aux.getEmail(), aux.getNum_estudante());
-                                    BDResposta resposta = dbManager.RegistoNovoUser(user, aux.getPassword());
+                                    BDResposta resposta;
+                                    synchronized (dbManager) {
+                                        resposta = dbManager.RegistoNovoUser(user, aux.getPassword());
+                                    }
                                     if (resposta.resultado()) {
                                         email = aux.getEmail();
                                         logado = true;
@@ -341,28 +347,35 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                                 case EDITAR_REGISTO -> {
                                                     Mgs_RegistarEditar_Conta aux = (Mgs_RegistarEditar_Conta) message;
                                                     Utilizador user = new Utilizador(aux.getNome(), email, aux.getNum_estudante());
-                                                    if (dbManager.edita_registo(user, aux.getPassword())) {
+                                                    Boolean res = false;
+                                                    synchronized (dbManager) {
+                                                        res = dbManager.edita_registo(user, aux.getPassword());
+                                                    }
+                                                    if (res)
                                                         out.writeObject(new Geral(Message_types.VALIDO));
-                                                    } else
+                                                    else
                                                         out.writeObject(new Geral(Message_types.ERRO));
                                                 }
                                                 case SUBMICAO_COD -> {
                                                     Msg_String_Int aux = (Msg_String_Int) message;
-                                                    if (!dbManager.submitcod(aux.getNumero(), aux.getConteudo(), email)) {
-                                                        out.writeObject(new Geral(Message_types.INVALIDO));
-                                                    } else {
-                                                        out.writeObject(new Geral(Message_types.VALIDO));
+                                                    Boolean res = false;
+                                                    synchronized (dbManager) {
+                                                        res = dbManager.submitcod(aux.getNumero(), aux.getConteudo(), email);
                                                     }
+                                                    if(!res)
+                                                        out.writeObject(new Geral(Message_types.INVALIDO));
+                                                    else
+                                                        out.writeObject(new Geral(Message_types.VALIDO));
                                                 }
                                                 case CONSULTA_PRES_UTILIZADOR -> {
                                                     Msg_ConsultaComFiltros aux = (Msg_ConsultaComFiltros) message;
-                                                    List<Evento> eventosAssistidos = dbManager.ConsultaPresencas_user(email, aux);
-                                                    if (eventosAssistidos.isEmpty())
+                                                    synchronized (dbManager) {
+                                                        eventosPresencasUser = dbManager.ConsultaPresencas_user(email, aux);
+                                                    }
+                                                    if (eventosPresencasUser == null)
                                                         out.writeObject(new Geral(Message_types.ERRO));
                                                     else {
-                                                        eventosPresencasUser.clear();
-                                                        eventosPresencasUser.addAll(eventosAssistidos);
-                                                        Evento[] res = eventosAssistidos.toArray(new Evento[0]);
+                                                        Evento[] res = eventosPresencasUser.toArray(new Evento[0]);
                                                         out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));
                                                     }
                                                 }
@@ -398,40 +411,55 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                             switch (geral.getTipo()) {
                                                 case CRIA_EVENTO -> {
                                                     Msg_Cria_Evento evento = (Msg_Cria_Evento) message;
-                                                    if (dbManager.Cria_evento(evento)) {
+                                                    Boolean res = false;
+                                                    synchronized (dbManager) {
+                                                        res = dbManager.Cria_evento(evento);
+                                                    }
+                                                    if (res)
                                                         out.writeObject(new Geral(Message_types.VALIDO));
-                                                    } else
+                                                    else
                                                         out.writeObject(new Geral(Message_types.ERRO));
                                                 }
                                                 case EDIT_EVENTO -> {
                                                     Msg_Edita_Evento evento = (Msg_Edita_Evento) message;
-                                                    if (dbManager.Edita_evento(evento)) {
+                                                    Boolean res = false;
+                                                    synchronized (dbManager) {
+                                                        res = dbManager.Edita_evento(evento);
+                                                    }
+                                                    if(res)
                                                         out.writeObject(new Geral(Message_types.VALIDO));
-                                                    } else
+                                                    else
                                                         out.writeObject(new Geral(Message_types.ERRO));
                                                 }
                                                 case ELIMINAR_EVENTO -> {
                                                     Msg_String aux = (Msg_String) message;
-                                                    if (dbManager.Elimina_evento(aux.getConteudo())) {
+                                                    Boolean res = false;
+                                                    synchronized (dbManager) {
+                                                        res = dbManager.Elimina_evento(aux.getConteudo());
+                                                    }
+                                                    if(res)
                                                         out.writeObject(new Geral(Message_types.VALIDO));
-                                                    } else
+                                                    else
                                                         out.writeObject(new Geral(Message_types.ERRO));
                                                 }
                                                 case CONSULTA_EVENTOS -> {
                                                     Msg_ConsultaComFiltros aux = (Msg_ConsultaComFiltros) message;
-                                                    List<Evento> eventosConsultados = dbManager.Consulta_eventos(aux);
-                                                    if (eventosConsultados.isEmpty())
+                                                    synchronized (dbManager) {
+                                                        eventosPresencasAdmin = dbManager.Consulta_eventos(aux);
+                                                    }
+                                                    if (eventosPresencasAdmin == null)
                                                         out.writeObject(new Geral(Message_types.ERRO));
                                                     else {
-                                                        eventosPresencasUser.addAll(eventosConsultados); //vou utilizar o eventos presenças user para fazer o ficheiro csv do utilizador
-                                                        Evento[] res = eventosConsultados.toArray(new Evento[0]);
+                                                        Evento[] res = eventosPresencasAdmin.toArray(new Evento[0]);
                                                         out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));
                                                     }
                                                 }
                                                 case GERAR_COD -> {
                                                     Msg_String_Int aux = (Msg_String_Int) message;
-
-                                                    int code = dbManager.GeraCodigoRegisto(aux.getConteudo(), aux.getNumero());
+                                                    int code;
+                                                    synchronized (dbManager) {
+                                                        code = dbManager.GeraCodigoRegisto(aux.getConteudo(), aux.getNumero());
+                                                    }
                                                     if (code != 0) {
                                                          out.writeObject(new Msg_String(Integer.toString(code), Message_types.VALIDO));
                                                     } else
@@ -439,7 +467,9 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                                 }
                                                 case CONSULTA_PRES_EVENT -> {
                                                     Msg_String aux = (Msg_String) message;
-                                                    utilizadoresEvento = dbManager.Presencas_evento(aux.getConteudo());
+                                                    synchronized (dbManager) {
+                                                        utilizadoresEvento = dbManager.Presencas_evento(aux.getConteudo());
+                                                    }
                                                     if (utilizadoresEvento != null) {
                                                         Utilizador[] res = new Utilizador[utilizadoresEvento.size()];
                                                         utilizadoresEvento.toArray(res);
@@ -458,7 +488,9 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                                 }
                                                 case CONSULTA_PRES_UTILIZADOR -> {
                                                     Msg_String aux = (Msg_String) message;
-                                                    eventosPresencasUser = dbManager.ConsultaPresencas_User_Admin(aux.getConteudo());
+                                                    synchronized (dbManager) {
+                                                        eventosPresencasUser = dbManager.ConsultaPresencas_User_Admin(aux.getConteudo());
+                                                    }
                                                     if (eventosPresencasUser != null) {
                                                         Evento[] res = eventosPresencasUser.toArray(new Evento[0]);
                                                         out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));
@@ -479,17 +511,25 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
 
                                                 case ELIMINA_PRES -> {
                                                     Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas) message;
-                                                    if (dbManager.EliminaPresencas(aux.getNome_evento(), aux.getLista())) {
+                                                    Boolean res = false;
+                                                    synchronized (dbManager) {
+                                                        res = dbManager.EliminaPresencas(aux.getNome_evento(), aux.getLista());
+                                                    }
+                                                    if(res)
                                                         out.writeObject(new Geral(Message_types.VALIDO));
-                                                    } else
+                                                    else
                                                         out.writeObject(new Geral(Message_types.ERRO));
                                                 }
 
                                                 case INSERE_PRES -> {
                                                     Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas) message;
-                                                    if (dbManager.InserePresencas(aux.getNome_evento(), aux.getLista())) {
+                                                    Boolean res = false;
+                                                    synchronized (dbManager) {
+                                                        res = dbManager.InserePresencas(aux.getNome_evento(), aux.getLista());
+                                                    }
+                                                    if(res)
                                                         out.writeObject(new Geral(Message_types.VALIDO));
-                                                    } else
+                                                    else
                                                         out.writeObject(new Geral(Message_types.ERRO));
                                                 }
                                                 case LOGOUT -> {
