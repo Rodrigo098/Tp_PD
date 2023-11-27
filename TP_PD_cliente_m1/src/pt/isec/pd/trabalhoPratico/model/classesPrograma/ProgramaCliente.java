@@ -551,7 +551,7 @@ public class ProgramaCliente {
             LocalTime horaAtual = LocalTime.now(), HoraInicio, HoraFim;
 
             try {
-                dataEvento = LocalDate.parse(data, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                dataEvento = LocalDate.parse(data, DateTimeFormatter.ofPattern("yyyy/MM/dd"));
                 HoraInicio = LocalTime.parse(horaInicio, DateTimeFormatter.ofPattern("HH:mm"));
                 HoraFim = LocalTime.parse(horaFim, DateTimeFormatter.ofPattern("HH:mm"));
                 if (dataEvento.isBefore(dataAtual))
