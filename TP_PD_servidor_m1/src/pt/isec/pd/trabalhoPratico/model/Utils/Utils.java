@@ -9,7 +9,7 @@ import java.io.*;
 import java.util.List;
 
 public class Utils {
-    public static void eventosPresencasCSV(List<Utilizador> users, File csvFile ) {
+    public static File eventosPresencasCSV(List<Utilizador> users, File csvFile ) {
         String csvSplit = ","; // Delimitador!!
 
         try (FileWriter writer = new FileWriter(csvFile)) {
@@ -36,11 +36,13 @@ public class Utils {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+        return csvFile;
     }
 
     //Ficheiros CSV
-    public static void presencasUtilizadorCSV(List<Evento> eventos, File csvFile ) {
+    public static File presencasUtilizadorCSV(List<Evento> eventos, File csvFile ) {
         String csvSplit = ","; // Delimitador!!
+        System.out.println(eventos.size());
 
         try (FileWriter writer = new FileWriter(csvFile)) {
             // Escrita do cabeçalho:
@@ -72,6 +74,7 @@ public class Utils {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+        return csvFile;
     }
 
 

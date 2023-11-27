@@ -331,7 +331,7 @@ public class ProgramaCliente {
             String localCSVCaminho;
             File destinoCSV = new File(caminhoCSV);
             byte[] fileChunk = new byte[4000];
-            int nbytes;
+            int nbytes = 0;
 
             if (!destinoCSV.exists()) {
                 return "A directoria inserida [" + caminhoCSV + "] não existe!";
@@ -346,7 +346,7 @@ public class ProgramaCliente {
             }
 
             try {
-                localCSVCaminho = destinoCSV.getCanonicalPath() + File.separator + nomeFicheiro + ".csv";
+                localCSVCaminho = destinoCSV.getCanonicalPath() + File.separator + "Presencas" + ".csv";
             } catch (IOException e) {
                 return "Ocorreu um erro ao gerar o csv!";
             }
@@ -357,11 +357,11 @@ public class ProgramaCliente {
 
                 oout.writeObject(csv);
                 oout.flush();
+                System.out.println(localCSVCaminho);
 
-                InputStream inStream = socketPedidos.getInputStream();
-
-                while ((nbytes = inStream.read(fileChunk)) > 0) {
-                    localFileOutputStream.write(fileChunk, 0, nbytes);
+                while ((nbytes = oin.read(fileChunk)) > 0) {
+                    System.out.println("Chegou ca: "+nbytes);
+                    localFileOutputStream.write(fileChunk,0,nbytes);
                 }
                 return "CSV gerado com sucesso guardado em: " + localCSVCaminho;
             } catch (IOException e) {
