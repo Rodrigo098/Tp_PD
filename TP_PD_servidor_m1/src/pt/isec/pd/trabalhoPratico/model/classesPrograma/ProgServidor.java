@@ -570,6 +570,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                 }
             }while (nbytes > 0);
             out.flush();
+            file.delete();
             System.out.println("<SERVIDOR> Ficheiro enviado.");
 
         } catch (IOException e) {
