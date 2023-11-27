@@ -8,6 +8,6 @@ public record Evento( String nomeEvento, String local, String data, String horaI
     private static final long serialVersionUID = 1L;
     @Override
     public String toString() {
-        return nomeEvento + "; " + local + "; " + data + "; " + horaInicio;
+        return "Nome evento: " + nomeEvento + "; Local: " + local + "; Data: " + data + "; Comaça às: " + horaInicio;
     }
 }

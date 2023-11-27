@@ -15,7 +15,6 @@ import java.nio.file.Paths;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
@@ -170,11 +169,6 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
         } catch (Exception e) {
             throw new RemoteException("Erro ao obter cópia da base de dados", e);
         }
-
-    }
-
-    @Override
-    public void registaBackupServers(String backupServerURL) throws RemoteException {
 
     }
 
@@ -347,7 +341,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                                 case EDITAR_REGISTO -> {
                                                     Mgs_RegistarEditar_Conta aux = (Mgs_RegistarEditar_Conta) message;
                                                     Utilizador user = new Utilizador(aux.getNome(), email, aux.getNum_estudante());
-                                                    Boolean res = false;
+                                                    boolean res;
                                                     synchronized (dbManager) {
                                                         res = dbManager.edita_registo(user, aux.getPassword());
                                                     }
@@ -358,7 +352,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                                 }
                                                 case SUBMICAO_COD -> {
                                                     Msg_String_Int aux = (Msg_String_Int) message;
-                                                    Boolean res = false;
+                                                    boolean res;
                                                     synchronized (dbManager) {
                                                         res = dbManager.submitcod(aux.getNumero(), aux.getConteudo(), email);
                                                     }
@@ -412,7 +406,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                             switch (geral.getTipo()) {
                                                 case CRIA_EVENTO -> {
                                                     Msg_Cria_Evento evento = (Msg_Cria_Evento) message;
-                                                    Boolean res = false;
+                                                    boolean res;
                                                     synchronized (dbManager) {
                                                         res = dbManager.Cria_evento(evento);
                                                     }
@@ -423,7 +417,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                                 }
                                                 case EDIT_EVENTO -> {
                                                     Msg_Edita_Evento evento = (Msg_Edita_Evento) message;
-                                                    Boolean res = false;
+                                                    boolean res;
                                                     synchronized (dbManager) {
                                                         res = dbManager.Edita_evento(evento);
                                                     }
@@ -434,7 +428,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                                 }
                                                 case ELIMINAR_EVENTO -> {
                                                     Msg_String aux = (Msg_String) message;
-                                                    Boolean res = false;
+                                                    boolean res;
                                                     synchronized (dbManager) {
                                                         res = dbManager.Elimina_evento(aux.getConteudo());
                                                     }
@@ -512,7 +506,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
 
                                                 case ELIMINA_PRES -> {
                                                     Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas) message;
-                                                    Boolean res = false;
+                                                    boolean res;
                                                     synchronized (dbManager) {
                                                         res = dbManager.EliminaPresencas(aux.getNome_evento(), aux.getLista());
                                                     }
@@ -524,7 +518,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
 
                                                 case INSERE_PRES -> {
                                                     Msg_EliminaInsere_Presencas aux = (Msg_EliminaInsere_Presencas) message;
-                                                    Boolean res = false;
+                                                    boolean res;
                                                     synchronized (dbManager) {
                                                         res = dbManager.InserePresencas(aux.getNome_evento(), aux.getLista());
                                                     }

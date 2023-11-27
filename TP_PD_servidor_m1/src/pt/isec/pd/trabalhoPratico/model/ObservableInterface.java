@@ -8,6 +8,4 @@ public interface ObservableInterface extends Remote {
     void executaUpdate(String query) throws RemoteException;
     boolean InserePresencas(String nomeEvento, String[] emails) throws RemoteException;
     boolean EliminaPresencas(String nomeEvento, String [] emails) throws RemoteException;
-
-
 }

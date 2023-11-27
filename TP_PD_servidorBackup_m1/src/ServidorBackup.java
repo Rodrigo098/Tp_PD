@@ -1,5 +1,4 @@
 import pt.isec.pd.trabalhoPratico.model.ObservableInterface;
-import pt.isec.pd.trabalhoPratico.model.dataAccess.DbManager;
 import pt.isec.pd.trabalhoPratico.model.RemoteInterface;
 import pt.isec.pd.trabalhoPratico.model.recordDados.DadosRmi;
 
@@ -12,14 +11,12 @@ import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
 import java.util.Date;
 import java.util.Scanner;
-import java.util.Timer;
 
 public class ServidorBackup extends UnicastRemoteObject implements ObservableInterface {
     private static final String dbAdress = "Base de Dados/copiaDb.db";
     private static final String dbUrl= "jdbc:sqlite:"+dbAdress;
     private static String registration;
     private static boolean sair;
-    private static boolean recebeuHeartBeat;
     private static RemoteInterface rmi;
     private static MulticastSocket multicastSocket;
     private static int versao;
@@ -27,11 +24,8 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
     private static final int portobackup = 4444;
     private static final String Heartbeatip = "230.44.44.44";
     private static InetAddress group;
-    private Timer timeoutTimer = new Timer();
     private static String diretoria;
     private static ObservableInterface obs;
-
-    private static final DbManager dbManager = new DbManager();
 
     protected ServidorBackup() throws RemoteException {
     }
@@ -68,7 +62,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
             sair("<SERVIDOR BACKUP> Já existe uma base de dados guarda na diretoria.");
         }
 
-        ThreadLeLinhaComandos linhaComandos = new ServidorBackup().new ThreadLeLinhaComandos();
+        ThreadLeLinhaComandos linhaComandos = new ThreadLeLinhaComandos();
         linhaComandos.start();
 
         try
@@ -111,11 +105,10 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                         if (o instanceof DadosRmi dados) {
                             if(dados.nome_servico().equals("Fim"))
                                 sair=true;
-                            recebeuHeartBeat = true;
                             System.out.println("<SERVIDOR BACKUP> Recebeu HeartBeat");
                             // Compara a versão da base de dados recebida com a versão local
-                            if (dados.versao() != dbManager.getVersaoDb()) {
-                                System.out.println("<INFO> Dados " + dados.versao() + " Manager:" + dbManager.getVersaoDb());
+                            if (dados.versao() != versao) {
+                                System.out.println("<INFO> Dados " + dados.versao() + " Manager:" + versao);
                                 System.out.println("<SERVIDOR BACKUP> Versao da base de dados diferente.");
                                 sair = true;
 
@@ -139,7 +132,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
             multicastSocket.close();
             linhaComandos.join();
         } catch (InterruptedException | RuntimeException | IOException e) {
-            System.out.println("<SERVIDOR BACKUP>");;
+            System.out.println("<SERVIDOR BACKUP>");
         }
         System.out.println("\n-----------------------------------------------");
         System.out.println("<SERVIDOR BACKUP> A encerrar o servidor backup...");
@@ -151,22 +144,39 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
            byte[] copiaDb = rmi.getCopiaDb();
             salvarCopiaDb(copiaDb);
         } catch (RemoteException e) {
-          e.printStackTrace();
+            System.out.println("<SERVIDOR BACKUP> Excecao: " + e.getCause());
         }
 
     }
+    private static int getversaobd(){
+        try(Connection connection=DriverManager.getConnection(dbUrl)) {
+            String GetQuery="Select versao_id FROM VERSAO;";
+            PreparedStatement statement=connection.prepareStatement(GetQuery);
+            ResultSet rs= statement.executeQuery();
+            if(rs.isBeforeFirst()){
+                rs.next();
+                return rs.getInt("versao_id");
 
+            }else{
+                return 0;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
     private static void salvarCopiaDb(byte[] copiaDb) {
         try (FileOutputStream fos = new FileOutputStream(diretoria)) {
             fos.write(copiaDb);
             System.out.println("<SERVIDOR BACKUP> Copia da base de dados salva localmente: " + diretoria);
-            versao = DbManager.getVersaoDb();
+            versao = getversaobd();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("<SERVIDOR BACKUP> Excecao: " + e.getCause());
         }
     }
 
-    public static void setVersao(int versao) {
+    public static void setVersao() {
+        versao++;
         try (Connection connection=DriverManager.getConnection(dbUrl)){
             String UpdateVersao="UPDATE Versao SET versao_id=? where versao_id=?;";
             PreparedStatement statement=connection.prepareStatement(UpdateVersao);
@@ -211,7 +221,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
 
                statement.executeUpdate(createEntryQuery);
                connection.close();
-               setVersao(versao++);
+               setVersao();
             }
         } catch (SQLException e) {
 
@@ -232,7 +242,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                     presencaStatement.executeUpdate();
             }
             connection.close();
-            setVersao(versao++);
+            setVersao();
             return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -252,7 +262,7 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                 eliminaPresencaStatement.executeUpdate();
             }
             connection.close();
-            setVersao(versao++);
+            setVersao();
             return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -263,18 +273,18 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
     @Override
     public void executaUpdate(String query) throws RemoteException {
         try(Connection connection = DriverManager.getConnection(dbUrl);
-            Statement statement= connection.createStatement();
+            Statement statement = connection.createStatement()
         ) {
             System.out.println("Chega ca");
             statement.executeUpdate(query);
             connection.close();
-            setVersao(versao++);
+            setVersao();
         } catch (SQLException e) {
             System.out.println("<SERVIDOR BACKUP> Excepcao ao executar um update da base de dados [" + e + "]");
         }
     }
 
-    class ThreadLeLinhaComandos extends Thread {
+    static class ThreadLeLinhaComandos extends Thread {
         @Override
         public void run(){
             String inserido;
@@ -293,131 +303,3 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         System.exit(1);
     }
 }
-/*
-
-    public void avisaObservables(Geral Msg, int versao) {
-        System.out.println("Recebeu notificacao");
-        DbManager.setVersao(versao);
-        System.out.println(versao);
-        switch (Msg.getTipo()){
-            case REGISTO ->{
-                Mgs_RegistarEditar_Conta mg=(Mgs_RegistarEditar_Conta) Msg;
-                Utilizador aux=new Utilizador(mg.getNome(),mg.getEmail(), mg.getNum_estudante());
-                DbManager.RegistoNovoUser(aux,mg.getPassword());
-            }
-            case EDITAR_REGISTO -> {
-                Mgs_RegistarEditar_Conta mg=(Mgs_RegistarEditar_Conta) Msg;
-                Utilizador aux=new Utilizador(mg.getNome(),mg.getEmail(), mg.getNum_estudante());
-                DbManager.edita_registo(aux,mg.getPassword());
-            }
-            case SUBMICAO_COD -> {
-                Msg_Sub_Cod mg=(Msg_Sub_Cod) Msg;
-                DbManager.submitcod(mg.getNumero(),mg.getConteudo(),mg.getEmail());
-            }
-            case CRIA_EVENTO -> {
-                Msg_Cria_Evento mg=(Msg_Cria_Evento) Msg;
-                DbManager.Cria_evento(mg);
-            }
-            case EDIT_EVENTO -> {
-                Msg_Edita_Evento mg=(Msg_Edita_Evento) Msg;
-                DbManager.Edita_evento(mg);
-            }
-            case ELIMINAR_EVENTO -> {
-                Msg_String mg=(Msg_String) Msg;
-                DbManager.Elimina_evento(mg.getConteudo());
-            }
-            case GERAR_COD ->
-                System.out.println("Por fazer");
-
-            case INSERE_PRES -> {
-                Msg_EliminaInsere_Presencas mg=(Msg_EliminaInsere_Presencas) Msg;
-                DbManager.InserePresencas(mg.getNome_evento(),mg.getLista());
-            }
-            case ELIMINA_PRES -> {
-                Msg_EliminaInsere_Presencas mg=(Msg_EliminaInsere_Presencas) Msg;
-                DbManager.EliminaPresencas(mg.getNome_evento(),mg.getLista());
-            }
-
-        }
-    }
-
-    public boolean RegistoNovoUser(Utilizador user, String password) throws RemoteException {
-        try(Connection connection = DriverManager.getConnection(dbUrl);
-            Statement statement = connection.createStatement())
-        {String createEntryQuery = "INSERT INTO Utilizador (email,nome,numero_estudante,palavra_passe,tipo_utilizador) VALUES ('"
-                    + user.email() + "','" + user.nome() + "','" + user.numIdentificacao() + "','" + password +"','" + "cliente" +"')";// CHELSEA SERIA ASSIM QUE ADICIONAVAMOS OUTROS VALORES??
-           connection.close();
-            setVersao(versao++);
-            return true;
-        } catch (SQLException e) {
-            return false;
-        }
-    }
-
-    public boolean edita_registo(Utilizador user, String pasword) throws RemoteException {
-        try(Connection connection = DriverManager.getConnection(dbUrl);
-            Statement statement = connection.createStatement()){
-                String updateQuery = "UPDATE Utilizador SET nome=?, numero_estudante=?, palavra_passe=? WHERE email=?";
-                PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
-                preparedStatement.setString(1, user.nome());
-                preparedStatement.setInt(2, user.numIdentificacao());
-                preparedStatement.setString(3, pasword);
-                preparedStatement.setString(4, user.email());
-                preparedStatement.executeUpdate();
-                connection.close();
-                setVersao(versao++);
-                return true;
-
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
-    }
-
-    public boolean Cria_evento(Msg_Cria_Evento evento) throws RemoteException {
-        try(Connection connection = DriverManager.getConnection(dbUrl);
-
-            Statement statement = connection.createStatement()){
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-            String dataString = dateFormat.format(evento.getData()); //Alterei isso para termos a data nesse formato, facilita os testes
-
-            String createEntryQuery = "INSERT INTO Evento (nome_evento,local,data_realizacao,hora_inicio,hora_fim) VALUES ('"
-                    + evento.getNome() +"','" + evento.getLocal() +"','" + dataString +"','" + evento.getHoreInicio() +"','" + evento.getHoraFim() +"')";
-          statement.executeUpdate(createEntryQuery);
-          connection.close();
-          setVersao(versao++);
-
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return false;
-    }
-
-    public boolean Edita_evento(Msg_Edita_Evento evento) throws RemoteException {
-        try (Connection connection = DriverManager.getConnection(dbUrl);
-             Statement statement = connection.createStatement()) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-            String dataString = dateFormat.format(evento.getData()); //Alterei isso para termos a data nesse formato, facilita os testes mas sempre se pode alterar
-            String updateEventQuery = "UPDATE Evento SET data_realizacao = '" + dataString + "', hora_inicio = '" + evento.getHoreInicio() + "', hora_fim = '" + evento.getHoraFim() + "', nome_evento = '" + evento.getNome() + "', local = '" + evento.getLocal()+ "' WHERE nome_evento = '" + evento.getNome()
-                    + "'";
-          statement.executeUpdate(updateEventQuery);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return true;
-    }
-
-    public boolean Elimina_evento(String nome_evento) throws RemoteException {
-        try (Connection connection = DriverManager.getConnection(dbUrl);
-             Statement statement = connection.createStatement()){
-        String deleteEventQuery = "DELETE FROM Evento WHERE nome_evento = '" + nome_evento + "'";
-        statement.executeUpdate(deleteEventQuery);
-        connection.close();
-        return true;
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
-    }
-
- */

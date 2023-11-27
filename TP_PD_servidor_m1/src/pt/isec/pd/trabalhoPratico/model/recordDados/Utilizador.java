@@ -8,6 +8,6 @@ public record Utilizador(String nome, String email, int numIdentificacao) implem
     private static final long serialVersionUID = 1L;
     @Override
     public String toString() {
-        return nome + ";" + numIdentificacao + ";" + email;
+        return "Nome: " + nome + "; Número de identificacao: " + numIdentificacao + "; Email: " + email;
     }
 }

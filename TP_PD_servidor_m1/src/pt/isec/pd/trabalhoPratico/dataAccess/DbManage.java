@@ -135,10 +135,6 @@ public class DbManage implements Serializable {
     public void addVersaoListener(PropertyChangeListener novoListener) {
         versaoSuporte.addPropertyChangeListener(novoListener);
     }
-
-    public void removeVersaoChangeListener(PropertyChangeListener novoListener) {
-        versaoSuporte.removePropertyChangeListener(novoListener);
-    }
     private int getversaobd(){
         try(Connection connection=DriverManager.getConnection(dbUrl)) {
             String GetQuery="Select versao_id FROM VERSAO;";
@@ -656,9 +652,6 @@ public class DbManage implements Serializable {
     public boolean InserePresencas(String nomeEvento, String[] emails) {
         try (Connection connection = DriverManager.getConnection(dbUrl)) {
 
-            //Att: Vi na net que para cenas na bd que envolvam duas chaves primárias deve se utilizar esse PreparedStatement
-            //É rezar que funcione bem e que seja assim mesmo
-
             // Verificar se o evento existe
             String verificaEventoQuery = "SELECT COUNT(*) FROM Evento WHERE nome_evento = ?;";
             PreparedStatement eventoStatement = connection.prepareStatement(verificaEventoQuery); //Para preparar a consulta
@@ -766,10 +759,6 @@ public class DbManage implements Serializable {
                 //Estou a obter a data e hora atual para comparar se o evento se encontra a decorrer
                 Date dataAtual = new Date();
                 long dataAtualMillis = dataAtual.getTime();
-/*
-                System.out.println(dataAtualMillis);
-                System.out.println(dataInicioMillis);
-                System.out.println(dataFimMillis);*/
 
                 //Se estiver dentro do intervalo de tempo, então o evento se encontra a decorrer
                 if (dataAtualMillis >= dataInicioMillis && dataAtualMillis <= dataFimMillis) {
