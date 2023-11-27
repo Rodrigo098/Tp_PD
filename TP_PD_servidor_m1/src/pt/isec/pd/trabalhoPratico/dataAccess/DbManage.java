@@ -406,17 +406,17 @@ public class DbManage implements Serializable {
             Statement statement = connection.createStatement()) {
             String FiltroEventosUser = "SELECT * FROM Evento " +
                     "INNER JOIN Assiste ON Evento.nome_evento = Assiste.nome_evento " +
-                    "WHERE Assiste.email = '" + email_utilizador + "' ;";
+                    "WHERE Assiste.email = '" + email_utilizador + "' ";
 
             //ResultSet rs = statement.executeQuery(FiltroEventosUser);
-
+            System.out.println(filtros.getNome());
             // nome evento
-            if (filtros.getNome() != null && !filtros.getNome().isEmpty()) {
-                FiltroEventosUser += "AND Evento.nome_evento LIKE '%" + filtros.getNome() + "%' ";
+            if (filtros.getNome() != null && !filtros.getNome().isBlank()) {
+                FiltroEventosUser += "AND Evento.nome_evento = '" + filtros.getNome() + "' ";
             }
 
             // local
-            if (filtros.getLocal() != null && !filtros.getLocal().isEmpty()) {
+            if (filtros.getLocal() != null && !filtros.getLocal().isBlank()) {
                 FiltroEventosUser += "AND Evento.local LIKE '%" + filtros.getLocal() + "%' ";
             }
 
@@ -440,7 +440,7 @@ public class DbManage implements Serializable {
                 FiltroEventosUser += " AND time(Evento.hora_inicio) < '" + filtros.getHoraFim() + "' ";
             }
 
-            ResultSet rs = statement.executeQuery(FiltroEventosUser);
+            ResultSet rs = statement.executeQuery(FiltroEventosUser+";");
 
 
             while (rs.next()){
