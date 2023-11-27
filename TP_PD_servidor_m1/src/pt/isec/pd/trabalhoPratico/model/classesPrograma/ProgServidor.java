@@ -153,7 +153,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
         System.out.println("\n-------------------- ATUALIZACAO ----------------------");
         //aviso de atualizacao aos backups
         System.out.println("<SERVIDOR> HeartBeat de atualizacao enviado aos servidores backup");
-        enviaHeartBeat();
+        enviaHeartBeat(service_name);
 
         //aviso de atualizacao aos clientes
         System.out.println("<SERVIDOR> Aviso de atualizacao enviado a:");
@@ -203,13 +203,13 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
     }
 
     ////////////////////////////////// HEART BEAT /////////////////////////////
-    private synchronized void enviaHeartBeat() {
+    private synchronized void enviaHeartBeat(String mensagem) {
         DatagramPacket heartBeat;
 
             try (ByteArrayOutputStream bout = new ByteArrayOutputStream();
                 ObjectOutputStream oout = new ObjectOutputStream(bout))
             {
-                oout.writeObject(new DadosRmi(InetAddress.getLocalHost().getHostAddress(), service_name, dbManager.getVersao()));
+                oout.writeObject(new DadosRmi(InetAddress.getLocalHost().getHostAddress(), mensagem, dbManager.getVersao()));
                 oout.flush();
                 heartBeat = new DatagramPacket(bout.toByteArray(), bout.size(), heartbeatgroup, portobackup);
                 multicastSocketBackup.send(heartBeat);
@@ -225,7 +225,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
             timerCount++;
             if(timerCount == 10 && !pararServidor) {
                 timerCount = 0;
-                enviaHeartBeat();
+                enviaHeartBeat(service_name);
                 System.out.println("[<SERVIDOR> Heartbeat enviado]");
             }
         }
@@ -245,10 +245,14 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
             temporizador.cancel();
             heartBeatTask.cancel();
             envioDeAvisoDeAtualizacao("fimServidor");
+            enviaHeartBeat("Fim");
             try {
                 socketServidor.close();
+
                 multicastSocketBackup.close();
                 gereRecursosClientes.terminarLigacoes();
+
+
             } catch (IOException e) {
                 throw new RuntimeException("\n<SERVIDOR> Erro a fechar sockets");
             }
@@ -530,6 +534,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                     System.out.println("Nbytes: "+nbytes);
                 }
             }while (nbytes > 0);
+            out.flush();
             System.out.println("<SERVIDOR> Ficheiro enviado.");
 
         } catch (IOException e) {

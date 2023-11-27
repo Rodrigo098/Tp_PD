@@ -109,6 +109,8 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
                     {
                         Object o = oin.readObject();
                         if (o instanceof DadosRmi dados) {
+                            if(dados.nome_servico().equals("Fim"))
+                                sair=true;
                             recebeuHeartBeat = true;
                             System.out.println("<SERVIDOR BACKUP> Recebeu HeartBeat");
                             // Compara a versão da base de dados recebida com a versão local

@@ -352,17 +352,21 @@ public class ProgramaCliente {
             }
 
             Geral csv = new Geral(tipoCSV);
+            File finalfile=new File(localCSVCaminho);
 
-            try (FileOutputStream localFileOutputStream = new FileOutputStream(localCSVCaminho)) {
+            try (FileOutputStream localFileOutputStream = new FileOutputStream(finalfile)) {
 
                 oout.writeObject(csv);
                 oout.flush();
                 System.out.println(localCSVCaminho);
 
-                while ((nbytes = oin.read(fileChunk)) > 0) {
+                do{
+                    nbytes=oin.read(fileChunk);
                     System.out.println("Chegou ca: "+nbytes);
                     localFileOutputStream.write(fileChunk,0,nbytes);
-                }
+                    System.out.println("-----");
+                }while (nbytes==0);
+                System.out.println("Teve aqui");
                 return "CSV gerado com sucesso guardado em: " + localCSVCaminho;
             } catch (IOException e) {
                 gereMudancasPLC.setErros();

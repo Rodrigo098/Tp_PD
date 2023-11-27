@@ -74,6 +74,8 @@ public class ConsultaEventosUtiUI extends BorderPane {
         if(ContaAdministradorUI.opcaoAdmin.get().equals("EVENTOS_PRESENCA_UTI")) {
             resultado.setText("");
             this.setVisible(true);
+        }else{
+            this.setVisible(false);
         }
         listaEventos.setVisible(false);
     }
