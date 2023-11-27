@@ -267,7 +267,7 @@ public class DbManage implements Serializable {
                 preparedStatement.executeUpdate();
                 connection.close();
                 for (ObservableInterface obv:observables) {
-                    obv.executaUpdate("UPDATE Utilizador SET nome='" + user.nome() + "', numero_estudante=" + user.numIdentificacao() + ", palavra_passe=" + password + " WHERE email="+ user.email() + ";");
+                    obv.executaUpdate("UPDATE Utilizador SET nome='" + user.nome() + "', numero_estudante='" + user.numIdentificacao() + "', palavra_passe='" + password + "' WHERE email='"+ user.email() + "';");
                 }
                 setVersao();
                 return true;
