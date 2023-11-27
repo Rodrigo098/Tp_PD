@@ -28,7 +28,7 @@ public class MainServidor {
         String caminhoBD = null;
         try {
             portoCli = Integer.parseInt(args[0]);//verifica validade do porto inserido para conexao - cliente
-            portoReg = Integer.parseInt(args[2]);//verifica validade do porto inserido para registry
+            portoReg = Integer.parseInt(args[3]);//verifica validade do porto inserido para registry
 
             File localDirectory = new File(args[1].trim());
             SERVICE_NAME = args[2];
