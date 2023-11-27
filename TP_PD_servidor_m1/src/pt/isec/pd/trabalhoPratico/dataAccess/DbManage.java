@@ -558,7 +558,7 @@ public class DbManage implements Serializable {
     public boolean Elimina_evento(String nome_evento) {
         try (Connection connection = DriverManager.getConnection(dbUrl);
              Statement statement = connection.createStatement()) {
-
+            System.out.println("Chegou ao elimina evento");
             // Verifico se há presenças na tabela "assiste" para o evento
             String checkAssisteQuery = "SELECT COUNT(*) FROM assiste WHERE nome_evento = '" + nome_evento + "';";
             ResultSet resultSet = statement.executeQuery(checkAssisteQuery);
@@ -582,6 +582,7 @@ public class DbManage implements Serializable {
                         obv.executaUpdate("DELETE FROM Evento WHERE nome_evento = '" + nome_evento + "'");
                     }
                     setVersao();
+                    return true;
                     }
             }
         } catch (SQLException e) {
