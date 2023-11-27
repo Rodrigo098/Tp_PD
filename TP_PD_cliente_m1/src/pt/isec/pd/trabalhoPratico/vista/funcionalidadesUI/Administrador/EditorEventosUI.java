@@ -124,7 +124,15 @@ public class EditorEventosUI extends BorderPane {
         editarEvento.setOnAction(e -> resultado.setText(progClienteManager.editar_Evento(ListarEventosUI.eventoSelecionado.nomeEvento() ,eventoUI.getNomeEvento(), eventoUI.getLocal(),
                 eventoUI.getData(), eventoUI.getHoraInicio(), eventoUI.getHoraFim())));
 
-        eliminarEvento.setOnAction(e -> resultado.setText(progClienteManager.eliminarEvento(ListarEventosUI.eventoSelecionado.nomeEvento())));
+        eliminarEvento.setOnAction(e -> {
+            String res = progClienteManager.eliminarEvento(ListarEventosUI.eventoSelecionado.nomeEvento());
+            if(res == null) {
+                ContaAdministradorUI.opcaoAdmin.set("LISTAR_EVENTOS");
+            }
+            else {
+                resultado.setText(res);
+            }
+        });
 
         obterPresencasCSV.setOnAction(e -> progClienteManager.obterCSV_ListaEventos(caminhoCSV.getText(), nomeFicheiro.getText(), Message_types.CSV_PRESENCAS_DO_EVENTO));
 

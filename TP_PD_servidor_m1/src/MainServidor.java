@@ -43,7 +43,7 @@ public class MainServidor {
                 sair("<SERVIDOR> Sem permissoes de escrita na directoria " + localDirectory);
             }
             try {
-                caminhoBD = localDirectory.getCanonicalPath() + File.separator + "Presencas" + ".csv";
+                caminhoBD = localDirectory.getCanonicalPath();
             } catch (IOException e) {
                 sair("<SERVIDOR> Erro ao obter o caminho da base de dados!");
             }

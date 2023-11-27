@@ -318,7 +318,7 @@ public class ProgramaCliente {
                 } catch (IOException | ClassNotFoundException e) {
                     gereMudancasPLC.setErros();
                 }
-            return null;//new Evento[]{};
+            return null;
         }
         return null;
     }
@@ -334,15 +334,15 @@ public class ProgramaCliente {
             int nbytes = 0;
 
             if (!destinoCSV.exists()) {
-                return "A directoria inserida [" + caminhoCSV + "] não existe!";
+                return "A directoria inserida não existe!";
             }
 
             if (!destinoCSV.isDirectory()) {
-                return "O caminho [" + caminhoCSV + "] não é uma diretoria!";
+                return "O caminho inserido não é uma diretoria!";
             }
 
             if (!destinoCSV.canWrite()) {
-                return "Não pode guardar o .csv em: " + destinoCSV;
+                return "Não pode guardar o .csv na diretoria inserida";
             }
 
             try {
@@ -362,12 +362,10 @@ public class ProgramaCliente {
 
                 do{
                     nbytes=oin.read(fileChunk);
-                    System.out.println("Chegou ca: "+nbytes);
                     localFileOutputStream.write(fileChunk,0,nbytes);
-                    System.out.println("-----");
                 }while (nbytes==0);
                 System.out.println("Teve aqui");
-                return "CSV gerado com sucesso guardado em: " + localCSVCaminho;
+                return "CSV gerado com sucesso!";
             } catch (IOException e) {
                 gereMudancasPLC.setErros();
             }
@@ -603,7 +601,7 @@ public class ProgramaCliente {
 
                 if (validacao instanceof Geral g)
                     return  g.getTipo() == Message_types.VALIDO ?
-                            "Evento eliminado com sucesso!"
+                            null
                             : "Ocorreu um erro na BD.";
 
             } catch (IOException | ClassNotFoundException ignored) {
