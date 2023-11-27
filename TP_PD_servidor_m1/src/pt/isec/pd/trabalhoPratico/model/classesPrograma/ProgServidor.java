@@ -82,7 +82,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
             multicastSocketBackup = new MulticastSocket(portobackup);
 
             networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName(InetAddress.getLocalHost().getHostAddress()));// replace with your network interface
-            System.out.println(networkInterface);
+            System.out.println(InetAddress.getLocalHost().getHostAddress());
             multicastSocketBackup.setNetworkInterface(networkInterface);
             multicastSocketBackup.joinGroup(new InetSocketAddress(heartbeatgroup, portobackup), networkInterface);
 
@@ -369,6 +369,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                                 }
                                                 case CONSULTA_PRES_UTILIZADOR -> {
                                                     Msg_ConsultaComFiltros aux = (Msg_ConsultaComFiltros) message;
+                                                    System.out.println("Recebeu");
                                                     synchronized (dbManager) {
                                                         eventosPresencasUser = dbManager.ConsultaPresencas_user(email, aux);
                                                     }
