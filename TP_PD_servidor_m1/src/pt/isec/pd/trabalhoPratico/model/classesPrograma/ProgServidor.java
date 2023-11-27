@@ -370,7 +370,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                                             out.writeObject(new Geral(Message_types.ERRO));
                                                     }
 
-                                                    Utils.presencasUtilizadorCSV(eventosPresencasUser, file);
+                                                    file = Utils.presencasUtilizadorCSV(eventosPresencasUser, file);
                                                     sendfile(out, file);
                                                 }
                                                 case LOGOUT -> {
@@ -450,28 +450,27 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                                                         if (!file.createNewFile())
                                                             out.writeObject(new Geral(Message_types.ERRO));
                                                     }
-                                                    Utils.eventosPresencasCSV(utilizadoresEvento, file);
+                                                    file = Utils.eventosPresencasCSV(utilizadoresEvento, file);
                                                     sendfile(out, file);
                                                 }
                                                 case CONSULTA_PRES_UTILIZADOR -> {
                                                     Msg_String aux = (Msg_String) message;
-                                                    eventosPresencasAdmin = dbManager.ConsultaPresencas_User_Admin(aux.getConteudo());
-                                                    if (eventosPresencasAdmin != null) {
-                                                        Evento[] res = eventosPresencasAdmin.toArray(new Evento[0]);
+                                                    eventosPresencasUser = dbManager.ConsultaPresencas_User_Admin(aux.getConteudo());
+                                                    if (eventosPresencasUser != null) {
+                                                        Evento[] res = eventosPresencasUser.toArray(new Evento[0]);
                                                         out.writeObject(new Msg_ListaEventos(Message_types.VALIDO, res));
                                                     } else
                                                         out.writeObject(new Geral(Message_types.ERRO));
                                                 }
 
                                                 case CSV_PRESENCAS_UTI_NUM_EVENTO -> {
-                                                    //NÃO DEVIAM ESTAR A FAZER ISTO, VÃO BUSCAR OS DADOS E CRIAR O CSV DESTE LADO
                                                     File file = new File("Presencas.csv");// talvez o nome do ficheiro seja outro ,idk
                                                     if (!file.exists()) {
                                                         if (!file.createNewFile())
                                                             out.writeObject(new Geral(Message_types.ERRO));
                                                     }
-                                                    Utils.presencasUtilizadorCSV(eventosPresencasUser, file);// not sure se e esta a funcao
-                                                    // Aqui colocar a funcao que vamos chamar na db
+                                                    System.out.println(eventosPresencasUser.size());
+                                                    file = Utils.presencasUtilizadorCSV(eventosPresencasUser, file);// not sure se e esta a funcao
                                                     sendfile(out, file);
                                                 }
 
@@ -520,7 +519,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
     }
 
 
-    public synchronized void sendfile(OutputStream out, File file){
+    public synchronized void sendfile(ObjectOutputStream out, File file){
         byte []fileChunk = new byte[ProgServidor.MAX_SIZE];
         try (FileInputStream filereader = new FileInputStream(file)){
             int nbytes;
@@ -529,6 +528,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
                 if(nbytes!=-1){
                     out.write(fileChunk,0,nbytes);
                     out.flush();
+                    System.out.println("Nbytes: "+nbytes);
                 }
             }while (nbytes > 0);
             System.out.println("<SERVIDOR> Ficheiro enviado.");
@@ -536,6 +536,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
         } catch (IOException e) {
             System.out.println("<SERVIDOR> Excecao ao enviar ficheiro: " + e.getCause());
         }
+       // file.delete();
     }
 
 }
