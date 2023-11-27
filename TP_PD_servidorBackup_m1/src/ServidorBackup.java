@@ -1,9 +1,7 @@
 import pt.isec.pd.trabalhoPratico.model.ObservableInterface;
-import pt.isec.pd.trabalhoPratico.model.classesComunication.*;
 import pt.isec.pd.trabalhoPratico.model.dataAccess.DbManager;
 import pt.isec.pd.trabalhoPratico.model.RemoteInterface;
 import pt.isec.pd.trabalhoPratico.model.recordDados.DadosRmi;
-import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 
 import java.io.*;
 import java.net.*;
@@ -42,28 +40,34 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
 
         // Verifica se o número de argumentos é válido
         if (args.length != 1) {
-            System.err.println("Sintaxe: ServidorBackup <caminho_da_diretoria>");
-            System.exit(1);
+            sair("<SERVIDOR BACKUP> Sintaxe: ServidorBackup <caminho_da_diretoria>");
         }
-
 
         diretoria = args[0];
-        System.setProperty("sun.rmi.transport.connectionTimeout","60000");
+        File destinoBDSB = new File(diretoria);
 
-        // Verifica se o caminho existe
-        File caminho = new File(diretoria);
+        if (!destinoBDSB.exists()) {
+            sair("A directoria inserida [" + diretoria + "] não existe!");
+        }
 
-        if (!caminho.exists() || !caminho.isDirectory()) {
-            System.err.println("[Erro] O caminho especificado nao corresponde a uma diretoria valida");
-            System.exit(1);
+        if (!destinoBDSB.isDirectory()) {
+            sair("O caminho [" + diretoria + "] não é uma diretoria!");
         }
-/*
-        // Verifica se a diretoria está vazia
-        if (caminho.list().length > 0) {
-            System.err.println("A diretoria nao esta vazia. A encerrar o servidor backup...");
-            System.exit(1);
+
+        if (!destinoBDSB.canWrite()) {
+            sair("Não tem permissoes para: " + destinoBDSB);
         }
-*/
+
+        try {
+            diretoria = destinoBDSB.getCanonicalPath() + File.separator + "copiaDb.db";
+        } catch (IOException e) {
+            sair("Excecao no acesso a ficheiro para armazenar BD!");
+        }
+
+        if(new File(diretoria).exists()){
+            sair("<SERVIDOR BACKUP> Já existe uma base de dados guarda na diretoria.");
+        }
+
         ThreadLeLinhaComandos linhaComandos = new ServidorBackup().new ThreadLeLinhaComandos();
         linhaComandos.start();
 
@@ -143,19 +147,17 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
     public static void receiveDb() {
         try {
            byte[] copiaDb = rmi.getCopiaDb();
-            System.out.println("Chegou aqui");
-           salvarCopiaDb(copiaDb, diretoria +File.separator+ "copiaDb.db");
-
+            salvarCopiaDb(copiaDb);
         } catch (RemoteException e) {
           e.printStackTrace();
         }
 
     }
 
-    private static void salvarCopiaDb(byte[] copiaDb, String nomeFicheiro) {
-        try (FileOutputStream fos = new FileOutputStream(nomeFicheiro)) {
+    private static void salvarCopiaDb(byte[] copiaDb) {
+        try (FileOutputStream fos = new FileOutputStream(diretoria)) {
             fos.write(copiaDb);
-            System.out.println("Copia da base de dados salva localmente: " + nomeFicheiro);
+            System.out.println("<SERVIDOR BACKUP> Copia da base de dados salva localmente: " + diretoria);
             versao = DbManager.getVersaoDb();
         } catch (IOException e) {
             e.printStackTrace();
@@ -284,6 +286,10 @@ public class ServidorBackup extends UnicastRemoteObject implements ObservableInt
         }
     }
 
+    public static void sair(String msg) {
+        System.out.println(msg);
+        System.exit(1);
+    }
 }
 /*
 

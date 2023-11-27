@@ -10,6 +10,7 @@ import pt.isec.pd.trabalhoPratico.model.recordDados.Utilizador;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.sql.*;
@@ -29,10 +30,10 @@ public class DbManage implements Serializable {
     private List<ObservableInterface>observables;
     private PropertyChangeSupport versaoSuporte;
 
-    public DbManage(List<ObservableInterface> obv) {
-        if(!DbManage.existeDb())
+    public DbManage(List<ObservableInterface> obv, String caminhoBD) {
+        if(!DbManage.existeDb(caminhoBD))
             criarDb();
-        this.observables=obv;
+        this.observables = obv;
         versao = getversaobd();
         versaoSuporte = new PropertyChangeSupport(this);
         int codigo_registo = 1;
@@ -41,7 +42,6 @@ public class DbManage implements Serializable {
     }
 
     public void addObserver(ObservableInterface o){
-
             if(!observables.contains(o))
                 observables.add(o);
 
@@ -49,8 +49,6 @@ public class DbManage implements Serializable {
     public void removeObserver(ObservableInterface o){
             if(observables.contains(o))
                 observables.remove(o);
-
-
     }
 
     public static String getDbAdress() {
@@ -58,8 +56,9 @@ public class DbManage implements Serializable {
     }
 
     //Função para verificar se a bd existe
-    private static boolean existeDb() {
+    private static boolean existeDb(String caminhoBD) {
         try {
+            dbAdress = caminhoBD + File.separator + dbAdress;
             File dbFile = new File(dbAdress);
             return dbFile.exists();
         } catch (Exception e) {

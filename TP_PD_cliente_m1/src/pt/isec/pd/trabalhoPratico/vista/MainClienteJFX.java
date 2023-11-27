@@ -25,13 +25,6 @@ public class MainClienteJFX extends Application {
         Parameters params = getParameters();
         List<String> list = params.getRaw();
 
-        //-----------------------------------
-        System.out.println(list.size());
-        for(String each : list){
-            System.out.println(each);
-        }
-        //-----------------------------------
-
         String css = this.getClass().getResource("css/estilos.css").toExternalForm();
         Scene scene;
 

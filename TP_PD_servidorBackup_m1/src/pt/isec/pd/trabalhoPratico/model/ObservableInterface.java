@@ -9,13 +9,3 @@ public interface ObservableInterface extends Remote {
     boolean InserePresencas(String nomeEvento, String[] emails) throws RemoteException;
     boolean EliminaPresencas(String nomeEvento, String [] emails) throws RemoteException;
 }
-/*
-    public void avisaObservables(Geral Msg,int versao) throws RemoteException;
-    public boolean RegistoNovoUser(Utilizador user, String password) throws RemoteException;
-    public boolean edita_registo( Utilizador user, String pasword ) throws  RemoteException;
-    public boolean Cria_evento(Msg_Cria_Evento evento) throws RemoteException;
-
-    public boolean Edita_evento(Msg_Edita_Evento evento) throws RemoteException;
-    public boolean Elimina_evento(String nome_evento) throws RemoteException;
-
-*/

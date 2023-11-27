@@ -45,7 +45,7 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
     private static HeartBeatTask teste;
 
 
-    public ProgServidor(int portoClientes, String service_name) throws RemoteException {
+    public ProgServidor(int portoClientes, String service_name, String caminhoBD) throws RemoteException {
         this.portoClientes = portoClientes;
         this.service_name = service_name;
 
@@ -55,17 +55,16 @@ public class ProgServidor extends UnicastRemoteObject implements RemoteInterface
         temporizador = new Timer();
         heartBeatTask = new HeartBeatTask();
         observers = new ArrayList<>();
-        dbManager = new DbManage(observers);
+        dbManager = new DbManage(observers, caminhoBD);
 
         dbManager.addVersaoListener(event -> envioDeAvisoDeAtualizacao("atualizacao"));
     }
 
     //////////////////////////////////// REGISTRY ////////////////////////////
-    public void setRegistry(String ipRegistry) throws RemoteException, MalformedURLException {
+    public void setRegistry(String ipRegistry, int porto) throws RemoteException, MalformedURLException {
         try {
             System.setProperty("java.rmi.server.hostname", ipRegistry); //parametro aquiii
-            LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
-
+            LocateRegistry.createRegistry(porto);
             System.out.println("\n<SERVIDOR> Registry lancado");
         } catch (RemoteException e) {
             throw new RemoteException("\n<SERVIDOR> Registry ja em execucao");
